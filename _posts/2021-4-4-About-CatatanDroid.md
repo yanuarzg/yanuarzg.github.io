@@ -7,7 +7,7 @@ title: About CatatanDroid
 
 Selain itu terdapat juga artikel Tips dan Trik cara blogging yang umumnya berasal dari platform blogger atau blogspot, demi memudahkan juga para blogger pemula untuk sama-sama belajar platform Blogger.
 
-<h2>Awal mula</h2>
+## Awal mula
 CatatanDroid dilahirkan oleh putra Tangerang Selatan tepatnya dibuat pada tahun 2012, pada saat itu blog CTD masih berdomain catatandroid.blogspot.com.
 
 Jika dilihat di halaman Sitemap (Daftar isi) postingan pertama CatatanDroid terbit pada tanggal 16 November 2012. Postingan tersebut mengenai ponsel Android pertama pemberian Istri tercinta hadiah pernikahan yakni Motorola Fire XT530.
@@ -16,7 +16,7 @@ Selanjutnya CatatanDroid mulai berisikan seputaran aktifitas development Android
 
 Seiring berjalannya waktu CTD membahas dan membagikan tips-tips umum yang masih berhubungan dengan teknologi sehingga dapat mencakup pengunjung dan pembaca yang lebih luas.
 
-<h2>Terus melaju</h2>
+## Terus melaju
 Walaupun sempat vacum selama 3 tahun, sampai pada akhirnya di tahun 2015 menjadi titik awal untuk fokus kembali mengembangkan blog ini.
 
 Syukur Alhamdulillah perjalanan CTD cukup mulus sehingga tepat pada 03 Maret 2016 blog CTD dapat membeli TLD dengan url CatatanDroid.com dan dapat diakses sampai sekarang.
@@ -25,12 +25,12 @@ Kini CatatanDroid menyajikan artikel seputaran cara & tutorial Apps/Game Android
 
 CatatanDroid berusaha dengan maksimal dalam menggunakan gaya bahasa dan penjelasan yang mudah dipahami pembaca, penjabaran yang Insya Allah lengkap, juga disertai dengan data-data terpercaya dan Tested.
 
-<h2>Sanggahan</h2>
+## Sanggahan
 Beberapa isi konten artikel baik kutipan teks maupun foto berasal dari Google alias Internet, jika mungkin terdapat khilaf foto atau kutipan yang ternyata sobat merasa memilikinya, silahkan kontak admin melalui email: 
 admin@catatandroid.com
 Tentu kami akan merubah atau mencantumkan credit ke konten originalnya.
 
-<h2>Akhir Kata</h2>
+## Akhir Kata
 Harapan kami semoga blog ini dapat bermanfaat, apalagi jika sampai dijadikan rujukan bagi teman-teman dalam mencari berita info tips dan trik terpercaya seputar Android, Techno, dan Blogging.
 
 Jika ada pertanyaan seputaran tips trik atau request artikel silahkan tulis pada kolom komentar ya! CatatanDroid akan berusaha menuliskan artikelnya spesial untuk sobat pembaca setia semua.
