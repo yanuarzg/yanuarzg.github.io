@@ -745,11 +745,11 @@
           <h3 class="h3 form-title">Contact Form</h3>
           <form action="#" class="form" data-form>
             <div class="input-wrapper">
-              <input type="text" name="fullname" class="form-input" placeholder="Full name" required data-form-input>
-              <input type="email" name="email" class="form-input" placeholder="Email address" required data-form-input>
+              <input id="namamu" type="text" name="fullname" class="form-input" placeholder="Full name" required data-form-input>
+              <input id="emailmu" type="email" name="email" class="form-input" placeholder="Email address" required data-form-input>
             </div>
-            <textarea name="message" class="form-input" placeholder="Your Message" required data-form-input></textarea>
-            <button class="form-btn" type="submit" disabled data-form-btn>
+            <textarea id="chatmu" name="message" class="form-input" placeholder="Your Message" required data-form-input></textarea>
+            <button id="kirimWa" class="form-btn" type="submit" disabled data-form-btn>
               <ion-icon name="paper-plane"></ion-icon>
               <span>Send Message</span>
             </button>
@@ -761,6 +761,34 @@
   <!--
     - custom js link
   -->
+  <script>
+  document.getElementById('kirimWa').addEventListener('click', contactViaWa);
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        var waChat = document.getElementById('chatmu');
+        waChat.value += ' ';
+    }
+});
+
+function contactViaWa() {
+    /* Pengaturan Whatsapp */
+    var waLink = 'https://api.whatsapp.com/send';
+    var waAdmin = '6289507785333'; // No Whatsapp Kalian
+    /* Dukungan Smartphone */
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        waLink = 'whatsapp://send';
+    }
+    var waNama = document.getElementById('namamu').value; // Mengambil Input Nama User
+    var waEmail = document.getElementById('emailmu').value; // Mengambil Input Email User
+    var waChat = document.getElementById('chatmu').value; // Mengambil Input Pesan User
+    var waVia = location.href; // Mengambil URL saat ini
+    var waKirim = waLink + '?phone=' + waAdmin + '&text=' + '*Nama:* ' + waNama + '%0A' + '*Email:* ' + waEmail + '%0A%0A' + '*Pesan:* %0A' + waChat + '%0A%0A' + '_Dikirim via: ' + waVia + '_';
+    /* Buka Jendela Whatsapp */
+    window.open(waKirim, '_blank');
+    window.location.href = waVia; // Segarkan Halaman Setelah Terkirim
+}
+  </script
   <script src="./assets/js/script.js"></script>
   <!--
     - ionicon link
