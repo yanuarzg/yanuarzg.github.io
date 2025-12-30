@@ -24,6 +24,7 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 
 #headline-sec {max-width: 100%;margin: 0;}
 
+#recHL {min-width: -webkit-fill-available; min-width: -moz-available; aspect-ratio: 16/9;}
 #recHL .post-title {font-size: 2rem!important;}
 
 #popularLabel .trend-title {background: var(--bg-color);}
