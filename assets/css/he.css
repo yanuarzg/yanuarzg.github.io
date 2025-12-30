@@ -1,0 +1,14 @@
+#headline-sec {max-width: 100%;margin: 0;}
+
+
+/* Laptop */
+@media only screen and (max-width:1366px) {
+}
+
+/* Tablet */
+@media only screen and (max-width:768px) {
+}
+
+/* Mobile */
+@media only screen and (max-width:500px) {
+}
