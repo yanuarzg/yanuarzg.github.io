@@ -1,4 +1,31 @@
+.swipe::-webkit-scrollbar,
+nav .LinkList ul::-webkit-scrollbar,
+#subLabelcont::-webkit-scrollbar,
+#popularLabel::-webkit-scrollbar
+{width: 5px;height: 5px;opacity: 0;}
+
+.swipe:hover::-webkit-scrollbar,
+nav .LinkList ul:hover::-webkit-scrollbar,
+#subLabelcont:hover::-webkit-scrollbar,
+#popularLabel:hover::-webkit-scrollbar
+{width: 5px;height: 5px;opacity: 1;}
+
+.swipe:hover::-webkit-scrollbar-thumb,
+nav .LinkList ul:hover::-webkit-scrollbar-thumb,
+#subLabelcont:hover::-webkit-scrollbar-thumb,
+#popularLabel:hover::-webkit-scrollbar-thumb
+{background: #d3d3d3;border-radius: 10px;}
+
+.swipe:hover::-webkit-scrollbar-track,
+nav .LinkList ul:hover::-webkit-scrollbar-track,
+#subLabelcont:hover::-webkit-scrollbar-track,
+#popularLabel:hover::-webkit-scrollbar-track
+{border-radius: 10px;background: 0 0;}
+
 #headline-sec {max-width: 100%;margin: 0;}
+
+#popularLabel .trend-title {background: var(--bg-color);}
+#subLabelcont .trend-title {background: #161d24;}
 
 
 /* Laptop */
