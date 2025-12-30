@@ -24,6 +24,8 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 
 #headline-sec {max-width: 100%;margin: 0;}
 
+#recHL .post-title {font-size: 2rem!important;}
+
 #popularLabel .trend-title {background: var(--bg-color);}
 #subLabelcont .trend-title {background: #161d24;}
 
@@ -45,4 +47,6 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 
 /* Mobile */
 @media only screen and (max-width:500px) {
+  #recHL .post-title {font-size: 1.5rem!important;}
+
 }
