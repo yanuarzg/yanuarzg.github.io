@@ -29,6 +29,9 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 
 .index .Blog .post-img a:after {top: 0;height: 124px;}
 
+.inpost .inner-post {display: block!important;}
+.inpost .post-labels {flex-wrap: wrap;gap: 0 1rem;}
+
 /* Laptop */
 @media only screen and (max-width:1366px) {
 }
