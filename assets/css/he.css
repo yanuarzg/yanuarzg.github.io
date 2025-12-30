@@ -27,6 +27,7 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 #popularLabel .trend-title {background: var(--bg-color);}
 #subLabelcont .trend-title {background: #161d24;}
 
+.index .Blog .post-img a:after {top: 0;height: 124px;}
 
 /* Laptop */
 @media only screen and (max-width:1366px) {
@@ -34,6 +35,9 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 
 /* Tablet */
 @media only screen and (max-width:768px) {
+  .ignielTopParallax .prlx2 {top: 0;transform: translate(-50%,0%);}
+  .ignielParallax .prlx2 {top: 42%;}
+  .index .Blog .post-img a:after {height: 90px;}
 }
 
 /* Mobile */
