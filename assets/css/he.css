@@ -1,5 +1,3 @@
-body.dw header ul li.has-menu:hover .sub-menu {top: 2rem;}
-
 .swipe::-webkit-scrollbar,
 nav .LinkList ul::-webkit-scrollbar,
 #subLabelcont::-webkit-scrollbar,
@@ -36,6 +34,8 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 
 .inpost .inner-post {display: block!important;}
 .inpost .post-labels {flex-wrap: wrap;gap: 0 1rem;}
+
+body.dw header ul li.has-menu:hover .sub-menu {top: 2rem;}
 
 /* Laptop */
 @media only screen and (max-width:1366px) {
