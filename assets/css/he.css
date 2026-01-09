@@ -1,3 +1,5 @@
+body.dw header ul li.has-menu:hover .sub-menu {top: 2rem;}
+
 .swipe::-webkit-scrollbar,
 nav .LinkList ul::-webkit-scrollbar,
 #subLabelcont::-webkit-scrollbar,
