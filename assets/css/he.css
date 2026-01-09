@@ -35,7 +35,7 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 .inpost .inner-post {display: block!important;}
 .inpost .post-labels {flex-wrap: wrap;gap: 0 1rem;}
 
-body.dw header ul li.has-menu:hover .sub-menu {top: 2rem;}
+body.dw header ul li.has-menu:hover .sub-menu {top: 2rem!important;}
 
 /* Laptop */
 @media only screen and (max-width:1366px) {
