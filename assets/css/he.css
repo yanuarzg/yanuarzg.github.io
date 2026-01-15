@@ -23,6 +23,7 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 {border-radius: 10px;background: 0 0;}
 
 #headline-sec {max-width: 100%;margin: 0;}
+header .trend-title {z-index: 0;}
 
 #recHL {min-width: -webkit-fill-available; min-width: -moz-available; aspect-ratio: 16/9;}
 #recHL .post-title {font-size: 2rem!important;}
