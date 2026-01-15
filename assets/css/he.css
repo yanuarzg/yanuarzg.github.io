@@ -67,7 +67,7 @@ body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.act
 	header ul li.has-menu:hover .sub-menu 
 	{display: none!important;}
 	header ul li.has-menu.active ul.sub-menu 
-	{display: grid!important;}
+	{display: grid!important;top: 5.75rem;}
 }
 
 /* Mobile */
