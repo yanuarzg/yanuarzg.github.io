@@ -35,7 +35,7 @@ nav .LinkList ul:hover::-webkit-scrollbar-track,
 .inpost .inner-post {display: block!important;}
 .inpost .post-labels {flex-wrap: wrap;gap: 0 1rem;}
 
-body.dw header ul li.has-menu:hover .sub-menu {top: 2rem!important;}
+body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.active ul.sub-menu {top: 2rem!important;}
 
 /* Laptop */
 @media only screen and (max-width:1366px) {
@@ -46,6 +46,13 @@ body.dw header ul li.has-menu:hover .sub-menu {top: 2rem!important;}
   .ignielTopParallax .prlx2 {top: 0;transform: translate(-50%,0%);}
   .ignielParallax .prlx2 {top: 42%;}
   .index .Blog .post-img a:after {height: 90px;}
+	header ul li.has-menu {padding-inline-end: 2rem!important;}
+	header ul li.has-menu:after,header .open ul li.has-menu:after {
+		content: '';
+	}
+	header .open ul li.has-menu {
+		padding-inline-end: 0!important;
+	}
 }
 
 /* Mobile */
