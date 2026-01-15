@@ -1,11 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => { 
 
-  document.querySelectorAll('.byline.post-author .post-author-label').forEach(element => {
-    element.innerHTML = element.innerHTML.replace(
-      /HarianExpress\.com/g,
-      '<a href="https://www.harianexpress.com" rel="noopener noreferrer">HarianExpress.com</a>'
-    );
-  });
+  const authorLabels = document.querySelectorAll('.byline.post-author .post-author-label');
+  
+  if (authorLabels.length > 0) {
+    authorLabels.forEach(element => {
+      element.innerHTML = element.innerHTML.replace(
+        /HarianExpress\.com/g,
+        '<a href="https://www.harianexpress.com" rel="noopener noreferrer">HarianExpress.com</a>'
+      );
+    });
+  }
   
   setTimeout(() => { 
     function yzRecHL(e, element) { 
