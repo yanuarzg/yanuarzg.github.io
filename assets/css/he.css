@@ -75,3 +75,5 @@ body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.act
   #recHL .post-title {font-size: 1.5rem!important;}
 
 }
+
+.post-desc {display:none;}
