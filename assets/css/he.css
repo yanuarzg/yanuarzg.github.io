@@ -55,7 +55,9 @@ body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.act
 	}
 
 	header ul li.has-menu:hover .sub-menu 
-	{display: none;}
+	{display: none!important;}
+	header ul li.has-menu.active ul.sub-menu 
+	{display: grid!important;}
 }
 
 /* Mobile */
