@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => { 
+
+  document.querySelectorAll('.byline.post-author .post-author-label').forEach(element => {
+    element.innerHTML = element.innerHTML.replace(
+      /HarianExpress\.com/g,
+      '<a href="https://www.harianexpress.com" rel="noopener noreferrer">HarianExpress.com</a>'
+    );
+  });
+  
   setTimeout(() => { 
     function yzRecHL(e, element) { 
       const s = element.getAttribute("data-items"), label = element.getAttribute("data-label"); 
@@ -83,3 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })(); 
   }, 1000); 
 });
+
+// Hanya aktif di mobile (lebih aman)
+if (window.innerWidth <= 768) {
+}
