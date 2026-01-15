@@ -53,6 +53,9 @@ body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.act
 	header .open ul li.has-menu {
 		padding-inline-end: 0!important;
 	}
+
+	header ul li.has-menu:hover .sub-menu 
+	{display: none;}
 }
 
 /* Mobile */
