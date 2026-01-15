@@ -55,6 +55,13 @@ body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.act
 		padding-inline-end: 0!important;
 	}
 
+	.side-drawer.open ul li.has-menu.active ul.sub-menu {
+	    top: 2rem;
+	    position: absolute;
+	    padding: 1rem;
+	    background: #131313;
+	}
+
 	header ul li.has-menu:hover:after {
 	    -webkit-transform: scale(180deg);
 	    transform: unset;
