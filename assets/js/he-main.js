@@ -96,6 +96,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 1000); 
 });
 
-// Hanya aktif di mobile (lebih aman)
+// Hanya aktif di mobile
 if (window.innerWidth <= 768) {
+
+  document.addEventListener('DOMContentLoaded', function() {
+    function cleanUrl(url) {
+      return url
+        .replace(/[?&]m=1/gi, '');
+    }
+  
+    // Cari semua link share di dalam #share
+    var shareLinks = document.querySelectorAll('#share a');
+  
+    shareLinks.forEach(function(link) {
+      var originalHref = link.getAttribute('href');
+      if (originalHref) {
+        var cleanedHref = cleanUrl(originalHref);
+        link.setAttribute('href', cleanedHref);
+      }
+    });
+  });
+
 }
