@@ -3,6 +3,7 @@ header ul li.has-menu:after {background-image: url('data:image/svg+xml,%3Csvg xm
 .img-thumb { width: -webkit-fill-available; width: -moz-available; }
 
 .inpage h1.post-title {margin-block-end: 2rem;}
+.inpage #Blog1 .load-more-btn {padding: 8px 70px;}
 
 .swipe::-webkit-scrollbar,
 nav .LinkList ul::-webkit-scrollbar,
