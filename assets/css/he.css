@@ -16,7 +16,7 @@ header ul li.has-menu:after {background-image: url('data:image/svg+xml,%3Csvg xm
 #yz-header:after {
     content: '';
     position: absolute;
-    bottom: -32%;
+    bottom: -10%;
     left: -50px;
     width: 100px;
     height: 100px;
