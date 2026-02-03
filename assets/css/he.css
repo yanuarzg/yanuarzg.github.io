@@ -75,6 +75,19 @@ body.dw header ul li.has-menu:hover .sub-menu, body.dw header ul li.has-menu.act
     background: var(--bg-color)!important;
 }
 
+footer {position:relative;overflow:hidden;}
+footer#yz-footer:before {
+    content: '';
+    background-image: url(https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh1FXIitE0BIjbIvoOVgVcaksSYMcmdbEoTnh6FzQD8GiQYlmmromu1vWsQqYGFG7jr6t8nb41x1eNqPC1GY0XtrSDsZ7FNLPpOlPM3t_74ZFmFGm1_T7sg5YK3DxpQdBEaL27uSg1BrdgFFKCkRREQb9qzcdJI5Evt0m2rlPQD9lK0JHMDhxaDoyBX6t0/w640-h248/jakartacolor-removebg-preview.png);
+    position: absolute;
+    bottom: 0;
+    width: 640px;
+    height: 248px;
+    z-index: -1;
+    left: -75px;
+    opacity: 0.35;
+}
+
 /* Laptop */
 @media only screen and (max-width:1366px) {
 }
