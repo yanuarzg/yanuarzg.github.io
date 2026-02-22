@@ -42,7 +42,7 @@ h2.h3.jl_fe_title {
 
 .dw header { top: -3.95rem!important; }
 .admin-bar.dw header {
-	top: -1.95rem!important;
+	top: -2.5rem!important;
 }
 
 .logo_small_wrapper_table, footer .e-con-boxed.e-con.e-parent, footer .e-con-boxed.e-con.e-parent * {
@@ -106,8 +106,13 @@ ul#menu-top-menu:hover::-webkit-scrollbar-track, .swipe:hover::-webkit-scrollbar
 }
 
 #clockngreet {color:lightgray;}
-.navigation_wrapper {align-items: start;justify-content: start;}
-header .navigation_wrapper ul span {padding: 0 0 0.5rem;}
+.navigation_wrapper {
+	    align-items: start;
+    justify-content: start;
+    border-top: 1px solid dimgray;
+    padding-top: 0.65rem;
+}
+header .navigation_wrapper ul span {padding: 0 0 0.5rem;font-size: smaller;}
 
 .intersec {
 	background: rgba(0,0,0,0.05);
