@@ -90,6 +90,81 @@ footer#yz-footer:before {
     opacity: 0.35;
 }
 
+
+.swipe {
+    user-select: none;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    display: flex;
+    flex-wrap: nowrap!important;
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+}
+    .horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 10px;
+    gap: 15px;
+}
+.horizontal-scroll .video-card {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 9/16;
+    position: relative;
+    width: 150px;
+}
+.video-card img {
+    margin: 0!important;
+    padding: 0!important;
+}
+#close-viewer, .video-card-overlay {
+    border: 0;
+    cursor: pointer;
+    text-align: center;
+}
+.video-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.1);
+    font-size: 1.9em;
+    opacity: 1;
+    transition: opacity .3s;
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+}
+.vertical-scroll, .vertical-scroll .video-card {
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+}
+.vertical-scroll {
+    position: fixed;
+    inset: 0;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    background-color: #000;
+    z-index: 1000;
+}
+#close-viewer {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1001;
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2em;
+    line-height: 40px;
+    padding: 0;
+}
+
 /* Laptop */
 @media only screen and (max-width:1366px) {
 }
