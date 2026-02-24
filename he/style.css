@@ -4,6 +4,10 @@
 .timer {display: inline-block; background: var(--webkit-text-color); color: var(--skl-soft)!important;} .timer span {color: var(--skl-soft);} .timer-count {padding-inline-start: 0.5rem;}
 /* end yz */
 
+body, body * {
+    font-family: sans-serif!important;
+}
+
 h2.h3.jl_fe_title {
 	font-weight: bold;
 }
