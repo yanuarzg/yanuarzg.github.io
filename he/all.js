@@ -1,5 +1,391 @@
-/* Optimized Feeds Loader | IIFE ES7 Minified */
-(()=>{"use strict";const CACHE_DUR=3e5,LAZY_MARGIN="200px",skelHtml=()=>{const t=`<li style="display:flex;gap:12px;margin-bottom:15px;align-items:center;"><div class="sk-img" style="aspect-ratio:16/9;width:-webkit-fill-available;height:auto;max-height:150px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk-load 1.5s infinite;border-radius:4px;"></div><div style="flex:1;"><div style="height:14px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk-load 1.5s infinite;border-radius:3px;width:80%;margin-bottom:8px;"></div><div style="height:10px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk-load 1.5s infinite;border-radius:3px;width:40%;"></div></div></li>`,n=innerWidth>=768?4:2;return`<style>@keyframes sk-load{0%{background-position:200% 0}100%{background-position:-200% 0}}</style><ul style="list-style:none;padding:0;margin:0;">${Array(n).fill(t).join("")}</ul>`},renderList=t=>{if(!t.length)return"<p>Tidak ada konten.</p>";return`<ul style="list-style:none;padding:0;margin:0;">${t.map(({link:t,title:e,img:i,date:a})=>`<li style="display:flex;gap:12px;margin-bottom:15px;align-items:center;"><a href="${t}" aria-label="${e}" class="post-img"><img src="${i}" style="width:70px;height:50px;object-fit:cover;border-radius:4px;" onerror="this.src='https://placehold.co/70x50'"/></a><div style="flex:1;"><h2 class="h3 jl_fe_title jl_txt_2row" style="font-size:18px;display:block;line-height:1.5;"><a href="${t}" target="_blank">${e}</a></h2><small style="font-size:11px;">${a}</small></div></li>`).join("")}</ul>`},getCached=t=>{try{const e=localStorage.getItem(t);if(!e)return null;const i=JSON.parse(e);return Date.now()-i.timestamp>CACHE_DUR?(localStorage.removeItem(t),null):i.value}catch{return null}},setCache=(t,e)=>{try{localStorage.setItem(t,JSON.stringify({value:e,timestamp:Date.now()}))}catch{}},addPreconnect=t=>{t.forEach(t=>{if(!document.querySelector(`link[href*="${t}"]`)){const e=document.createElement("link");e.rel="preconnect",e.href=`https://${t}`,e.crossOrigin="anonymous",document.head.appendChild(e)}})},fetchWPOptimized=async(t,e,i)=>{const a=`wp_${t}_${e||"all"}_${i}`,n=getCached(a);if(n)return n;let s=`https://${t}/wp-json/wp/v2/posts?per_page=${i}&_fields=id,title,link,date,featured_media`;e&&(s+=`&categories=${e}`);const o=new AbortController,c=setTimeout(()=>o.abort(),8e3);try{const e=await fetch(s,{signal:o.signal,mode:"cors",cache:"force-cache"});clearTimeout(c);if(!e.ok)throw new Error("HTTP error");const i=await e.json(),r=[...new Set(i.filter(t=>t.featured_media).map(t=>t.featured_media))];let l={};if(r.length)try{const t=await(await fetch(`https://${t}/wp-json/wp/v2/media?include=${r.join(",")}&_fields=id,source_url`,{cache:"force-cache"})).json();t.forEach(t=>{l[t.id]=t.source_url})}catch{}const d=i.map(t=>({title:t.title.rendered||t.title,link:t.link,rawDate:t.date,date:new Date(t.date).toLocaleDateString("id-ID"),source:t,img:l[t.featured_media]||"https://placehold.co/70x50"}));return setCache(a,d),d}catch(t){return clearTimeout(c),console.warn(`WP fetch failed:`,t.message),[]}},fetchWPCategory=async(t,e)=>{const i=`wp_cat_${t}_${e}`,a=getCached(i);if(a)return a;try{const i=await(await fetch(`https://${t}/wp-json/wp/v2/categories?search=${encodeURIComponent(e)}&per_page=5&_fields=id,slug,name`,{cache:"force-cache"})).json();if(!i.length)return null;const a=i.find(t=>t.slug===e.toLowerCase()),n=i.find(t=>t.name.toLowerCase()===e.toLowerCase()),s=(a||n||i[0]).id;return setCache(i,s),s}catch{return null}},loadBloggerOptimized=(t,e,i,a)=>{const n=`blg_${t}_${e||"all"}_${i}`,s=getCached(n);if(s)return void a(s);const o="blgCb_"+Math.random().toString(36).slice(2);window[o]=t=>{document.getElementById(o)?.remove(),delete window[o];const e=(t.feed.entry||[]).map(t=>({title:t.title.$t,link:t.link.find(t=>"alternate"===t.rel).href,rawDate:t.published.$t,date:new Date(t.published.$t).toLocaleDateString("id-ID"),img:t.media$thumbnail?t.media$thumbnail.url.replace(/\/s\d+-c\//,"/s320-c/"):"https://placehold.co/70x50"}));setCache(n,e),a(e)};const c=document.createElement("script");c.id=o,c.src=`https://${t}/feeds/posts/default${e?`/-/${encodeURIComponent(e)}/`:"/"} ?alt=json&max-results=${i}&callback=${o}`,c.onerror=()=>{document.getElementById(o)?.remove(),delete window[o],a([])},document.body.appendChild(c)},observer=new IntersectionObserver(t=>{t.forEach(t=>{if(t.isIntersecting){const e=t.target,i=e.dataset.loader;e.innerHTML=skelHtml(),i&&window[i]&&(window[i](e),delete e.dataset.loader),observer.unobserve(e)}})},{rootMargin:LAZY_MARGIN});window.loadSingleWP=async t=>{const e=t.getAttribute("data-source"),i=parseInt(t.getAttribute("data-items"))||5,a=await fetchWPOptimized(e,null,i);t.innerHTML=renderList(a)};window.loadSingleBlogger=t=>{const e=t.getAttribute("data-source"),i=parseInt(t.getAttribute("data-items"))||5;loadBloggerOptimized(e,null,i,e=>t.innerHTML=renderList(e))};window.loadMultiWP=async t=>{const e=t.getAttribute("data-sources").split(",").map(t=>t.trim()).filter(Boolean),i=t.getAttribute("data-category")||"",a=parseInt(t.getAttribute("data-items"))||10,n=t.getAttribute("data-sort")||"date";if(!e.length)return;addPreconnect(e);const s=await Promise.allSettled(e.map(async t=>{const e=i?await fetchWPCategory(t,i):null;return e===null&&i?[]:fetchWPOptimized(t,e,a)}));let o=[];s.forEach(t=>{"fulfilled"===t.status&&(o=o.concat(t.value))});"date"===n&&o.sort((t,e)=>new Date(e.rawDate)-new Date(t.rawDate)),t.innerHTML=renderList(o.slice(0,a))};window.loadMultiBlogger=t=>{const e=t.getAttribute("data-sources").split(",").map(t=>t.trim()).filter(Boolean),i=t.getAttribute("data-category")||"",a=parseInt(t.getAttribute("data-items"))||10,n=t.getAttribute("data-sort")||"date";if(!e.length)return;addPreconnect(e);let s=[],o=0;e.forEach(t=>{loadBloggerOptimized(t,i,a,t=>{s=s.concat(t),++o===e.length&&("date"===n&&s.sort((t,e)=>new Date(e.rawDate)-new Date(t.rawDate)),document.querySelector(".recent-blg-multi").innerHTML=renderList(s.slice(0,a)))})})};document.addEventListener("DOMContentLoaded",()=>{[".recent-wp","loadSingleWP"],[".recent-blg","loadSingleBlogger"],[".recent-wp-multi","loadMultiWP"],[".recent-blg-multi","loadMultiBlogger"]].forEach(([t,e])=>{document.querySelectorAll(t).forEach(t=>{t.dataset.loader=e,observer.observe(t)})})});})();
+/**
+ * OPTIMIZED FEEDS LOADER WITH SKELETON
+ * Fitur optimasi:
+ * - localStorage cache (5 menit)
+ * - Lazy loading (IntersectionObserver)
+ * - Parallel fetch dengan AbortController
+ * - Fetch hanya field penting (tanpa _embed)
+ * - Preconnect DNS
+ * - Skeleton loader responsif (4 desktop, 2 mobile)
+ */
 
-/* scroll up/down class toggle */
-(t=>{let e,i=pageYOffset||document.documentElement.scrollTop;addEventListener("scroll",()=>{const a=pageYOffset||document.documentElement.scrollTop;Math.abs(a-i)>t&&(a>i?!1!==e&&(document.body.classList.replace("up","dw"),e=!1):!0!==e&&(document.body.classList.replace("dw","up"),e=!0),i=a),0===a&&document.body.classList.remove("up")})})(70);
+document.addEventListener("DOMContentLoaded", function () {
+
+  // ============================================================
+  // CONFIG
+  // ============================================================
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 menit
+  const LAZY_LOAD_THRESHOLD = '200px';  // mulai load saat 200px dari viewport
+
+  // ============================================================
+  // SKELETON LOADER HTML
+  // ============================================================
+  function renderSkeleton() {
+    const skeletonHTML = `
+      <li style="display:flex;gap:12px;margin-bottom:15px;align-items:center;">
+        <div class="skeleton-img" style="aspect-ratio:16/9;width:-moz-available;width:-webkit-fill-available;height:auto;max-height:124px!important;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton-loading 1.5s infinite;border-radius:4px;"></div>
+        <div class='dn' style="flex:1;">
+          <div class="skeleton-title" style="height:14px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton-loading 1.5s infinite;border-radius:3px;width:80%;margin-bottom:8px;"></div>
+          <div class="skeleton-date" style="height:10px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton-loading 1.5s infinite;border-radius:3px;width:40%;"></div>
+        </div>
+      </li>
+    `;
+
+    // Desktop: 4, Mobile: 2
+    const count = window.innerWidth >= 768 ? 4 : 2;
+    const items = Array(count).fill(skeletonHTML).join('');
+
+    return `
+      <style>
+        @keyframes skeleton-loading {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      </style>
+      <ul style="list-style:none;padding:0;margin:0;">${items}</ul>
+    `;
+  }
+
+  // ============================================================
+  // HELPER: Render List
+  // ============================================================  
+  function renderList(items) {
+	if (!items.length) return '<p>Tidak ada konten.</p>';
+	return '<ul style="list-style:none;padding:0;margin:0;">' +
+	  items.map(item => `
+		<li style="display:flex;gap:12px;margin-bottom:15px;align-items:center;">
+		  <a href="${item.link}" aria-label="${item.title}" class="post-img">
+			<img src="${item.img}"
+			   style="width:70px;height:50px;object-fit:cover;border-radius:4px;"
+			   onerror="this.src='https://placehold.co/70x50'"/>
+		  </a>
+		  <div style="flex:1;">
+		  <h2 class="h3 jl_fe_title jl_txt_2row" style="text-decoration:none;font-size:18px;display:block;line-height:1.5;">
+			<a href="${item.link}" target="_blank">
+			  ${item.title}
+			</a>
+			</h2>
+			<small style="font-size:11px;">
+			  ${item.date}
+			</small>
+		  </div>
+		</li>`).join('') +
+	  '</ul>';
+	}
+
+  // ============================================================
+  // CACHE HELPER
+  // ============================================================
+  function getCached(key) {
+    try {
+      const item = localStorage.getItem(key);
+      if (!item) return null;
+      const data = JSON.parse(item);
+      if (Date.now() - data.timestamp > CACHE_DURATION) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      return data.value;
+    } catch {
+      return null;
+    }
+  }
+
+  function setCache(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify({
+        value: value,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // localStorage penuh atau disabled
+    }
+  }
+
+  // ============================================================
+  // DNS PRECONNECT (jalankan sekali saat load)
+  // ============================================================
+  function addPreconnect(domains) {
+    const head = document.head;
+    domains.forEach(domain => {
+      if (!document.querySelector(`link[href*="${domain}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = `https://${domain}`;
+        link.crossOrigin = 'anonymous';
+        head.appendChild(link);
+      }
+    });
+  }
+
+  // ============================================================
+  // LAZY LOAD OBSERVER
+  // ============================================================
+  const lazyLoadObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const container = entry.target;
+        const loader = container.dataset.loader;
+        
+        // Tampilkan skeleton
+        container.innerHTML = renderSkeleton();
+        
+        if (loader && window[loader]) {
+          window[loader](container);
+          delete container.dataset.loader; // jangan load ulang
+        }
+        
+        lazyLoadObserver.unobserve(container);
+      }
+    });
+  }, { rootMargin: LAZY_LOAD_THRESHOLD });
+
+  // ============================================================
+  // WORDPRESS OPTIMIZED FETCH
+  // ============================================================
+  async function fetchWPOptimized(source, catId, count) {
+    const cacheKey = `wp_${source}_${catId || 'all'}_${count}`;
+    const cached = getCached(cacheKey);
+    if (cached) return cached;
+
+    let url = `https://${source}/wp-json/wp/v2/posts?per_page=${count}&_fields=id,title,link,date,featured_media`;
+    if (catId) url += `&categories=${catId}`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
+    try {
+      const res = await fetch(url, { 
+        signal: controller.signal,
+        mode: 'cors',
+        cache: 'force-cache'
+      });
+      clearTimeout(timeout);
+
+      if (!res.ok) throw new Error('HTTP error');
+      const posts = await res.json();
+
+      // Ambil thumbnail hanya untuk post yang punya featured_media
+      const mediaIds = [...new Set(posts.filter(p => p.featured_media).map(p => p.featured_media))];
+      let mediaMap = {};
+
+      if (mediaIds.length > 0) {
+        try {
+          const mediaUrl = `https://${source}/wp-json/wp/v2/media?include=${mediaIds.join(',')}&_fields=id,source_url`;
+          const mediaRes = await fetch(mediaUrl, { cache: 'force-cache' });
+          const mediaData = await mediaRes.json();
+          mediaData.forEach(m => {
+            mediaMap[m.id] = m.source_url;
+          });
+        } catch {
+          // jika gagal ambil media, lanjut tanpa thumbnail
+        }
+      }
+
+      const mapped = posts.map(post => ({
+        title   : post.title.rendered || post.title,
+        link    : post.link,
+        rawDate : post.date,
+        date    : new Date(post.date).toLocaleDateString('id-ID'),
+        source  : source,
+        img     : mediaMap[post.featured_media] || 'https://placehold.co/70x50'
+      }));
+
+      setCache(cacheKey, mapped);
+      return mapped;
+
+    } catch (err) {
+      clearTimeout(timeout);
+      console.warn(`WP fetch failed for ${source}:`, err.message);
+      return [];
+    }
+  }
+
+  async function fetchWPCategory(source, categoryName) {
+    const cacheKey = `wp_cat_${source}_${categoryName}`;
+    const cached = getCached(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const res = await fetch(
+        `https://${source}/wp-json/wp/v2/categories?search=${encodeURIComponent(categoryName)}&per_page=5&_fields=id,slug,name`,
+        { cache: 'force-cache' }
+      );
+      const cats = await res.json();
+      if (!cats.length) return null;
+
+      const bySlug = cats.find(c => c.slug === categoryName.toLowerCase());
+      const byName = cats.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+      const catId = (bySlug || byName || cats[0]).id;
+
+      setCache(cacheKey, catId);
+      return catId;
+    } catch {
+      return null;
+    }
+  }
+
+  // ============================================================
+  // BLOGGER OPTIMIZED (sudah cepat, tambah cache)
+  // ============================================================
+  function loadBloggerOptimized(source, category, count, callback) {
+    const cacheKey = `blg_${source}_${category || 'all'}_${count}`;
+    const cached = getCached(cacheKey);
+    
+    if (cached) {
+      callback(cached);
+      return;
+    }
+
+    const cbName = 'blgCb_' + Math.random().toString(36).slice(2);
+
+    window[cbName] = function (data) {
+      document.getElementById(cbName)?.remove();
+      delete window[cbName];
+
+      const entries = data.feed.entry || [];
+      const mapped = entries.map(entry => ({
+        title   : entry.title.$t,
+        link    : entry.link.find(l => l.rel === 'alternate').href,
+        rawDate : entry.published.$t,
+        date    : new Date(entry.published.$t).toLocaleDateString('id-ID'),
+        source  : source,
+        img     : entry.media$thumbnail
+                    ? entry.media$thumbnail.url.replace(/\/s\d+-c\//, '/s320-c/')
+                    : 'https://placehold.co/70x50'
+      }));
+
+      setCache(cacheKey, mapped);
+      callback(mapped);
+    };
+
+    const labelPath = category ? `/-/${encodeURIComponent(category)}/` : '/';
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = `https://${source}/feeds/posts/default${labelPath}?alt=json&max-results=${count}&callback=${cbName}`;
+    script.onerror = () => {
+      document.getElementById(cbName)?.remove();
+      delete window[cbName];
+      callback([]);
+    };
+    document.body.appendChild(script);
+  }
+
+  // ============================================================
+  // SINGLE WP (lazy load)
+  // ============================================================
+  window.loadSingleWP = async function(container) {
+    const source = container.getAttribute('data-source');
+    const count = parseInt(container.getAttribute('data-items')) || 5;
+
+    const posts = await fetchWPOptimized(source, null, count);
+    container.innerHTML = renderList(posts);
+  };
+
+  document.querySelectorAll('.recent-wp').forEach(container => {
+    container.dataset.loader = 'loadSingleWP';
+    lazyLoadObserver.observe(container);
+  });
+
+  // ============================================================
+  // SINGLE BLOGGER (lazy load)
+  // ============================================================
+  window.loadSingleBlogger = function(container) {
+    const source = container.getAttribute('data-source');
+    const count = parseInt(container.getAttribute('data-items')) || 5;
+
+    loadBloggerOptimized(source, null, count, posts => {
+      container.innerHTML = renderList(posts);
+    });
+  };
+
+  document.querySelectorAll('.recent-blg').forEach(container => {
+    container.dataset.loader = 'loadSingleBlogger';
+    lazyLoadObserver.observe(container);
+  });
+
+  // ============================================================
+  // MULTI-SOURCE WP (lazy load)
+  // ============================================================
+  window.loadMultiWP = async function(container) {
+    const sources = container.getAttribute('data-sources').split(',').map(s => s.trim()).filter(Boolean);
+    const category = container.getAttribute('data-category') || '';
+    const total = parseInt(container.getAttribute('data-items')) || 10;
+    const sort = container.getAttribute('data-sort') || 'date';
+
+    if (!sources.length) return;
+
+    // Preconnect semua domain
+    addPreconnect(sources);
+
+    let allPosts = [];
+
+    // Paralel fetch semua sources
+    const promises = sources.map(async (source) => {
+      let catId = null;
+      if (category) {
+        catId = await fetchWPCategory(source, category);
+        if (!catId) return [];
+      }
+      return fetchWPOptimized(source, catId, total);
+    });
+
+    const results = await Promise.allSettled(promises);
+    results.forEach(result => {
+      if (result.status === 'fulfilled') {
+        allPosts = allPosts.concat(result.value);
+      }
+    });
+
+    if (sort === 'date') {
+      allPosts.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+    }
+
+    container.innerHTML = renderList(allPosts.slice(0, total));
+  };
+
+  document.querySelectorAll('.recent-wp-multi').forEach(container => {
+    container.dataset.loader = 'loadMultiWP';
+    lazyLoadObserver.observe(container);
+  });
+
+  // ============================================================
+  // MULTI-SOURCE BLOGGER (lazy load)
+  // ============================================================
+  window.loadMultiBlogger = function(container) {
+    const sources = container.getAttribute('data-sources').split(',').map(s => s.trim()).filter(Boolean);
+    const category = container.getAttribute('data-category') || '';
+    const total = parseInt(container.getAttribute('data-items')) || 10;
+    const sort = container.getAttribute('data-sort') || 'date';
+
+    if (!sources.length) return;
+
+    addPreconnect(sources);
+
+    let allEntries = [];
+    let completed = 0;
+
+    sources.forEach(source => {
+      loadBloggerOptimized(source, category, total, entries => {
+        allEntries = allEntries.concat(entries);
+        completed++;
+
+        if (completed === sources.length) {
+          if (sort === 'date') {
+            allEntries.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+          }
+          container.innerHTML = renderList(allEntries.slice(0, total));
+        }
+      });
+    });
+  };
+
+  document.querySelectorAll('.recent-blg-multi').forEach(container => {
+    container.dataset.loader = 'loadMultiBlogger';
+    lazyLoadObserver.observe(container);
+  });
+
+});
+
+/* scroll up show */
+function kontrolScroll(o){var l,s=window.pageYOffset||document.documentElement.scrollTop;window.addEventListener("scroll",(function(){var c=window.pageYOffset||document.documentElement.scrollTop;Math.abs(c-s)>o&&(c>s?!1!==l&&(document.body.classList.remove("up"),document.body.classList.add("dw"),l=!1):!0!==l&&(document.body.classList.remove("dw"),document.body.classList.add("up"),l=!0),s=c),0===c&&document.body.classList.remove("up")}))}kontrolScroll(70);
