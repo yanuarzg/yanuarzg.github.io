@@ -70,14 +70,19 @@ font-weight: bold;
 .headline h2 {font-size:16px!important;}
 
 .btn-primary.en .mobile-text {display: none;}
+a.btn-primary.en {
+    padding: 4px 6px;
+    font-size: x-small;
+    text-wrap-mode: nowrap;
+}
 
 
 @media only screen and (max-width: 770px) {
     .btn-primary.en .mobile-text {
         display: inline;
     }
-    .btn-primary.en span:not(.mobile-text) {
-        display: none;
+    .btn-primary.en span:not(.mobile-text), .jl_shwp.jl_shsmb {
+        display: none!important;
     }
 }
 
