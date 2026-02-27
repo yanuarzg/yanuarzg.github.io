@@ -387,6 +387,12 @@ aspect-ratio: 9/16;
 position: relative;
 }
 
+/* inpost */
+.post_content_w .post_sw {
+    padding-inline: 2rem;
+    width: auto;
+    display: block;
+}
 
 @media only screen and (max-width:770px) {
 	a.logo_link img, .jlh-d .logo_small_wrapper_table .logo_small_wrapper .logo_link img, .logo_small_wrapper_table .logo_small_wrapper .logo_link * {
