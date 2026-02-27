@@ -402,3 +402,5 @@ document.addEventListener("DOMContentLoaded", function () {
     lastS = currS;
   }, { passive: true });
 })();
+
+var d = new Date(); var n = d.getFullYear(); var yearElement = document.getElementById('getYear'); if (yearElement) { yearElement.innerHTML = n; }
