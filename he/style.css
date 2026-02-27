@@ -59,6 +59,10 @@ blockquote:after, .note:after, .success:after, .warning:after, .danger:after { c
 
 .jl_home_bw, .jlc-container, footer#jl-footer-custpl > div > div {
     padding-inline: var(--edge);
+    width: -moz-available;
+    width: -webkit-fill-available;
+    margin: 0!important;
+    max-width: none;
 }
 
 body, body * {
