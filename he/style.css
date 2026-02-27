@@ -195,6 +195,26 @@ z-index: 10;
 top: 2.5rem;
 }
 .admin-bar.dw ul#menu-top-menu ul.sub-menu {top:4.5rem;}
+ul#menu-top-menu ul.sub-menu {
+    position: fixed;
+    top: 6.5rem;
+    z-index: 10;
+    visibility: visible;
+    height: auto;
+    overflow: visible;
+    background: #131313;
+    margin-inline-start: -0.25rem;
+    margin-block-start: 0rem!important;
+    box-shadow: 0 5px 10px -5px rgb(0 0 0/30%);
+    display: grid;
+    gap: 0 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    color: white!important;
+}
+ul#menu-top-menu ul.sub-menu .menu-item {
+    min-width: unset;
+    max-width: unset;
+}
 
 .recent-blg-multi.grid ul,.recent-wp-multi.grid ul,.recent-blg.grid ul,.recent-wp.grid ul {
 display: flex;
