@@ -272,6 +272,21 @@ color: dimgray!important;
 font-weight: 100!important;
 }
 
+header input#searchInput {
+    display: block;
+    border: none;
+    background: 0;
+    font: inherit;
+    color: white;
+    padding: 0px 8px;
+}
+
+header form#search-form {
+    background: #222;
+    border-radius: 0.5rem;
+    padding: .25rem .5rem;
+	color: white;
+}
 
 .swipe {
 user-select: none;
@@ -427,4 +442,4 @@ width: auto!important;
 max-width: unset!important;
 }
 
-.jlc-stick-main-w.jlc-hop4.jl_cus_sihead.jl_r_menu, .dn-i, .d-none-i, .none-i { display: none!important; } 
+.jlc-stick-main-w.jlc-hop4.jl_cus_sihead.jl_r_menu, .dn-i, .d-none-i, .none-i, .jl_shwp { display: none!important; } 
