@@ -394,9 +394,6 @@ position: relative;
 	.btn-primary.en .mobile-text {
         display: inline;
     }
-    .btn-primary.en span:not(.mobile-text), .jl_shwp.jl_shsmb {
-        display: none!important;
-    }
 	.jlc-container {
 	padding-right: 1.5rem;
 	padding-left: 1.5rem;
@@ -434,6 +431,10 @@ position: relative;
 	footer .elementor-element.e-con-full.e-flex.e-con.e-child {
 		padding-inline: 0;
 	}
+	.btn-primary.en span:not(.mobile-text), .jl_shwp.jl_shsmb, form#search-form {
+        display: none!important;
+    }
+
 }
 
 a.logo_link img, .jlh-d .logo_small_wrapper_table .logo_small_wrapper .logo_link img, .logo_small_wrapper_table .logo_small_wrapper .logo_link * {
