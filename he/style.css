@@ -169,7 +169,7 @@ ul#menu-top-menu ul.sub-menu {
 }
 
 .jlc-hmain-w .jlc-hmain-in, .jlc-stick-main-w .jlc-stick-main-in {
-	background: black;
+	background: black!important;
 }
 
 .intersec .recent-blg-multi.grid ul, .intersec .recent-wp-multi.grid ul, .intersec .recent-blg.grid ul, .intersec .recent-wp.grid ul {
@@ -187,9 +187,9 @@ ul#menu-top-menu ul.sub-menu {
 }
 
 .jl_sh_num .jl_nun_d {
-	background: rgba(0,0,0,0.05);
-	color: dimgray;
-	font-weight: 100;
+	background: rgba(0,0,0,0.05)!important;
+	color: dimgray!important;
+	font-weight: 100!important;
 }
 
 
