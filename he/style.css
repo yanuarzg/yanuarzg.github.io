@@ -57,13 +57,14 @@ blockquote:after, .note:after, .success:after, .warning:after, .danger:after { c
 .timer {display: inline-block; background: var(--webkit-text-color); color: var(--skl-soft)!important;} .timer span {color: var(--skl-soft);} .timer-count {padding-inline-start: 0.5rem;}
 /* end yz */
 
+.jl_home_bw, .jlc-container, footer#jl-footer-custpl > div > div {
+    padding-inline: var(--edge);
+}
+
 body, body * {
 font-family: sans-serif!important;
 }
-.jlc-container {
-padding-right: 3rem;
-padding-left: 3rem;
-}
+
 h2.h3.jl_fe_title {
 font-weight: bold;
 }
@@ -394,10 +395,6 @@ position: relative;
 	.btn-primary.en .mobile-text {
         display: inline;
     }
-	.jlc-container {
-	padding-right: 1.5rem;
-	padding-left: 1.5rem;
-	}
 	.dw header, .up header, .admin-bar.dw header {
 		top: 0!important;
 	}
