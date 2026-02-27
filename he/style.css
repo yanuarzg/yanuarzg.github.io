@@ -76,17 +76,6 @@ a.btn-primary.en {
     text-wrap-mode: nowrap;
 }
 
-
-@media only screen and (max-width: 770px) {
-    .btn-primary.en .mobile-text {
-        display: inline;
-    }
-    .btn-primary.en span:not(.mobile-text), .jl_shwp.jl_shsmb {
-        display: none!important;
-    }
-}
-
-
 #HTML3 {
 fill: white;
 color:white;
@@ -364,43 +353,52 @@ position: relative;
 
 
 @media only screen and (max-width:770px) {
-.jlc-container {
-padding-right: 1.5rem;
-padding-left: 1.5rem;
-}
-.dw header, .up header, .admin-bar.dw header {
-	top: 0!important;
-}
-.recent-blg-multi.grid ul li {
-	flex: 1 1 45%;
-	max-width: 49%;
-	min-width: 45%;
-}
-#clockngreet {
-	padding-inline-start: 0!important;
-	border-inline-start: 0!important;
-}
-.jl_lisep:after {
-	content: none!important;
-}
-.intersec .recent-blg-multi.grid ul, .intersec .recent-wp-multi.grid ul, .intersec .recent-blg.grid ul, .intersec .recent-wp.grid ul {
-	gap: 2rem 4%;
-}
-.intersec .recent-blg-multi.grid ul li, .intersec .recent-wp-multi.grid ul li, .intersec .recent-blg.grid ul li, .intersec .recent-wp.grid ul li {
-	flex: 1 1 48%;
-	max-width: 48%;
-	min-width: 48%;
-}
-.recent-blg-multi.grid ul li img, .recent-blg-multi.grid ul li .post-img, .recent-wp-multi.grid ul li img, .recent-wp-multi.grid ul li .post-img, .recent-blg .post-img, .recent-wp .post-img, .recent-blg .post-img img, .recent-wp .post-img img {
-	max-width: 100px; aspect-ratio:1/1;
-}
-.headline .post-img, .headline img, .intersec .post-img, .intersec img {
-	max-width: 220px!important;
-	aspect-ratio:16/9!important;
-}
-footer .elementor-element.e-con-full.e-flex.e-con.e-child {
-	padding-inline: 0;
-}
+	a.logo_link img, .jlh-d .logo_small_wrapper_table .logo_small_wrapper .logo_link img, .logo_small_wrapper_table .logo_small_wrapper .logo_link * {
+    height: 2rem;
+	}
+	.btn-primary.en .mobile-text {
+        display: inline;
+    }
+    .btn-primary.en span:not(.mobile-text), .jl_shwp.jl_shsmb {
+        display: none!important;
+    }
+	.jlc-container {
+	padding-right: 1.5rem;
+	padding-left: 1.5rem;
+	}
+	.dw header, .up header, .admin-bar.dw header {
+		top: 0!important;
+	}
+	.recent-blg-multi.grid ul li {
+		flex: 1 1 45%;
+		max-width: 49%;
+		min-width: 45%;
+	}
+	#clockngreet {
+		padding-inline-start: 0!important;
+		border-inline-start: 0!important;
+	}
+	.jl_lisep:after {
+		content: none!important;
+	}
+	.intersec .recent-blg-multi.grid ul, .intersec .recent-wp-multi.grid ul, .intersec .recent-blg.grid ul, .intersec .recent-wp.grid ul {
+		gap: 2rem 4%;
+	}
+	.intersec .recent-blg-multi.grid ul li, .intersec .recent-wp-multi.grid ul li, .intersec .recent-blg.grid ul li, .intersec .recent-wp.grid ul li {
+		flex: 1 1 48%;
+		max-width: 48%;
+		min-width: 48%;
+	}
+	.recent-blg-multi.grid ul li img, .recent-blg-multi.grid ul li .post-img, .recent-wp-multi.grid ul li img, .recent-wp-multi.grid ul li .post-img, .recent-blg .post-img, .recent-wp .post-img, .recent-blg .post-img img, .recent-wp .post-img img {
+		max-width: 100px; aspect-ratio:1/1;
+	}
+	.headline .post-img, .headline img, .intersec .post-img, .intersec img {
+		max-width: 220px!important;
+		aspect-ratio:16/9!important;
+	}
+	footer .elementor-element.e-con-full.e-flex.e-con.e-child {
+		padding-inline: 0;
+	}
 }
 
 a.logo_link img, .jlh-d .logo_small_wrapper_table .logo_small_wrapper .logo_link img, .logo_small_wrapper_table .logo_small_wrapper .logo_link * {
