@@ -69,7 +69,7 @@ font-weight: bold;
 }
 .headline h2 {font-size:16px!important;}
 
-            .post-footer .post-timestamp, .post-footer .post-comment-link, .btn-primary.en .mobile-text {display: none;}
+.btn-primary.en .mobile-text {display: none;}
 
 
 @media only screen and (max-width: 770px) {
