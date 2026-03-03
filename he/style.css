@@ -139,6 +139,10 @@ gap: 0.25rem;
 overflow-x: auto;
 scroll-snap-type: x mandatory;
 }
+ul#menu-top-menu ul.sub-menu .menu-item a {
+    color: white;
+}
+
 ul#menu-top-menu::-webkit-scrollbar, .swipe::-webkit-scrollbar {
 width: 5px;
 height: 5px;
