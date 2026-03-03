@@ -404,3 +404,13 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 var d = new Date(); var n = d.getFullYear(); var yearElement = document.getElementById('getYear'); if (yearElement) { yearElement.innerHTML = n; }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const target = document.querySelector('#redaksi');      // elemen tujuan
+    const elementToMove = document.querySelector('.lh-normal'); // elemen yang dipindah
+
+    if (target && elementToMove) {
+        // Pindahkan elemen .lh-normal ke dalam #redaksi
+        target.appendChild(elementToMove);
+    }
+});
