@@ -73,6 +73,9 @@ h2.h3.jl_fe_title {
 font-weight: bold;
 }
 .headline h2 {font-size:16px!important;}
+.jlcus_sec_title.jl_sec_style11 .jlcus_sect_inner {
+    padding-inline-start: 0.5rem;
+}
 
 .btn-primary.en .mobile-text {display: none;}
 a.btn-primary.en {
