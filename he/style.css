@@ -132,6 +132,10 @@ max-width: -moz-available!important;
 background-color: white;
 }
 
+.navigation_wrapper .jl_main_menu>.menu-item>a, .jl_main_menu .menu-item:hover>a {
+    color: white!important;
+}
+
 ul#menu-top-menu {
 user-select: none;
 scroll-behavior: smooth;
