@@ -242,6 +242,10 @@ ul#menu-top-menu ul.sub-menu .menu-item {
 }
 #jl_sb_nav .sub-menu {gap: 0.5rem!important;}
 
+.recent-blg-multi,.recent-wp-multi,.recent-blg,.recent-wp {
+	min-height: 12rem;
+}
+
 .recent-blg-multi.grid ul,.recent-wp-multi.grid ul,.recent-blg.grid ul,.recent-wp.grid ul {
 	display: flex;
 	flex-wrap: wrap;
