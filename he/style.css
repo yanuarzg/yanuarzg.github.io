@@ -298,7 +298,7 @@ ul#menu-top-menu ul.sub-menu .menu-item {
     flex-direction: column;
 }
 .jl_smmain_side {
-    padding-bottom: 2.5rem;
+    padding-bottom: 2.5rem!important;
 }
 .jl_sidebar_w {
 	top: 10rem;
@@ -523,7 +523,6 @@ iframe {
 		width: -moz-available;
 		width: -webkit-fill-available;
 		margin-top: 4rem;
-		padding: 0;
 	}
 	.jl_sidebar_w, .menu-detached .jl_sidebar_w {
 		position: relative!important;
