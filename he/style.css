@@ -288,6 +288,8 @@ background: black!important;
 .jl_sidebar_w {
     top: 10rem;
 }
+.jl-sticky>*, .jl_sidebar_w, .post_sw .post_s { top: 9rem!important; }
+.up .jl-sticky > *, .up .jl_sidebar_w, .up .post_sw .post_s { top: 12rem!important; }
 
 .intersec .recent-blg-multi.grid ul, .intersec .recent-wp-multi.grid ul, .intersec .recent-blg.grid ul, .intersec .recent-wp.grid ul {
 gap: 2rem 2%;
@@ -464,6 +466,8 @@ position: relative;
 	/* main - sidebar */
 	.jl_smmain_side { max-width: 320px; }
 	.menu-detached  .jl_sidebar_w { top: 3rem!important; }
+	/* side share */
+	.post_content_w .post_sw { padding-inline: 1rem; }
 }
 
 
