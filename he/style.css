@@ -274,7 +274,7 @@ background: black!important;
 }
 
 /* main flex sidebar */
-.jl_smmain_con, .jl_main_achv {
+.jl_smmain_con {
     -ms-flex: 1;
     flex: 1;
     position: relative;
