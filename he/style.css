@@ -297,9 +297,14 @@ ul#menu-top-menu ul.sub-menu .menu-item {
 .page .jl_smmain_con {
     flex-direction: column;
 }
+.jl_smmain_side {
+    padding-bottom: 2.5rem;
+}
 .jl_sidebar_w {
 	top: 10rem;
 }
+
+
 .dw .jl-sticky>*, .dw .jl_sidebar_w, .dw .post_sw .post_s { top: 6rem!important; }
 .up .jl-sticky>*, .up .jl_sidebar_w, .up .post_sw .post_s { top: 9rem!important; }
 
