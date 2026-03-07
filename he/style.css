@@ -273,6 +273,13 @@ display: -webkit-box !important;
 background: black!important;
 }
 
+.jl_smmain_con, .jl_main_achv {
+    position: relative;
+    display: flex;
+    width: -webkit-fill-available;
+    width: -moz-available;
+}
+
 .intersec .recent-blg-multi.grid ul, .intersec .recent-wp-multi.grid ul, .intersec .recent-blg.grid ul, .intersec .recent-wp.grid ul {
 gap: 2rem 2%;
 }
