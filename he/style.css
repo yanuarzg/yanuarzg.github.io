@@ -513,6 +513,11 @@ iframe {
 		top: 0!important;
 	}
 
+	.jl_relsec {
+    	padding-inline: 0;
+    	margin-top: 2rem;
+	}
+
 	.intersec .recent-blg-multi.grid ul, .intersec .recent-wp-multi.grid ul, .intersec .recent-blg.grid ul, .intersec .recent-wp.grid ul {
 		gap: 2rem 4%;
 	}
