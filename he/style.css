@@ -57,6 +57,11 @@ blockquote:after, .note:after, .success:after, .warning:after, .danger:after { c
 .timer {display: inline-block; background: var(--webkit-text-color); color: var(--skl-soft)!important;} .timer span {color: var(--skl-soft);} .timer-count {padding-inline-start: 0.5rem;}
 /* end yz */
 
+.jl_block_content {
+    padding-bottom: 0!important;
+    margin: 0!important;
+}
+
 .jl_home_bw, .jlc-container, footer#jl-footer-custpl > div > div {
 	padding-inline: var(--edge);
 	width: -moz-available;
