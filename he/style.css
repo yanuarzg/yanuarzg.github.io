@@ -290,6 +290,9 @@ ul#menu-top-menu ul.sub-menu .menu-item {
 	max-width: -webkit-fill-available;
 	flex: 1;
 }
+.page .jl_smmain_con {
+    flex-direction: column;
+}
 .jl_sidebar_w {
 	top: 10rem;
 }
