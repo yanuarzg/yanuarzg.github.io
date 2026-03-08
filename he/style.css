@@ -292,7 +292,7 @@ ul#menu-top-menu ul.sub-menu .menu-item {
 	width: -moz-available;
 	max-width: -moz-available;
 	max-width: -webkit-fill-available;
-	flex: 1;
+	flex: 1; margin-bottom: 2rem;
 }
 .page .jl_smmain_con {
     flex-direction: column;
