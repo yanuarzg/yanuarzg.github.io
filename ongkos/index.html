@@ -121,7 +121,6 @@ input{font-family:inherit;}
 }
 .sheet-body{padding:2px 18px 22px;overflow-y:auto;}
 .sheet-title{font-size:17px;font-weight:800;letter-spacing:-.2px;margin:2px 0 14px;display:flex;align-items:center;justify-content:space-between;}
-.sheet-title small{font-size:12px;font-weight:600;color:var(--ink-soft);}
 .btn-minimize { color:var(--ink-soft); display:flex; align-items:center; justify-content:center; padding:4px;}
 
 /* ---------- COMPACT BOTTOM BAR ---------- */
@@ -132,16 +131,18 @@ input{font-family:inherit;}
   padding:16px 20px 24px;
   display:flex; align-items:center; justify-content:space-between;
   transform:translateY(120%); transition:transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  pointer-events:auto; cursor:pointer;
+  pointer-events:auto;
 }
 .compact-bar.show { transform:translateY(0); }
-.cb-info { display:flex; flex-direction:column; gap:2px; }
+.cb-info { display:flex; flex-direction:column; gap:2px; flex:1; cursor:pointer;}
 .cb-price { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
 .cb-dist { font-size:12.5px; font-weight:600; color:rgba(255,255,255,0.7); }
-.cb-expand {
-  width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15);
+.cb-actions { display:flex; gap:10px; align-items:center;}
+.cb-btn {
+  width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15);
   display:flex; align-items:center; justify-content:center; color:#fff;
 }
+.cb-btn:active { background:rgba(255,255,255,0.25); }
 
 /* route stack */
 .route-stack{position:relative;padding-left:26px;}
@@ -356,7 +357,6 @@ input{font-family:inherit;}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
   </button>
   <div class="topbar-right">
-    <!-- Mengganti Ikon Delete/Trash dengan Refresh -->
     <button class="icon-btn ghost" id="btnReset" aria-label="Reset Rute" style="color:var(--danger);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
     </button>
@@ -402,7 +402,7 @@ input{font-family:inherit;}
   <div class="sheet-body">
     <div id="formView">
       <div class="sheet-title">
-        <span>Hitung Ongkos<small id="ptCount" style="margin-left:8px;"></small></span>
+        <span>Hitung Ongkos</span>
         <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Minimize">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
@@ -460,7 +460,7 @@ input{font-family:inherit;}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
           Hitung ulang
         </button>
-        <button class="share-btn" id="btnShare">
+        <button class="share-btn" onclick="handleShare(this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Bagikan
         </button>
@@ -471,13 +471,19 @@ input{font-family:inherit;}
 
 <!-- ============ COMPACT BOTTOM BAR ============ -->
 <div class="compact-bar" id="compactBar">
-  <div class="cb-info">
+  <div class="cb-info" id="cbInfo">
     <div class="cb-price mono" id="cbPrice">Rp 0</div>
     <div class="cb-dist" id="cbDist">0 km • 0 tujuan</div>
   </div>
-  <button class="cb-expand" aria-label="Perbesar Layar">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
-  </button>
+  <div class="cb-actions">
+    <!-- Icon Share di sebelah Expand -->
+    <button class="cb-btn" aria-label="Bagikan" onclick="handleShare(this, true)">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
+    <button class="cb-btn" id="cbExpand" aria-label="Perbesar Layar">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- ============ SEARCH PANEL ============ -->
@@ -580,9 +586,7 @@ const geocodeSearch = async (q) => {
     const res = await fetch(url, { headers: { 'Accept-Language': 'id' } });
     if (!res.ok) throw new Error('Geocode failed');
     return await res.json();
-  } catch (err) {
-    return [];
-  }
+  } catch (err) { return []; }
 };
 
 const reverseGeocode = async (lat, lng) => {
@@ -632,7 +636,6 @@ const routeBetween = async (list) => {
 
 /* ================= RENDER STACK ================= */
 const routeStack = document.getElementById('routeStack');
-const ptCount = document.getElementById('ptCount');
 
 const iconFor = (role) => {
   if (role === 'origin') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/></svg>`;
@@ -645,7 +648,6 @@ const renderStack = () => {
   points.forEach((pt) => {
     const row = document.createElement('div');
     row.className = 'route-row';
-    // Perbaikan icon delete menjadi icon silang untuk titik singgah
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
       <div class="route-field ${pt.address ? '' : 'empty'}" data-id="${pt.id}">
@@ -656,8 +658,6 @@ const renderStack = () => {
     routeStack.appendChild(row);
   });
   
-  const wpCount = points.filter(p => p.role === 'waypoint').length;
-  ptCount.textContent = wpCount ? `${wpCount} tujuan tambahan` : '';
   document.getElementById('btnCalc').disabled = !points.every(p => p.lat != null && p.lng != null);
   syncMarkers();
 };
@@ -674,18 +674,30 @@ routeStack.addEventListener('click', (e) => {
   }
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
+    
+    // Perbaikan label role jika tujuan utama (dest) secara tidak sengaja terhapus 
+    // (meskipun di UI tombol remove cuma ada di waypoint)
+    if(points[points.length-1].role === 'waypoint') {
+       points[points.length-1].role = 'dest';
+       points[points.length-1].label = 'Tujuan akhir';
+    }
+    
     renderStack();
+    if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
     e.stopPropagation(); return;
   }
   if (field) openSearchPanel(field.getAttribute('data-id'));
 });
 
+// Penambahan Tujuan (Ditambahkan di akhir, mengubah destinasi lama menjadi waypoint)
 document.getElementById('btnAddStop').addEventListener('click', () => {
-  const wpCount = points.filter(p => p.role === 'waypoint').length;
-  if (wpCount >= 5) { toast('Maksimal 5 tujuan tambahan'); return; }
-  const dest = points.pop();
-  points.push({ id: cryptoId(), role: 'waypoint', label: `Tujuan ${wpCount + 2}`, lat: null, lng: null, address: '' });
-  points.push(dest);
+  if (points.length >= 7) { toast('Batas maksimal 7 lokasi dicapai'); return; }
+  
+  const oldDest = points[points.length - 1];
+  oldDest.role = 'waypoint';
+  oldDest.label = `Tujuan ${points.length - 1}`;
+  
+  points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '' });
   renderStack();
 });
 
@@ -703,7 +715,8 @@ const toggleSheet = () => {
 };
 document.getElementById('btnMinimizeSheet').addEventListener('click', toggleSheet);
 document.getElementById('btnMinimizeResult').addEventListener('click', toggleSheet);
-compactBar.addEventListener('click', toggleSheet);
+document.getElementById('cbInfo').addEventListener('click', toggleSheet);
+document.getElementById('cbExpand').addEventListener('click', toggleSheet);
 
 /* ================= SETTINGS (COLLAPSIBLE TOP) ================= */
 const topMenu = document.getElementById('topMenu');
@@ -718,6 +731,7 @@ const updatePricing = () => {
   pricePerKm = parseInt(inputPrice.value, 10) || 0;
   minKm = parseFloat(inputMinKm.value) || 0;
   minFare = parseInt(inputMinFare.value, 10) || 0;
+  if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
 };
 inputPrice.addEventListener('input', updatePricing);
 inputMinKm.addEventListener('input', updatePricing);
@@ -740,14 +754,12 @@ document.getElementById('btnReset').addEventListener('click', () => {
   if (sheetEl.classList.contains('minimized')) toggleSheet(); 
   renderStack();
   
-  // Bersihkan parameter url tanpa refresh halaman
   const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
   window.history.pushState({path:newUrl}, '', newUrl);
-
   toast('Data rute telah direset');
 });
 
-/* ================= MARKERS ================= */
+/* ================= MARKERS (Drag akan otomatis update rute) ================= */
 const syncMarkers = () => {
   const activeIds = points.map(p => p.id);
   Object.keys(markers).forEach(id => {
@@ -765,11 +777,17 @@ const syncMarkers = () => {
     } else {
       const m = L.marker([pt.lat, pt.lng], { icon: badgeIcon(pt.role, label), draggable: true });
       m.addTo(map);
+      
       m.on('dragend', async () => {
         const { lat, lng } = m.getLatLng();
         pt.lat = lat; pt.lng = lng;
         pt.address = 'Mencari alamat…';
         renderStack();
+        
+        // Cek jika sedang ada di result view atau compact mode, hitung ulang (tanpa merubah UI Form)
+        const isResult = document.getElementById('resultView').classList.contains('show');
+        if (isResult) executeCalc(true); 
+
         pt.address = await reverseGeocode(lat, lng);
         renderStack();
       });
@@ -778,8 +796,10 @@ const syncMarkers = () => {
   });
   
   const latlngs = points.filter(p => p.lat != null).map(p => [p.lat, p.lng]);
-  if (latlngs.length >= 2) map.fitBounds(latlngs, { padding: [70, 70] });
-  else if (latlngs.length === 1) map.setView(latlngs[0], 15);
+  if(!document.getElementById('resultView').classList.contains('show')){
+    if (latlngs.length >= 2) map.fitBounds(latlngs, { padding: [70, 70] });
+    else if (latlngs.length === 1) map.setView(latlngs[0], 15);
+  }
 };
 
 /* ================= SEARCH PANEL ================= */
@@ -845,6 +865,7 @@ const setActivePoint = (lat, lng, address) => {
   if (!pt) return;
   pt.lat = lat; pt.lng = lng; pt.address = address;
   renderStack();
+  if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
 };
 
 document.getElementById('qaGps').addEventListener('click', () => {
@@ -891,7 +912,7 @@ const exitPickMode = () => {
   pickMode = false;
   crosshair.classList.remove('show');
   pickBar.classList.remove('show');
-  sheetEl.style.transform = '';
+  if(!sheetEl.classList.contains('minimized')) sheetEl.style.transform = '';
   map.off('moveend', onMapMoveEnd);
 };
 
@@ -918,7 +939,7 @@ const drawRoute = (coords) => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
   drawnRouteLayers = [];
   
-  // Tampilan biru/ungu ala Google Maps (Casing border lebih tebal, Inner lebih terang)
+  // Tampilan biru/ungu ala Google Maps
   const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   
@@ -931,29 +952,35 @@ const calculateFareLogic = (kmTotal) => {
   return minFare + ((kmTotal - minKm) * pricePerKm);
 };
 
-const executeCalc = async () => {
+// Parameter silent: mencegah tombol berputar / UI flicker kalau sekadar update ketika digeser
+window.executeCalc = async (silent = false) => {
   if (!points.every(p => p.lat != null && p.lng != null)) return;
   
-  btnCalc.classList.add('loading');
-  btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg> Menghitung…';
+  if (!silent) {
+    btnCalc.classList.add('loading');
+    btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg> Menghitung…';
+  }
   
   try {
     const list = points.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
-    showResult(res);
+    showResult(res, silent);
   } finally {
-    btnCalc.classList.remove('loading');
-    btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg> Hitung Jarak &amp; Ongkos';
+    if (!silent) {
+      btnCalc.classList.remove('loading');
+      btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg> Hitung Jarak &amp; Ongkos';
+    }
   }
 };
 
-btnCalc.addEventListener('click', executeCalc);
+btnCalc.addEventListener('click', () => executeCalc(false));
 
-const roundFare = (n) => Math.ceil(n / 500) * 500;
+// Pembulatan Tarif: Cukup Puluhan 
+const roundFare = (n) => Math.round(n / 10) * 10;
 const fmtRp = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const shortLabel = (pt) => (pt.address || pt.label).length > 18 ? (pt.address || pt.label).slice(0, 18) + '…' : (pt.address || pt.label);
 
-const showResult = (res) => {
+const showResult = (res, silent) => {
   const totalKm = res.distanceKm;
   const rawFare = calculateFareLogic(totalKm);
   const fare = roundFare(rawFare);
@@ -998,8 +1025,11 @@ const showResult = (res) => {
   }
 
   document.getElementById('routeNote').style.display = res.estimated ? 'flex' : 'none';
-  formView.style.display = 'none';
-  resultView.classList.add('show');
+  
+  if (!silent) {
+    formView.style.display = 'none';
+    resultView.classList.add('show');
+  }
 };
 
 const backToForm = () => {
@@ -1010,13 +1040,14 @@ document.getElementById('btnBack').addEventListener('click', backToForm);
 document.getElementById('btnRecalc').addEventListener('click', backToForm);
 
 /* ================= SHARE & URL PARSER ================= */
-document.getElementById('btnShare').addEventListener('click', async () => {
-  const btn = document.getElementById('btnShare');
-  const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="animation:spin 1s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> Memproses...';
+window.handleShare = async (btnElement, isCompact = false) => {
+  // Prevent sheet toggle if clicked inside compact bar
+  if (isCompact && event) event.stopPropagation();
+
+  const originalHtml = btnElement.innerHTML;
+  btnElement.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="animation:spin 1s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>';
   
   try {
-    // Generate URL dengan Parameter
     const shareUrl = new URL(window.location.href);
     shareUrl.search = ''; 
     const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join(';');
@@ -1026,13 +1057,21 @@ document.getElementById('btnShare').addEventListener('click', async () => {
     shareUrl.searchParams.set('mf', minFare);
     const link = shareUrl.toString();
 
+    // Sembunyikan elemen top & bottom agar peta fokus dan bersih
     document.querySelector('.topbar').style.display = 'none';
+    if(sheetEl.classList.contains('minimized')) {
+       document.getElementById('compactBar').style.display = 'none';
+    }
+
     const canvas = await html2canvas(document.body, { 
       useCORS: true, 
       allowTaint: false,
       backgroundColor: '#F3F5F8'
     });
+    
+    // Kembalikan visibilitas UI
     document.querySelector('.topbar').style.display = 'flex';
+    document.getElementById('compactBar').style.display = 'flex';
 
     canvas.toBlob(async (blob) => {
       if(!blob) throw new Error("Blob failed");
@@ -1040,7 +1079,7 @@ document.getElementById('btnShare').addEventListener('click', async () => {
       
       const shareData = {
         title: 'Estimasi Ongkos Jarak',
-        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek & navigasi rute langsung di browser:\n${link}`,
+        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek & navigasi rute langsung:\n${link}`,
         files: [file]
       };
 
@@ -1055,15 +1094,16 @@ document.getElementById('btnShare').addEventListener('click', async () => {
         a.click();
         URL.revokeObjectURL(url);
       }
-      btn.innerHTML = originalHtml;
+      btnElement.innerHTML = originalHtml;
     });
   } catch (error) {
     console.error(error);
     document.querySelector('.topbar').style.display = 'flex';
-    toast('Gagal memproses gambar/tautan untuk dibagikan.');
-    btn.innerHTML = originalHtml;
+    document.getElementById('compactBar').style.display = 'flex';
+    toast('Gagal memproses gambar/tautan.');
+    btnElement.innerHTML = originalHtml;
   }
-});
+};
 
 /* ================= INIT & LOAD URL PARAMS ================= */
 const initApp = async () => {
@@ -1082,23 +1122,20 @@ const initApp = async () => {
       points = ptArr.map((str, idx) => {
         const [lat, lng] = str.split(',').map(Number);
         const role = idx === 0 ? 'origin' : (idx === ptArr.length - 1 ? 'dest' : 'waypoint');
-        let label = role === 'origin' ? 'Titik awal' : (role === 'dest' ? 'Titik tujuan' : `Tujuan ${idx + 1}`);
+        let label = role === 'origin' ? 'Titik awal' : (role === 'dest' ? 'Tujuan akhir' : `Tujuan ${idx}`);
         return { id: cryptoId(), role, label, lat, lng, address: 'Mencari alamat...' };
       });
       
       renderStack();
-      
-      // Hitung rute segera lalu ambil alamat di latar belakang (agar tidak delay nunggu geocode)
-      executeCalc();
+      executeCalc(false); // Hitung dulu 
 
+      // Cari alamat di latar belakang agar tidak membuat proses geocode memblokir UI
       Promise.all(points.map(async p => {
         p.address = await reverseGeocode(p.lat, p.lng);
       })).then(() => {
         renderStack(); 
         if (document.getElementById('resultView').classList.contains('show')) {
-          // Refresh segmen label text
-          const l = points.map(p => ({lat: p.lat, lng: p.lng}));
-          routeBetween(l).then(res => showResult(res));
+          executeCalc(true); 
         }
       });
     } else {
