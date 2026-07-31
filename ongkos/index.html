@@ -176,6 +176,14 @@ input{font-family:inherit;}
 .field-clear{width:22px;height:22px;flex:none;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;}
 .field-clear svg{width:14px;height:14px;}
 
+.swap-btn{
+  position:absolute; right:0; top:43px; width:34px; height:34px;
+  border-radius:50%; background:var(--card); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06); z-index:10; cursor:pointer;
+}
+.swap-btn:active { transform:scale(0.9); }
+
 .add-stop-btn{
   display:flex;align-items:center;gap:8px;
   padding:9px 2px;font-size:13px;font-weight:700;color:var(--wp);
@@ -357,7 +365,6 @@ input{font-family:inherit;}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
   </button>
   <div class="topbar-right">
-    <!-- Icon Fullscreen Baru -->
     <button class="icon-btn ghost" id="btnFullscreen" aria-label="Layar Penuh">
       <svg id="iconExpandFS" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       <svg id="iconShrinkFS" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
@@ -558,11 +565,11 @@ let searchTimer = null;
 let drawnRouteLayers = [];
 const markers = {};
 
-/* ================= MAP INIT (preferCanvas:true untuk FIX jalur hilang saat screenshot) ================= */
+/* ================= MAP INIT (preferCanvas:true untuk fix jalur screenshot) ================= */
 const map = L.map('map', { 
   zoomControl: false, 
   attributionControl: true,
-  preferCanvas: true // Memastikan Leaflet menggambar garis rute di kanvas, bukan SVG overlay
+  preferCanvas: true 
 }).setView([-6.2088, 106.8456], 12);
 
 L.tileLayer('https://mt0.google.com/vt/lyrs=m&hl=id&x={x}&y={y}&z={z}', {
@@ -597,10 +604,8 @@ const iconShrink = document.getElementById('iconShrinkFS');
 btnFullscreen.addEventListener('click', () => {
   if (!document.fullscreenElement) {
     if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => toast('Mode layar penuh diblokir oleh browser'));
-    } else {
-      toast('Browser ini tidak mendukung layar penuh');
-    }
+      document.documentElement.requestFullscreen().catch(() => toast('Mode layar penuh diblokir browser'));
+    } else { toast('Browser ini tidak mendukung layar penuh'); }
   } else {
     if (document.exitFullscreen) document.exitFullscreen();
   }
@@ -615,7 +620,6 @@ document.addEventListener('fullscreenchange', () => {
     iconShrink.style.display = 'none';
   }
 });
-
 
 /* ================= OSRM & NOMINATIM ================= */
 const geocodeSearch = async (q) => {
@@ -682,7 +686,8 @@ const iconFor = (role) => {
 };
 
 const renderStack = () => {
-  routeStack.querySelectorAll('.route-row').forEach(el => el.remove());
+  routeStack.querySelectorAll('.route-row, .swap-btn').forEach(el => el.remove());
+  
   points.forEach((pt) => {
     const row = document.createElement('div');
     row.className = 'route-row';
@@ -696,6 +701,30 @@ const renderStack = () => {
     routeStack.appendChild(row);
   });
   
+  // Tombol Swap
+  if (points.length >= 2) {
+    const swapBtn = document.createElement('button');
+    swapBtn.className = 'swap-btn';
+    swapBtn.setAttribute('aria-label', 'Tukar posisi');
+    swapBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M7 10l-4 4M7 10l4 4M17 14V2M17 2l-4 4M17 2l4 4"/></svg>`;
+    swapBtn.onclick = () => {
+       const lastIdx = points.length - 1;
+       const temp = { lat: points[0].lat, lng: points[0].lng, address: points[0].address };
+       
+       points[0].lat = points[lastIdx].lat;
+       points[0].lng = points[lastIdx].lng;
+       points[0].address = points[lastIdx].address;
+       
+       points[lastIdx].lat = temp.lat;
+       points[lastIdx].lng = temp.lng;
+       points[lastIdx].address = temp.address;
+       
+       renderStack();
+       if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
+    };
+    routeStack.appendChild(swapBtn);
+  }
+  
   document.getElementById('btnCalc').disabled = !points.every(p => p.lat != null && p.lng != null);
   syncMarkers();
 };
@@ -707,18 +736,19 @@ routeStack.addEventListener('click', (e) => {
   
   if (clear) {
     const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
-    if (pt) { pt.lat = null; pt.lng = null; pt.address = ''; renderStack(); }
+    if (pt) { 
+      pt.lat = null; pt.lng = null; pt.address = ''; 
+      renderStack();
+      if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
+    }
     e.stopPropagation(); return;
   }
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
-    
-    // Perbaikan jika menghapus elemen tetapi urutan dest/waypoint bermasalah
     if(points[points.length-1].role === 'waypoint') {
        points[points.length-1].role = 'dest';
        points[points.length-1].label = 'Tujuan akhir';
     }
-    
     renderStack();
     if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
     e.stopPropagation(); return;
@@ -726,14 +756,11 @@ routeStack.addEventListener('click', (e) => {
   if (field) openSearchPanel(field.getAttribute('data-id'));
 });
 
-// Tambah tujuan baru SELALU di akhir baris
 document.getElementById('btnAddStop').addEventListener('click', () => {
   if (points.length >= 7) { toast('Batas maksimal 7 lokasi dicapai'); return; }
-  
   const oldDest = points[points.length - 1];
   oldDest.role = 'waypoint';
   oldDest.label = `Tujuan ${points.length - 1}`;
-  
   points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '' });
   renderStack();
 });
@@ -768,6 +795,7 @@ const updatePricing = () => {
   pricePerKm = parseInt(inputPrice.value, 10) || 0;
   minKm = parseFloat(inputMinKm.value) || 0;
   minFare = parseInt(inputMinFare.value, 10) || 0;
+  
   if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
 };
 inputPrice.addEventListener('input', updatePricing);
@@ -785,6 +813,10 @@ document.getElementById('btnReset').addEventListener('click', () => {
   for (let k in markers) delete markers[k];
   
   map.setView([-6.2088, 106.8456], 12);
+  
+  document.getElementById('cbPrice').textContent = 'Rp 0';
+  document.getElementById('cbDist').textContent = '0 km • 0 tujuan';
+  
   document.getElementById('resultView').classList.remove('show');
   document.getElementById('formView').style.display = 'block';
   
@@ -796,7 +828,7 @@ document.getElementById('btnReset').addEventListener('click', () => {
   toast('Data rute telah direset');
 });
 
-/* ================= MARKERS (Drag otomatis recalculate) ================= */
+/* ================= MARKERS ================= */
 const syncMarkers = () => {
   const activeIds = points.map(p => p.id);
   Object.keys(markers).forEach(id => {
@@ -805,7 +837,14 @@ const syncMarkers = () => {
   
   let wpIdx = 0;
   points.forEach(pt => {
-    if (pt.lat == null) return;
+    if (pt.lat == null) {
+      if (markers[pt.id]) {
+        map.removeLayer(markers[pt.id]);
+        delete markers[pt.id];
+      }
+      return;
+    }
+    
     const label = pt.role === 'origin' ? 'A' : pt.role === 'dest' ? 'B' : String(++wpIdx);
     
     if (markers[pt.id]) {
@@ -821,7 +860,6 @@ const syncMarkers = () => {
         pt.address = 'Mencari alamat…';
         renderStack();
         
-        // Kalkulasi Live jika view result terbuka
         const isResult = document.getElementById('resultView').classList.contains('show');
         if (isResult) executeCalc(true); 
 
@@ -976,7 +1014,6 @@ const drawRoute = (coords) => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
   drawnRouteLayers = [];
   
-  // Gaya Garis Maps: Biru Gelap Luar, Biru Terang Dalam
   const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   
@@ -1011,7 +1048,6 @@ window.executeCalc = async (silent = false) => {
 
 btnCalc.addEventListener('click', () => executeCalc(false));
 
-// Pembulatan ke kelipatan Rp 10 saja
 const roundFare = (n) => Math.round(n / 10) * 10;
 const fmtRp = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const shortLabel = (pt) => (pt.address || pt.label).length > 18 ? (pt.address || pt.label).slice(0, 18) + '…' : (pt.address || pt.label);
@@ -1024,12 +1060,10 @@ const showResult = (res, silent) => {
 
   drawRoute(res.coords);
 
-  // Update Result View
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
   document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
 
-  // Update Compact Bottom Bar
   document.getElementById('cbPrice').textContent = `Rp ${fmtRp(fare)}`;
   document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan`;
 
@@ -1092,32 +1126,28 @@ window.handleShare = async (btnElement, isCompact = false) => {
     shareUrl.searchParams.set('mf', minFare);
     const link = shareUrl.toString();
 
-    // Persiapan Screenshot: Hilangkan Topbar, dan jika Sheet minimize sembunyikan element dari DOM
     document.querySelector('.topbar').style.display = 'none';
     const isSheetMinimized = sheetEl.classList.contains('minimized');
     if (isSheetMinimized) {
-       sheetEl.style.display = 'none'; // FIX BUG KOSONG: Hilangkan sheet agar tidak dihitung html2canvas
+       sheetEl.style.display = 'none'; 
     }
 
-    // Jeda sejenak agar reflow DOM selesai
-    await new Promise(res => setTimeout(res, 100));
+    await new Promise(res => setTimeout(res, 150));
 
-    // Fix Bug Kosong: mengunci dimensi persis sebesar layar perangkat
     const w = document.documentElement.clientWidth;
     const h = document.documentElement.clientHeight;
 
     const canvas = await html2canvas(document.body, { 
       useCORS: true, 
       allowTaint: false,
-      backgroundColor: '#DCE3EA', // Warna peta 
+      backgroundColor: '#DCE3EA', 
       width: w,
       height: h,
       windowWidth: w,
       windowHeight: h,
-      scale: window.devicePixelRatio || 2 // Render kualitas tinggi
+      scale: window.devicePixelRatio || 2 
     });
     
-    // Kembalikan visibilitas UI
     document.querySelector('.topbar').style.display = 'flex';
     if (isSheetMinimized) sheetEl.style.display = 'flex';
 
