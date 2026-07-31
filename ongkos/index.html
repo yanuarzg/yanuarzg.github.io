@@ -83,7 +83,7 @@ input{font-family:inherit;}
   border-radius:0 0 var(--radius-lg) var(--radius-lg);
   padding:20px 18px; transform:translateY(-110%);
   transition:transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  max-height: 85vh; overflow-y: auto; /* Agar bisa di scroll */
+  max-height: 85vh; overflow-y: auto; 
 }
 .top-menu.show { transform:translateY(0); }
 .top-menu-title { font-weight:800; font-size:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
@@ -446,8 +446,8 @@ input{font-family:inherit;}
       <input type="number" id="minFare" inputmode="numeric" value="10000">
     </div>
   </div>
-  <div class="settings-row">
-    <div class="label" style="color:var(--ink);">Tarif Jarak Selanjutnya</div>
+  <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:12px; padding-top:16px;">
+    <div class="label" style="color:var(--ink);">Tarif per Km (> Minimal)</div>
     <div class="price-edit">
       <span class="unit">Rp</span>
       <input type="number" id="pricePerKm" inputmode="numeric" value="4000">
@@ -648,7 +648,7 @@ let minFare = 10000;
 let pricePerKm = 4000;
 let routePointsForNav = []; 
 
-// Data Payment State
+// Data Payment State (Bisa diedit via Setting Top Menu)
 let payData = JSON.parse(localStorage.getItem('ongkir_payment_data')) || {
   name: 'Yanuar Zhaldy G',
   dana: '089507785333',
@@ -884,7 +884,7 @@ const renderStack = () => {
     row.className = 'route-row';
     const hasLocation = pt.lat != null;
     
-    // Semua titik tujuan selain origin bisa dihapus jika ada titik lebih dari 2
+    // Titik waypoint atau dest bisa dihapus (asal sisa titik lebih dari 2)
     const canRemove = points.length > 2 && idx !== 0;
 
     row.innerHTML = `
@@ -942,7 +942,6 @@ routeStack.addEventListener('click', (e) => {
     e.stopPropagation(); return;
   }
 
-  // Hapus titik input ("X")
   if (clear) {
     const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
     if (pt) { 
@@ -954,11 +953,8 @@ routeStack.addEventListener('click', (e) => {
     e.stopPropagation(); return;
   }
   
-  // Hapus lokasi / waypoint entirely
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
-    
-    // Re-adjust roles
     points.forEach((p, idx) => {
       if (idx === 0) { p.role = 'origin'; p.label = 'Titik awal'; }
       else if (idx === points.length - 1) { p.role = 'dest'; p.label = 'Tujuan akhir'; }
@@ -1242,9 +1238,10 @@ const drawRoute = (coords) => {
   map.fitBounds(route.getBounds(), { padding: [60, 60] });
 };
 
+// UPDATE LOGIKA: Jika > minKm maka Tarif Dasar x Jarak, jika tidak Tarif Minimal. Dibatasi minimal minFare
 const calculateFareLogic = (kmTotal) => {
   if (kmTotal <= minKm) return minFare;
-  return minFare + ((kmTotal - minKm) * pricePerKm);
+  return Math.max(minFare, kmTotal * pricePerKm);
 };
 
 window.executeCalc = async (silent = false) => {
@@ -1271,6 +1268,7 @@ window.executeCalc = async (silent = false) => {
 
     const list = routePointsForNav.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
+
     showResult(res, silent);
   } finally {
     if (!silent) {
@@ -1386,14 +1384,18 @@ window.handleShare = async (btnElement, isCompact = false) => {
 
     document.querySelector('.topbar').style.display = 'none';
     const isSheetMinimized = sheetEl.classList.contains('minimized');
-    if (isSheetMinimized) { sheetEl.style.display = 'none'; }
+    if (isSheetMinimized) {
+       sheetEl.style.display = 'none'; 
+    }
 
     await new Promise(res => setTimeout(res, 150));
     const w = document.documentElement.clientWidth;
     const h = document.documentElement.clientHeight;
 
     const canvas = await html2canvas(document.body, { 
-      useCORS: true, allowTaint: false, backgroundColor: '#DCE3EA', 
+      useCORS: true, 
+      allowTaint: false,
+      backgroundColor: '#DCE3EA', 
       width: w, height: h, windowWidth: w, windowHeight: h,
       scale: window.devicePixelRatio || 2 
     });
@@ -1405,7 +1407,6 @@ window.handleShare = async (btnElement, isCompact = false) => {
       if(!blob) throw new Error("Blob failed");
       const file = new File([blob], 'ongkos-jarak.png', { type: 'image/png' });
       
-      // Susun teks pembayaran untuk di WhatsApp
       let payTexts = [];
       if(payData.dana) payTexts.push(`DANA : ${payData.dana}`);
       if(payData.gopay) payTexts.push(`GOPAY : ${payData.gopay}`);
