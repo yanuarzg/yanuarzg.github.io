@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<!-- HTML2Canvas untuk fitur Share (Screenshot) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
@@ -29,7 +28,7 @@
   --radius-sm:10px;
   --shadow-sheet:0 -8px 30px rgba(23,34,59,0.14);
   --shadow-card:0 2px 10px rgba(23,34,59,0.08);
-  --shadow-fab:0 4px 14px rgba(23,34,59,0.22);
+  --shadow-compact:0 -4px 20px rgba(23,34,59,0.15);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100dvh;margin:0;overscroll-behavior:none;}
@@ -66,9 +65,7 @@ input{font-family:inherit;}
   display:flex;justify-content:space-between;align-items:flex-start;
   pointer-events:none;
 }
-.topbar-right {
-  display:flex; gap:10px;
-}
+.topbar-right { display:flex; gap:10px; }
 .icon-btn{
   width:42px;height:42px;border-radius:50%;
   background:var(--card);box-shadow:var(--shadow-card);
@@ -127,17 +124,24 @@ input{font-family:inherit;}
 .sheet-title small{font-size:12px;font-weight:600;color:var(--ink-soft);}
 .btn-minimize { color:var(--ink-soft); display:flex; align-items:center; justify-content:center; padding:4px;}
 
-/* FAB */
-.fab{
-  position:absolute; right:16px; bottom:24px; z-index:15;
-  width:54px; height:54px; border-radius:50%;
+/* ---------- COMPACT BOTTOM BAR ---------- */
+.compact-bar{
+  position:absolute; left:0; right:0; bottom:0; z-index:15;
   background:var(--ink); color:#fff;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:var(--shadow-fab);
-  transform:scale(0); transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  pointer-events:auto;
+  border-radius:22px 22px 0 0; box-shadow:var(--shadow-compact);
+  padding:16px 20px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  transform:translateY(120%); transition:transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events:auto; cursor:pointer;
 }
-.fab.show { transform:scale(1); }
+.compact-bar.show { transform:translateY(0); }
+.cb-info { display:flex; flex-direction:column; gap:2px; }
+.cb-price { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+.cb-dist { font-size:12.5px; font-weight:600; color:rgba(255,255,255,0.7); }
+.cb-expand {
+  width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15);
+  display:flex; align-items:center; justify-content:center; color:#fff;
+}
 
 /* route stack */
 .route-stack{position:relative;padding-left:26px;}
@@ -352,8 +356,9 @@ input{font-family:inherit;}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
   </button>
   <div class="topbar-right">
+    <!-- Mengganti Ikon Delete/Trash dengan Refresh -->
     <button class="icon-btn ghost" id="btnReset" aria-label="Reset Rute" style="color:var(--danger);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
     </button>
     <button class="icon-btn ghost" id="btnSettings" aria-label="Pengaturan harga">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M8 12h12M4 18h14M20 18h0"/><circle cx="16" cy="6" r="2.2" fill="currentColor"/><circle cx="6" cy="12" r="2.2" fill="currentColor"/><circle cx="18" cy="18" r="2.2" fill="currentColor"/></svg>
@@ -409,7 +414,7 @@ input{font-family:inherit;}
 
       <button class="add-stop-btn" id="btnAddStop">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Tambah titik singgah
+        Tambah tujuan baru
       </button>
 
       <button class="cta" id="btnCalc" disabled>
@@ -464,10 +469,16 @@ input{font-family:inherit;}
   </div>
 </div>
 
-<!-- ============ FAB TO RESTORE SHEET ============ -->
-<button class="fab" id="fabShowSheet" aria-label="Tampilkan Menu">
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
-</button>
+<!-- ============ COMPACT BOTTOM BAR ============ -->
+<div class="compact-bar" id="compactBar">
+  <div class="cb-info">
+    <div class="cb-price mono" id="cbPrice">Rp 0</div>
+    <div class="cb-dist" id="cbDist">0 km • 0 tujuan</div>
+  </div>
+  <button class="cb-expand" aria-label="Perbesar Layar">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+</div>
 
 <!-- ============ SEARCH PANEL ============ -->
 <div class="search-panel" id="searchPanel">
@@ -524,7 +535,6 @@ const getEmptyPoints = () => [
 
 let points = getEmptyPoints();
 
-// Tarif dan aturan jarak
 let minKm = 3;
 let minFare = 10000;
 let pricePerKm = 4000;
@@ -537,13 +547,10 @@ let searchTimer = null;
 let drawnRouteLayers = [];
 const markers = {};
 
-/* ================= MAP INIT (Google Maps Style) ================= */
+/* ================= MAP INIT ================= */
 const map = L.map('map', { zoomControl: false, attributionControl: true }).setView([-6.2088, 106.8456], 12);
-// Menggunakan server Google Maps MT. `crossOrigin: true` wajib ada agar fitur Screenshot (html2canvas) tidak di-block (tainted canvas)
 L.tileLayer('https://mt0.google.com/vt/lyrs=m&hl=id&x={x}&y={y}&z={z}', {
-  maxZoom: 19,
-  attribution: '© Google Maps',
-  crossOrigin: true 
+  maxZoom: 19, attribution: '© Google Maps', crossOrigin: true 
 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -638,18 +645,19 @@ const renderStack = () => {
   points.forEach((pt) => {
     const row = document.createElement('div');
     row.className = 'route-row';
+    // Perbaikan icon delete menjadi icon silang untuk titik singgah
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
       <div class="route-field ${pt.address ? '' : 'empty'}" data-id="${pt.id}">
         <div class="field-text">${pt.address || pt.label}</div>
         ${pt.address ? `<button class="field-clear" data-clear="${pt.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
-        ${pt.role === 'waypoint' ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg></button>` : ''}
+        ${pt.role === 'waypoint' ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
       </div>`;
     routeStack.appendChild(row);
   });
   
   const wpCount = points.filter(p => p.role === 'waypoint').length;
-  ptCount.textContent = wpCount ? `${wpCount} titik singgah` : '';
+  ptCount.textContent = wpCount ? `${wpCount} tujuan tambahan` : '';
   document.getElementById('btnCalc').disabled = !points.every(p => p.lat != null && p.lng != null);
   syncMarkers();
 };
@@ -674,27 +682,28 @@ routeStack.addEventListener('click', (e) => {
 
 document.getElementById('btnAddStop').addEventListener('click', () => {
   const wpCount = points.filter(p => p.role === 'waypoint').length;
-  if (wpCount >= 5) { toast('Maksimal 5 titik singgah'); return; }
+  if (wpCount >= 5) { toast('Maksimal 5 tujuan tambahan'); return; }
   const dest = points.pop();
-  points.push({ id: cryptoId(), role: 'waypoint', label: `Titik singgah ${wpCount + 1}`, lat: null, lng: null, address: '' });
+  points.push({ id: cryptoId(), role: 'waypoint', label: `Tujuan ${wpCount + 2}`, lat: null, lng: null, address: '' });
   points.push(dest);
   renderStack();
 });
 
-/* ================= BOTTOM SHEET MINIMIZE / FAB ================= */
+/* ================= MINIMIZE SHEET & COMPACT BAR ================= */
 const sheetEl = document.getElementById('sheet');
-const fabEl = document.getElementById('fabShowSheet');
+const compactBar = document.getElementById('compactBar');
+
 const toggleSheet = () => {
   const isMinimized = sheetEl.classList.toggle('minimized');
   if (isMinimized) {
-    fabEl.classList.add('show');
+    compactBar.classList.add('show');
   } else {
-    fabEl.classList.remove('show');
+    compactBar.classList.remove('show');
   }
 };
 document.getElementById('btnMinimizeSheet').addEventListener('click', toggleSheet);
 document.getElementById('btnMinimizeResult').addEventListener('click', toggleSheet);
-fabEl.addEventListener('click', toggleSheet);
+compactBar.addEventListener('click', toggleSheet);
 
 /* ================= SETTINGS (COLLAPSIBLE TOP) ================= */
 const topMenu = document.getElementById('topMenu');
@@ -716,7 +725,7 @@ inputMinFare.addEventListener('input', updatePricing);
 
 /* ================= RESET BUTTON ================= */
 document.getElementById('btnReset').addEventListener('click', () => {
-  if (!confirm("Hapus semua titik rute dan reset pengaturan?")) return;
+  if (!confirm("Reset ulang seluruh titik rute?")) return;
   points = getEmptyPoints();
   activePointId = null;
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
@@ -728,11 +737,15 @@ document.getElementById('btnReset').addEventListener('click', () => {
   document.getElementById('resultView').classList.remove('show');
   document.getElementById('formView').style.display = 'block';
   
-  if (sheetEl.classList.contains('minimized')) toggleSheet(); // Buka kembali jika diminimize
+  if (sheetEl.classList.contains('minimized')) toggleSheet(); 
   renderStack();
-  toast('Data rute telah dihapus');
-});
+  
+  // Bersihkan parameter url tanpa refresh halaman
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+  window.history.pushState({path:newUrl}, '', newUrl);
 
+  toast('Data rute telah direset');
+});
 
 /* ================= MARKERS ================= */
 const syncMarkers = () => {
@@ -904,8 +917,11 @@ const btnCalc = document.getElementById('btnCalc');
 const drawRoute = (coords) => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
   drawnRouteLayers = [];
-  const casing = L.polyline(coords, { color: '#17223B', weight: 8, opacity: .18, lineCap: 'round' }).addTo(map);
-  const route = L.polyline(coords, { color: '#D98C2B', weight: 5, opacity: .92, lineCap: 'round' }).addTo(map);
+  
+  // Tampilan biru/ungu ala Google Maps (Casing border lebih tebal, Inner lebih terang)
+  const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  
   drawnRouteLayers.push(casing, route);
   map.fitBounds(route.getBounds(), { padding: [60, 60] });
 };
@@ -915,8 +931,9 @@ const calculateFareLogic = (kmTotal) => {
   return minFare + ((kmTotal - minKm) * pricePerKm);
 };
 
-btnCalc.addEventListener('click', async () => {
-  if (btnCalc.disabled) return;
+const executeCalc = async () => {
+  if (!points.every(p => p.lat != null && p.lng != null)) return;
+  
   btnCalc.classList.add('loading');
   btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg> Menghitung…';
   
@@ -928,7 +945,9 @@ btnCalc.addEventListener('click', async () => {
     btnCalc.classList.remove('loading');
     btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg> Hitung Jarak &amp; Ongkos';
   }
-});
+};
+
+btnCalc.addEventListener('click', executeCalc);
 
 const roundFare = (n) => Math.ceil(n / 500) * 500;
 const fmtRp = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -938,12 +957,18 @@ const showResult = (res) => {
   const totalKm = res.distanceKm;
   const rawFare = calculateFareLogic(totalKm);
   const fare = roundFare(rawFare);
+  const destCount = points.length - 1;
 
   drawRoute(res.coords);
 
+  // Update Result View
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
   document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
+
+  // Update Compact Bottom Bar
+  document.getElementById('cbPrice').textContent = `Rp ${fmtRp(fare)}`;
+  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan`;
 
   const fillPct = Math.min(100, totalKm <= 5 ? totalKm / 5 * 35 : totalKm <= 20 ? 35 + (totalKm - 5) / 15 * 40 : 75 + Math.min(25, (totalKm - 20) / 30 * 25));
   requestAnimationFrame(() => {
@@ -958,7 +983,6 @@ const showResult = (res) => {
   for (let i = 0; i < points.length - 1; i++) {
     const a = points[i], b = points[i + 1];
     const segKm = res.segments[i] || 0;
-    // Taksiran proporsional berdasarkan jarak segmen vs total jarak
     const segFare = roundFare( (segKm / totalKm) * rawFare );
     
     const row = document.createElement('div');
@@ -985,14 +1009,23 @@ const backToForm = () => {
 document.getElementById('btnBack').addEventListener('click', backToForm);
 document.getElementById('btnRecalc').addEventListener('click', backToForm);
 
-/* ================= SHARE / SCREENSHOT API ================= */
+/* ================= SHARE & URL PARSER ================= */
 document.getElementById('btnShare').addEventListener('click', async () => {
   const btn = document.getElementById('btnShare');
   const originalHtml = btn.innerHTML;
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="animation:spin 1s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> Memproses...';
   
   try {
-    // Sembunyikan topbar sesaat saat screenshot
+    // Generate URL dengan Parameter
+    const shareUrl = new URL(window.location.href);
+    shareUrl.search = ''; 
+    const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join(';');
+    shareUrl.searchParams.set('pts', ptsParam);
+    shareUrl.searchParams.set('p', pricePerKm);
+    shareUrl.searchParams.set('mk', minKm);
+    shareUrl.searchParams.set('mf', minFare);
+    const link = shareUrl.toString();
+
     document.querySelector('.topbar').style.display = 'none';
     const canvas = await html2canvas(document.body, { 
       useCORS: true, 
@@ -1005,15 +1038,16 @@ document.getElementById('btnShare').addEventListener('click', async () => {
       if(!blob) throw new Error("Blob failed");
       const file = new File([blob], 'ongkos-jarak.png', { type: 'image/png' });
       
+      const shareData = {
+        title: 'Estimasi Ongkos Jarak',
+        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek & navigasi rute langsung di browser:\n${link}`,
+        files: [file]
+      };
+
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Estimasi Ongkos Jarak',
-          text: 'Berikut rincian jarak dan estimasi ongkos rute perjalanan.',
-          files: [file]
-        });
+        await navigator.share(shareData);
       } else {
-        toast('Perangkat tidak mendukung Share Gambar otomatis. Gambar akan diunduh.');
-        // Fallback: Download file
+        toast('Perangkat tidak mendukung Share otomatis. Gambar akan diunduh.');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1026,13 +1060,56 @@ document.getElementById('btnShare').addEventListener('click', async () => {
   } catch (error) {
     console.error(error);
     document.querySelector('.topbar').style.display = 'flex';
-    toast('Gagal memproses gambar untuk dibagikan.');
+    toast('Gagal memproses gambar/tautan untuk dibagikan.');
     btn.innerHTML = originalHtml;
   }
 });
 
-/* ================= INIT ================= */
-renderStack();
+/* ================= INIT & LOAD URL PARAMS ================= */
+const initApp = async () => {
+  const params = new URLSearchParams(window.location.search);
+  const ptsStr = params.get('pts');
+  
+  if (ptsStr) {
+    // Load Settings
+    if(params.get('p')) { pricePerKm = parseInt(params.get('p'),10); inputPrice.value = pricePerKm; }
+    if(params.get('mk')) { minKm = parseFloat(params.get('mk')); inputMinKm.value = minKm; }
+    if(params.get('mf')) { minFare = parseInt(params.get('mf'),10); inputMinFare.value = minFare; }
+    
+    // Load Points
+    const ptArr = ptsStr.split(';');
+    if (ptArr.length >= 2) {
+      points = ptArr.map((str, idx) => {
+        const [lat, lng] = str.split(',').map(Number);
+        const role = idx === 0 ? 'origin' : (idx === ptArr.length - 1 ? 'dest' : 'waypoint');
+        let label = role === 'origin' ? 'Titik awal' : (role === 'dest' ? 'Titik tujuan' : `Tujuan ${idx + 1}`);
+        return { id: cryptoId(), role, label, lat, lng, address: 'Mencari alamat...' };
+      });
+      
+      renderStack();
+      
+      // Hitung rute segera lalu ambil alamat di latar belakang (agar tidak delay nunggu geocode)
+      executeCalc();
+
+      Promise.all(points.map(async p => {
+        p.address = await reverseGeocode(p.lat, p.lng);
+      })).then(() => {
+        renderStack(); 
+        if (document.getElementById('resultView').classList.contains('show')) {
+          // Refresh segmen label text
+          const l = points.map(p => ({lat: p.lat, lng: p.lng}));
+          routeBetween(l).then(res => showResult(res));
+        }
+      });
+    } else {
+      renderStack();
+    }
+  } else {
+    renderStack();
+  }
+};
+
+initApp();
 })();
 </script>
 </body>
