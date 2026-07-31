@@ -99,6 +99,21 @@ input{font-family:inherit;}
 .price-edit input:focus{outline:none;}
 .price-edit .unit{font-size:12px;color:var(--ink-soft);font-weight:600;}
 
+/* Toggle Switch */
+.toggle-switch { position:relative; width:42px; height:24px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; cursor:pointer; inset:0;
+  background-color:var(--line); border-radius:24px; transition:.3s;
+}
+.toggle-slider:before {
+  position:absolute; content:""; height:18px; width:18px;
+  left:3px; bottom:3px; background-color:white;
+  border-radius:50%; transition:.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background-color:var(--teal); }
+.toggle-switch input:checked + .toggle-slider:before { transform:translateX(18px); }
+
 /* ---------- BOTTOM SHEET ---------- */
 .sheet{
   position:absolute;left:0;right:0;bottom:0;z-index:20;
@@ -173,8 +188,7 @@ input{font-family:inherit;}
 }
 .route-field.empty .field-text{color:var(--ink-soft);font-weight:600;}
 .field-text{flex:1;min-width:0;font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.field-clear{width:22px;height:22px;flex:none;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;}
-.field-clear svg{width:14px;height:14px;}
+.field-clear{width:24px;height:24px;flex:none;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;}
 
 .swap-btn{
   position:absolute; right:0; top:43px; width:34px; height:34px;
@@ -202,6 +216,13 @@ input{font-family:inherit;}
 .cta svg{width:18px;height:18px;}
 .cta.loading svg{animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+.nav-btn {
+  margin-top:14px;width:100%;padding:13px;border-radius:var(--radius-md);
+  background:#4285F4;color:#fff;font-weight:800;font-size:14px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.nav-btn svg { width:18px;height:18px; }
 
 /* ---------- RESULT VIEW ---------- */
 .result{display:none;}
@@ -251,7 +272,7 @@ input{font-family:inherit;}
 }
 .note svg{width:15px;height:15px;flex:none;margin-top:1px;}
 
-.action-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:14px;}
+.action-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;}
 .recalc-btn{
   width:100%;padding:13px;border-radius:var(--radius-md);
   background:var(--surface);color:var(--ink);font-weight:800;font-size:14px;
@@ -429,6 +450,15 @@ input{font-family:inherit;}
         Tambah tujuan baru
       </button>
 
+      <!-- Toggle Pulang Pergi -->
+      <div class="settings-row" style="margin-top:14px; margin-bottom:16px; background:#FBF1E1;">
+        <div class="label" style="color:var(--accent-ink);">Pulang - Pergi (Round-Trip)</div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleRoundTrip">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <button class="cta" id="btnCalc" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
         Hitung Jarak &amp; Ongkos
@@ -466,6 +496,12 @@ input{font-family:inherit;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
         <span>Rute jalan tidak tersedia, jarak dihitung garis lurus × faktor jalan.</span>
       </div>
+
+      <!-- Tombol Mulai Navigasi Gmaps -->
+      <button class="nav-btn" id="btnNavMaps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Mulai Navigasi (Google Maps)
+      </button>
 
       <div class="action-grid">
         <button class="recalc-btn" id="btnRecalc">
@@ -547,8 +583,8 @@ input{font-family:inherit;}
 const cryptoId = () => window.crypto?.randomUUID ? crypto.randomUUID() : 'p' + Math.random().toString(36).slice(2, 10);
 
 const getEmptyPoints = () => [
-  { id: cryptoId(), role: 'origin', label: 'Titik awal', lat: null, lng: null, address: '' },
-  { id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '' }
+  { id: cryptoId(), role: 'origin', label: 'Titik awal', lat: null, lng: null, address: '', customName: '' },
+  { id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '', customName: '' }
 ];
 
 let points = getEmptyPoints();
@@ -556,6 +592,7 @@ let points = getEmptyPoints();
 let minKm = 3;
 let minFare = 10000;
 let pricePerKm = 4000;
+let routePointsForNav = []; // Simpan data asli untuk tombol Navigasi Google Maps
 
 let activePointId = null;
 let pickMode = false;
@@ -565,7 +602,9 @@ let searchTimer = null;
 let drawnRouteLayers = [];
 const markers = {};
 
-/* ================= MAP INIT (preferCanvas:true untuk fix jalur screenshot) ================= */
+const getPtLabel = (pt) => pt.customName || pt.address || pt.label;
+
+/* ================= MAP INIT (preferCanvas:true) ================= */
 const map = L.map('map', { 
   zoomControl: false, 
   attributionControl: true,
@@ -581,7 +620,7 @@ L.control.zoom({ position: 'bottomright' }).addTo(map);
 const pinSVG = (color) => `<svg viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="${color}"/><circle cx="12" cy="12" r="4.4" fill="#fff"/></svg>`;
 
 const badgeIcon = (role, numLabel) => {
-  const color = role === 'origin' ? '#159E86' : role === 'dest' ? '#D3483F' : '#3E6AE1';
+  const color = role === 'origin' ? '#159E86' : role === 'dest' || role === 'return' ? '#D3483F' : '#3E6AE1';
   const html = `<div class="pt-badge">${pinSVG(color)}<div class="num">${numLabel || ''}</div></div>`;
   return L.divIcon({ html, className: '', iconSize: [26, 34], iconAnchor: [13, 34] });
 };
@@ -594,6 +633,12 @@ const toast = (msg) => {
   toastEl.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+};
+
+/* ================= CLEAR ROUTE HELPER ================= */
+const clearRouteLayers = () => {
+  drawnRouteLayers.forEach(layer => map.removeLayer(layer));
+  drawnRouteLayers = [];
 };
 
 /* ================= FULLSCREEN API ================= */
@@ -691,12 +736,16 @@ const renderStack = () => {
   points.forEach((pt) => {
     const row = document.createElement('div');
     row.className = 'route-row';
+    const hasLocation = pt.lat != null;
+    
+    // Icon Pencil added for Editing Custom Label
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
-      <div class="route-field ${pt.address ? '' : 'empty'}" data-id="${pt.id}">
-        <div class="field-text">${pt.address || pt.label}</div>
-        ${pt.address ? `<button class="field-clear" data-clear="${pt.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
-        ${pt.role === 'waypoint' ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+      <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}">
+        <div class="field-text">${getPtLabel(pt)}</div>
+        ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
+        ${hasLocation ? `<button class="field-clear" data-clear="${pt.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+        ${pt.role === 'waypoint' ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
       </div>`;
     routeStack.appendChild(row);
   });
@@ -709,15 +758,17 @@ const renderStack = () => {
     swapBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M7 10l-4 4M7 10l4 4M17 14V2M17 2l-4 4M17 2l4 4"/></svg>`;
     swapBtn.onclick = () => {
        const lastIdx = points.length - 1;
-       const temp = { lat: points[0].lat, lng: points[0].lng, address: points[0].address };
+       const temp = { lat: points[0].lat, lng: points[0].lng, address: points[0].address, customName: points[0].customName };
        
        points[0].lat = points[lastIdx].lat;
        points[0].lng = points[lastIdx].lng;
        points[0].address = points[lastIdx].address;
+       points[0].customName = points[lastIdx].customName;
        
        points[lastIdx].lat = temp.lat;
        points[lastIdx].lng = temp.lng;
        points[lastIdx].address = temp.address;
+       points[lastIdx].customName = temp.customName;
        
        renderStack();
        if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
@@ -732,17 +783,38 @@ const renderStack = () => {
 routeStack.addEventListener('click', (e) => {
   const clear = e.target.closest('[data-clear]');
   const remove = e.target.closest('[data-remove]');
+  const edit = e.target.closest('[data-edit]');
   const field = e.target.closest('.route-field');
   
-  if (clear) {
-    const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
-    if (pt) { 
-      pt.lat = null; pt.lng = null; pt.address = ''; 
-      renderStack();
-      if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
+  // FITUR EDIT NAMA (LABEL CUSTOM)
+  if (edit) {
+    const pt = points.find(p => p.id === edit.getAttribute('data-edit'));
+    if (pt) {
+      const newName = prompt("Ubah nama/label tujuan ini (misal: Rumah Sarah):", pt.customName || "");
+      if (newName !== null) {
+        pt.customName = newName.trim();
+        renderStack();
+        if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
+      }
     }
     e.stopPropagation(); return;
   }
+
+  // HAPUS "X" INPUT
+  if (clear) {
+    const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
+    if (pt) { 
+      pt.lat = null; pt.lng = null; pt.address = ''; pt.customName = '';
+      renderStack();
+      clearRouteLayers();
+      if(document.getElementById('resultView').classList.contains('show')){
+         backToForm();
+      }
+    }
+    e.stopPropagation(); return;
+  }
+  
+  // HAPUS TUJUAN (WAYPOINT)
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
     if(points[points.length-1].role === 'waypoint') {
@@ -750,9 +822,17 @@ routeStack.addEventListener('click', (e) => {
        points[points.length-1].label = 'Tujuan akhir';
     }
     renderStack();
-    if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
+    
+    if (points.every(p => p.lat != null && p.lng != null)) {
+      if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
+    } else {
+      clearRouteLayers();
+      backToForm();
+    }
+    
     e.stopPropagation(); return;
   }
+  
   if (field) openSearchPanel(field.getAttribute('data-id'));
 });
 
@@ -761,7 +841,7 @@ document.getElementById('btnAddStop').addEventListener('click', () => {
   const oldDest = points[points.length - 1];
   oldDest.role = 'waypoint';
   oldDest.label = `Tujuan ${points.length - 1}`;
-  points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '' });
+  points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '', customName: '' });
   renderStack();
 });
 
@@ -807,12 +887,12 @@ document.getElementById('btnReset').addEventListener('click', () => {
   if (!confirm("Reset ulang seluruh titik rute?")) return;
   points = getEmptyPoints();
   activePointId = null;
-  drawnRouteLayers.forEach(layer => map.removeLayer(layer));
-  drawnRouteLayers = [];
+  clearRouteLayers();
   Object.values(markers).forEach(m => map.removeLayer(m));
   for (let k in markers) delete markers[k];
   
   map.setView([-6.2088, 106.8456], 12);
+  document.getElementById('toggleRoundTrip').checked = false; // Reset toggle
   
   document.getElementById('cbPrice').textContent = 'Rp 0';
   document.getElementById('cbDist').textContent = '0 km • 0 tujuan';
@@ -830,47 +910,50 @@ document.getElementById('btnReset').addEventListener('click', () => {
 
 /* ================= MARKERS ================= */
 const syncMarkers = () => {
-  const activeIds = points.map(p => p.id);
+  // Sync dengan routePointsForNav jika mode result, untuk marker Return Trip (jika PP aktif)
+  const isResult = document.getElementById('resultView').classList.contains('show');
+  const displayPoints = isResult && routePointsForNav.length > points.length ? routePointsForNav : points;
+  
+  const activeIds = displayPoints.map(p => p.id);
   Object.keys(markers).forEach(id => {
     if (!activeIds.includes(id)) { map.removeLayer(markers[id]); delete markers[id]; }
   });
   
   let wpIdx = 0;
-  points.forEach(pt => {
+  displayPoints.forEach(pt => {
     if (pt.lat == null) {
-      if (markers[pt.id]) {
-        map.removeLayer(markers[pt.id]);
-        delete markers[pt.id];
-      }
+      if (markers[pt.id]) { map.removeLayer(markers[pt.id]); delete markers[pt.id]; }
       return;
     }
     
-    const label = pt.role === 'origin' ? 'A' : pt.role === 'dest' ? 'B' : String(++wpIdx);
+    // Label Marker: Jika return trip, label icon jadi "A" tapi warna beda (di-handle oleh badgeIcon)
+    const label = pt.role === 'origin' || pt.role === 'return' ? 'A' : pt.role === 'dest' ? 'B' : String(++wpIdx);
     
     if (markers[pt.id]) {
       markers[pt.id].setLatLng([pt.lat, pt.lng]);
       markers[pt.id].setIcon(badgeIcon(pt.role, label));
     } else {
-      const m = L.marker([pt.lat, pt.lng], { icon: badgeIcon(pt.role, label), draggable: true });
+      const m = L.marker([pt.lat, pt.lng], { icon: badgeIcon(pt.role, label), draggable: pt.role !== 'return' }); // Return trip marker non-draggable
       m.addTo(map);
       
-      m.on('dragend', async () => {
-        const { lat, lng } = m.getLatLng();
-        pt.lat = lat; pt.lng = lng;
-        pt.address = 'Mencari alamat…';
-        renderStack();
-        
-        const isResult = document.getElementById('resultView').classList.contains('show');
-        if (isResult) executeCalc(true); 
+      if(pt.role !== 'return'){
+        m.on('dragend', async () => {
+          const { lat, lng } = m.getLatLng();
+          pt.lat = lat; pt.lng = lng;
+          pt.address = 'Mencari alamat…';
+          renderStack();
+          
+          if (document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
 
-        pt.address = await reverseGeocode(lat, lng);
-        renderStack();
-      });
+          pt.address = await reverseGeocode(lat, lng);
+          renderStack();
+        });
+      }
       markers[pt.id] = m;
     }
   });
   
-  const latlngs = points.filter(p => p.lat != null).map(p => [p.lat, p.lng]);
+  const latlngs = displayPoints.filter(p => p.lat != null).map(p => [p.lat, p.lng]);
   if(!document.getElementById('resultView').classList.contains('show')){
     if (latlngs.length >= 2) map.fitBounds(latlngs, { padding: [70, 70] });
     else if (latlngs.length === 1) map.setView(latlngs[0], 15);
@@ -1009,14 +1092,12 @@ document.getElementById('btnLocate').addEventListener('click', () => {
 const formView = document.getElementById('formView');
 const resultView = document.getElementById('resultView');
 const btnCalc = document.getElementById('btnCalc');
+const toggleRoundTrip = document.getElementById('toggleRoundTrip');
 
 const drawRoute = (coords) => {
-  drawnRouteLayers.forEach(layer => map.removeLayer(layer));
-  drawnRouteLayers = [];
-  
+  clearRouteLayers();
   const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  
   drawnRouteLayers.push(casing, route);
   map.fitBounds(route.getBounds(), { padding: [60, 60] });
 };
@@ -1035,7 +1116,21 @@ window.executeCalc = async (silent = false) => {
   }
   
   try {
-    const list = points.map(p => ({ lat: p.lat, lng: p.lng }));
+    const isRoundTrip = toggleRoundTrip.checked;
+    routePointsForNav = [...points];
+    
+    // Fitur Pulang-Pergi: Menambahkan titik origin di akhir array untuk kalkulasi jarak & segmen
+    if (isRoundTrip && points.length >= 2) {
+       routePointsForNav.push({
+         ...points[0], 
+         id: points[0].id + '_return', 
+         role: 'return', 
+         label: 'Kembali ke Titik Awal',
+         customName: ''
+       });
+    }
+
+    const list = routePointsForNav.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
     showResult(res, silent);
   } finally {
@@ -1047,47 +1142,54 @@ window.executeCalc = async (silent = false) => {
 };
 
 btnCalc.addEventListener('click', () => executeCalc(false));
+toggleRoundTrip.addEventListener('change', () => { if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); });
 
 const roundFare = (n) => Math.round(n / 10) * 10;
 const fmtRp = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-const shortLabel = (pt) => (pt.address || pt.label).length > 18 ? (pt.address || pt.label).slice(0, 18) + '…' : (pt.address || pt.label);
 
 const showResult = (res, silent) => {
   const totalKm = res.distanceKm;
   const rawFare = calculateFareLogic(totalKm);
   const fare = roundFare(rawFare);
-  const destCount = points.length - 1;
+  
+  // Total Tujuan tidak menghitung titik Pulang ke awal
+  const isRoundTrip = toggleRoundTrip.checked;
+  const destCount = isRoundTrip ? routePointsForNav.length - 2 : routePointsForNav.length - 1;
 
   drawRoute(res.coords);
+  syncMarkers(); // Sync marker u/ menampilkan titik return
 
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
   document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
 
   document.getElementById('cbPrice').textContent = `Rp ${fmtRp(fare)}`;
-  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan`;
+  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan ${isRoundTrip ? '(PP)' : ''}`;
 
   const fillPct = Math.min(100, totalKm <= 5 ? totalKm / 5 * 35 : totalKm <= 20 ? 35 + (totalKm - 5) / 15 * 40 : 75 + Math.min(25, (totalKm - 20) / 30 * 25));
-  requestAnimationFrame(() => {
-    document.getElementById('rulerFill').style.width = `${fillPct}%`;
-  });
+  requestAnimationFrame(() => { document.getElementById('rulerFill').style.width = `${fillPct}%`; });
   document.getElementById('rulerMid').textContent = `${(totalKm / 2).toFixed(1)} km`;
   document.getElementById('rulerMax').textContent = `${totalKm.toFixed(1)} km`;
 
   const segList = document.getElementById('segmentList');
   segList.innerHTML = '<div class="segment-title">Rincian segmen</div>';
   
-  for (let i = 0; i < points.length - 1; i++) {
-    const a = points[i], b = points[i + 1];
+  // Looping render Segmen berdasarkan routePointsForNav (Bisa berisi Return point)
+  for (let i = 0; i < routePointsForNav.length - 1; i++) {
+    const a = routePointsForNav[i], b = routePointsForNav[i + 1];
     const segKm = res.segments[i] || 0;
     const segFare = roundFare( (segKm / totalKm) * rawFare );
+    
+    // Khusus trip kembali
+    const titleA = getPtLabel(a);
+    const titleB = getPtLabel(b);
     
     const row = document.createElement('div');
     row.className = 'segment';
     row.innerHTML = `
       <div class="segment-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       <div class="segment-text">
-        <div class="segment-route">${shortLabel(a)} → ${shortLabel(b)}</div>
+        <div class="segment-route">${titleA} → ${titleB}</div>
         <div class="segment-dist">${segKm.toFixed(1)} km</div>
       </div>
       <div class="segment-fare mono">Rp ${fmtRp(segFare)}</div>`;
@@ -1105,9 +1207,30 @@ const showResult = (res, silent) => {
 const backToForm = () => {
   resultView.classList.remove('show');
   formView.style.display = 'block';
+  // Hapus marker return jika kembali ke edit form
+  routePointsForNav = [...points]; 
+  syncMarkers();
 };
 document.getElementById('btnBack').addEventListener('click', backToForm);
 document.getElementById('btnRecalc').addEventListener('click', backToForm);
+
+/* ================= GOOGLE MAPS NAVIGATION ================= */
+document.getElementById('btnNavMaps').addEventListener('click', () => {
+  if (routePointsForNav.length < 2) return;
+  
+  const origin = `${routePointsForNav[0].lat},${routePointsForNav[0].lng}`;
+  const lastIdx = routePointsForNav.length - 1;
+  const destination = `${routePointsForNav[lastIdx].lat},${routePointsForNav[lastIdx].lng}`;
+  
+  let waypoints = '';
+  if (routePointsForNav.length > 2) {
+    const wps = routePointsForNav.slice(1, lastIdx).map(p => `${p.lat},${p.lng}`);
+    waypoints = `&waypoints=${wps.join('|')}`;
+  }
+  
+  const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints}&travelmode=driving`;
+  window.open(url, '_blank');
+});
 
 /* ================= SHARE & URL PARSER ================= */
 window.handleShare = async (btnElement, isCompact = false) => {
@@ -1119,11 +1242,14 @@ window.handleShare = async (btnElement, isCompact = false) => {
   try {
     const shareUrl = new URL(window.location.href);
     shareUrl.search = ''; 
-    const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join(';');
+    
+    // Serialize Points include CustomName via URL encoding
+    const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)},${encodeURIComponent(p.customName || '')}`).join(';');
     shareUrl.searchParams.set('pts', ptsParam);
     shareUrl.searchParams.set('p', pricePerKm);
     shareUrl.searchParams.set('mk', minKm);
     shareUrl.searchParams.set('mf', minFare);
+    shareUrl.searchParams.set('rt', toggleRoundTrip.checked ? '1' : '0');
     const link = shareUrl.toString();
 
     document.querySelector('.topbar').style.display = 'none';
@@ -1133,7 +1259,6 @@ window.handleShare = async (btnElement, isCompact = false) => {
     }
 
     await new Promise(res => setTimeout(res, 150));
-
     const w = document.documentElement.clientWidth;
     const h = document.documentElement.clientHeight;
 
@@ -1141,10 +1266,7 @@ window.handleShare = async (btnElement, isCompact = false) => {
       useCORS: true, 
       allowTaint: false,
       backgroundColor: '#DCE3EA', 
-      width: w,
-      height: h,
-      windowWidth: w,
-      windowHeight: h,
+      width: w, height: h, windowWidth: w, windowHeight: h,
       scale: window.devicePixelRatio || 2 
     });
     
@@ -1157,7 +1279,7 @@ window.handleShare = async (btnElement, isCompact = false) => {
       
       const shareData = {
         title: 'Estimasi Ongkos Jarak',
-        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Buka & navigasi rute langsung di aplikasi:\n${link}`,
+        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${link}`,
         files: [file]
       };
 
@@ -1192,14 +1314,19 @@ const initApp = async () => {
     if(params.get('p')) { pricePerKm = parseInt(params.get('p'),10); inputPrice.value = pricePerKm; }
     if(params.get('mk')) { minKm = parseFloat(params.get('mk')); inputMinKm.value = minKm; }
     if(params.get('mf')) { minFare = parseInt(params.get('mf'),10); inputMinFare.value = minFare; }
+    if(params.get('rt')) { toggleRoundTrip.checked = params.get('rt') === '1'; }
     
     const ptArr = ptsStr.split(';');
     if (ptArr.length >= 2) {
       points = ptArr.map((str, idx) => {
-        const [lat, lng] = str.split(',').map(Number);
+        const parts = str.split(',');
+        const lat = Number(parts[0]);
+        const lng = Number(parts[1]);
+        const customName = parts[2] ? decodeURIComponent(parts[2]) : '';
+        
         const role = idx === 0 ? 'origin' : (idx === ptArr.length - 1 ? 'dest' : 'waypoint');
         let label = role === 'origin' ? 'Titik awal' : (role === 'dest' ? 'Tujuan akhir' : `Tujuan ${idx}`);
-        return { id: cryptoId(), role, label, lat, lng, address: 'Mencari alamat...' };
+        return { id: cryptoId(), role, label, customName, lat, lng, address: 'Mencari alamat...' };
       });
       
       renderStack();
