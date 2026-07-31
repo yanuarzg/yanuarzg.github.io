@@ -1273,9 +1273,10 @@ const toggleRoundTrip = document.getElementById('toggleRoundTrip');
 
 const drawRoute = (coords) => {
   clearRouteLayers();
-  // Garis rute warna app
-  const casing = L.polyline(coords, { color: 'var(--ink)', weight: 9, opacity: 0.18, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  const route = L.polyline(coords, { color: 'var(--accent)', weight: 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  // Bayangan/garis tepi luar (Casing)
+  const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  // Garis rute utama (Route)
+  const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   drawnRouteLayers.push(casing, route);
   map.fitBounds(route.getBounds(), { padding: [60, 60] });
 };
