@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalkulator Biaya Jarak</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    
+    <style>
+        :root {
+            --primary: #00AA13; /* Warna khas Gojek/Grab */
+            --bg-panel: #ffffff;
+            --text-main: #333333;
+            --text-muted: #888888;
+            --border: #e5e5e5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #f4f4f4;
+        }
+
+        /* Map Container */
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Bottom Panel UI */
+        .bottom-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--bg-panel);
+            z-index: 1000;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .drag-indicator {
+            width: 40px;
+            height: 5px;
+            background: #d1d1d1;
+            border-radius: 3px;
+            margin: 0 auto 10px auto;
+        }
+
+        /* Input Controls */
+        .location-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 12px;
+        }
+
+        .input-group input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            outline: none;
+            padding: 5px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            color: var(--primary);
+        }
+
+        .add-stop-btn {
+            color: var(--primary);
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            padding: 5px 0;
+        }
+
+        /* Settings & Price */
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .settings-row label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .settings-row input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: right;
+        }
+
+        /* Summary Area */
+        .summary-card {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-info .distance {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .summary-info .price {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .order-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Sembunyikan instruksi rute default dari Leaflet Routing Machine */
+        .leaflet-routing-container {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div class="bottom-panel">
+        <div class="drag-indicator"></div>
+        
+        <div class="location-inputs" id="waypoints-container">
+            <!-- Start Location -->
+            <div class="input-group">
+                <span style="color: #00AA13;">🟢</span>
+                <input type="text" id="input-0" placeholder="Lokasi Jemput (Pilih di peta / GPS)" readonly>
+                <button class="icon-btn" onclick="useCurrentLocation(0)" title="Gunakan GPS">📍</button>
+            </div>
+            
+            <!-- Finish Location -->
+            <div class="input-group" id="group-last">
+                <span style="color: #FF0000;">🔴</span>
+                <input type="text" id="input-last" placeholder="Tujuan (Pilih di peta)" readonly>
+            </div>
+        </div>
+
+        <button class="add-stop-btn" onclick="addWaypoint()">+ Tambah Titik Antar (Opsional)</button>
+
+        <div class="settings-row">
+            <label>Tarif Dasar / Km (Rp):</label>
+            <input type="number" id="base-price" value="4000" onchange="calculatePrice()">
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-info">
+                <span class="distance" id="display-distance">Jarak: 0 km</span>
+                <span class="price" id="display-price">Rp 0</span>
+            </div>
+            <button class="order-btn">Pesan</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        let map;
+        let routingControl;
+        let waypoints = [null, null]; // Index 0: Start, Index Terakhir: Finish
+        let currentDistanceKm = 0;
+        let activeInputIndex = 0; // Menandai input mana yang sedang diisi saat peta diklik
+
+        // Inisialisasi Peta
+        function initMap() {
+            // Default center: Jakarta
+            map = L.map('map', { zoomControl: false }).setView([-6.200000, 106.816666], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Inisialisasi Routing Machine (tanpa titik awal)
+            routingControl = L.Routing.control({
+                waypoints: waypoints,
+                routeWhileDragging: true, // Mendukung edit titik (drag and drop)
+                geocoder: L.Control.Geocoder.nominatim(),
+                createMarker: function(i, waypoint, n) {
+                    const marker = L.marker(waypoint.latLng, { draggable: true });
+                    // Reverse geocode saat marker digeser manual
+                    marker.on('dragend', function(e) {
+                        updateAddressFromLatLng(e.target.getLatLng(), i);
+                    });
+                    return marker;
+                }
+            }).addTo(map);
+
+            // Listener ketika rute ditemukan
+            routingControl.on('routesfound', function(e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                currentDistanceKm = (summary.totalDistance / 1000).toFixed(1);
+                document.getElementById('display-distance').innerText = `Jarak: ${currentDistanceKm} km`;
+                calculatePrice();
+            });
+
+            // Listener klik peta untuk set lokasi
+            map.on('click', function(e) {
+                setWaypoint(activeInputIndex, e.latlng);
+                updateAddressFromLatLng(e.latlng, activeInputIndex);
+                
+                // Auto pindah ke input berikutnya jika masih kosong
+                if (activeInputIndex < waypoints.length - 1 && waypoints[activeInputIndex + 1] === null) {
+                    activeInputIndex++;
+                } else if (waypoints[0] === null) {
+                    activeInputIndex = 0;
+                }
+            });
+
+            // Coba ambil GPS pengguna saat pertama kali buka
+            useCurrentLocation(0);
+        }
+
+        // Ambil lokasi via GPS
+        function useCurrentLocation(index) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const latlng = L.latLng(position.coords.latitude, position.coords.longitude);
+                    setWaypoint(index, latlng);
+                    updateAddressFromLatLng(latlng, index);
+                    map.setView(latlng, 15);
+                    activeInputIndex = waypoints.length - 1; // Pindah fokus ke tujuan
+                }, error => {
+                    alert("Gagal mendapatkan lokasi GPS. Pastikan izin lokasi aktif.");
+                });
+            } else {
+                alert("Browser Anda tidak mendukung Geolocation.");
+            }
+        }
+
+        // Set titik pada routing machine
+        function setWaypoint(index, latlng) {
+            waypoints[index] = latlng;
+            routingControl.setWaypoints(waypoints);
+        }
+
+        // Konversi LatLng ke Alamat Text (Reverse Geocoding)
+        function updateAddressFromLatLng(latlng, index) {
+            const geocoder = L.Control.Geocoder.nominatim();
+            geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), results => {
+                let r = results[0];
+                let inputId = index === waypoints.length - 1 ? 'input-last' : `input-${index}`;
+                let addressText = r ? r.name : `${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`;
+                
+                const inputEl = document.getElementById(inputId);
+                if(inputEl) inputEl.value = addressText;
+            });
+        }
+
+        // Tambah Titik Antar (Waypoint di tengah)
+        function addWaypoint() {
+            // Sisipkan titik baru sebelum index terakhir
+            const newIndex = waypoints.length - 1;
+            waypoints.splice(newIndex, 0, null);
+            
+            const container = document.getElementById('waypoints-container');
+            const lastGroup = document.getElementById('group-last');
+            
+            const newGroup = document.createElement('div');
+            newGroup.className = 'input-group';
+            newGroup.innerHTML = `
+                <span style="color: #FFA500;">🟠</span>
+                <input type="text" id="input-${newIndex}" placeholder="Titik Antar (Pilih di peta)" readonly>
+            `;
+            
+            container.insertBefore(newGroup, lastGroup);
+            activeInputIndex = newIndex; // Fokus ke titik baru
+        }
+
+        // Hitung Biaya
+        function calculatePrice() {
+            const basePrice = parseFloat(document.getElementById('base-price').value) || 0;
+            const total = currentDistanceKm * basePrice;
+            
+            // Format ke Rupiah
+            const formattedTotal = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(total);
+            
+            document.getElementById('display-price').innerText = formattedTotal;
+        }
+
+        // Run
+        window.onload = initMap;
+    </script>
+</body>
+</html>
