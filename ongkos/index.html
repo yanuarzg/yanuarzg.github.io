@@ -188,7 +188,8 @@ input{font-family:inherit;}
 }
 .route-field.empty .field-text{color:var(--ink-soft);font-weight:600;}
 .field-text{flex:1;min-width:0;font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.field-clear{width:24px;height:24px;flex:none;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;}
+.field-clear{width:22px;height:22px;flex:none;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;}
+.field-clear svg{width:14px;height:14px;}
 
 .swap-btn{
   position:absolute; right:0; top:43px; width:34px; height:34px;
@@ -273,6 +274,7 @@ input{font-family:inherit;}
 .note svg{width:15px;height:15px;flex:none;margin-top:1px;}
 
 .action-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;}
+.btn-full { grid-column: span 2; }
 .recalc-btn{
   width:100%;padding:13px;border-radius:var(--radius-md);
   background:var(--surface);color:var(--ink);font-weight:800;font-size:14px;
@@ -284,6 +286,27 @@ input{font-family:inherit;}
   display:flex;align-items:center;justify-content:center;gap:8px;
 }
 .share-btn svg, .recalc-btn svg{width:16px;height:16px;}
+
+/* ---------- MODAL PAYMENT ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(23,34,59,0.6); z-index: 100;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity 0.2s;
+}
+.modal-overlay.show { display: flex; opacity: 1; }
+.modal-card {
+  background: var(--card); border-radius: var(--radius-lg);
+  width: 100%; max-width: 340px; padding: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.2s;
+}
+.modal-overlay.show .modal-card { transform: translateY(0); }
+.modal-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;}
+.modal-body textarea { width: 100%; height: 160px; font-family: inherit; font-size: 13px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); resize: none; outline:none; }
+.modal-body pre { font-family: inherit; font-size: 13px; white-space: pre-wrap; margin:0; line-height:1.5; color:var(--ink-soft); }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.btn-modal { flex: 1; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; text-align:center; }
+.btn-modal.primary { background: var(--ink); color: #fff; }
+.btn-modal.secondary { background: var(--surface); color: var(--ink); }
 
 /* ---------- SEARCH PANEL ---------- */
 .search-panel{
@@ -492,25 +515,29 @@ input{font-family:inherit;}
 
       <div class="segment-list" id="segmentList"></div>
 
-      <div class="note" id="routeNote" style="display:none;">
+      <div class="note" id="routeNote" style="display:flex;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-        <span>Rute jalan tidak tersedia, jarak dihitung garis lurus × faktor jalan.</span>
+        <span id="noteText">Estimasi jarak via OSRM (OpenStreetMap). Bisa sedikit berbeda dengan Google Maps.</span>
       </div>
 
-      <!-- Tombol Mulai Navigasi Gmaps -->
-      <button class="nav-btn" id="btnNavMaps">
+      <!-- Tombol Navigasi Google Maps (Lebar Penuh) -->
+      <button class="nav-btn btn-full" id="btnNavMaps">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Mulai Navigasi (Google Maps)
       </button>
 
       <div class="action-grid">
+        <button class="recalc-btn" id="btnPayment" style="background:#E3E7EE; color:var(--ink);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Info Bayar
+        </button>
         <button class="recalc-btn" id="btnRecalc">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
           Hitung ulang
         </button>
-        <button class="share-btn" onclick="handleShare(this, false)">
+        <button class="share-btn btn-full" onclick="handleShare(this, false)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Bagikan
+          Bagikan Tagihan
         </button>
       </div>
     </div>
@@ -524,13 +551,33 @@ input{font-family:inherit;}
     <div class="cb-dist" id="cbDist">0 km • 0 tujuan</div>
   </div>
   <div class="cb-actions">
-    <!-- Icon Share Mode Compact -->
     <button class="cb-btn" aria-label="Bagikan" onclick="handleShare(this, true)">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
     <button class="cb-btn" id="cbExpand" aria-label="Perbesar Layar">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
     </button>
+  </div>
+</div>
+
+<!-- ============ MODAL PAYMENT INFO ============ -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal-card">
+    <div class="modal-title">
+      Info Pembayaran
+      <button id="btnClosePayment" style="color:var(--ink-soft);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <pre id="paymentText"></pre>
+      <textarea id="paymentInput" style="display:none;"></textarea>
+    </div>
+    <div class="modal-actions" id="paymentViewActions">
+      <button class="btn-modal secondary" id="btnEditPayment">Edit Info</button>
+    </div>
+    <div class="modal-actions" id="paymentEditActions" style="display:none;">
+      <button class="btn-modal secondary" id="btnCancelPayment">Batal</button>
+      <button class="btn-modal primary" id="btnSavePayment">Simpan</button>
+    </div>
   </div>
 </div>
 
@@ -592,7 +639,7 @@ let points = getEmptyPoints();
 let minKm = 3;
 let minFare = 10000;
 let pricePerKm = 4000;
-let routePointsForNav = []; // Simpan data asli untuk tombol Navigasi Google Maps
+let routePointsForNav = []; 
 
 let activePointId = null;
 let pickMode = false;
@@ -604,7 +651,7 @@ const markers = {};
 
 const getPtLabel = (pt) => pt.customName || pt.address || pt.label;
 
-/* ================= MAP INIT (preferCanvas:true) ================= */
+/* ================= MAP INIT ================= */
 const map = L.map('map', { 
   zoomControl: false, 
   attributionControl: true,
@@ -640,6 +687,56 @@ const clearRouteLayers = () => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
   drawnRouteLayers = [];
 };
+
+/* ================= PAYMENT MODAL LOGIC ================= */
+const defaultPayment = `Dana : 089507785333\nGOPAY : 089507785333\nShopeePay : 089507785333\nBRI : 012001067003502\nJago : 108281218767\nSeabank : 901030071975\na.n Yanuar Zhaldy G`;
+let paymentInfo = localStorage.getItem('ongkir_payment') || defaultPayment;
+
+const paymentModal = document.getElementById('paymentModal');
+const paymentText = document.getElementById('paymentText');
+const paymentInput = document.getElementById('paymentInput');
+const paymentViewActions = document.getElementById('paymentViewActions');
+const paymentEditActions = document.getElementById('paymentEditActions');
+
+const renderPaymentInfo = () => {
+  paymentText.textContent = paymentInfo;
+  paymentInput.value = paymentInfo;
+};
+
+document.getElementById('btnPayment').addEventListener('click', () => {
+  renderPaymentInfo();
+  paymentText.style.display = 'block';
+  paymentInput.style.display = 'none';
+  paymentViewActions.style.display = 'flex';
+  paymentEditActions.style.display = 'none';
+  paymentModal.classList.add('show');
+});
+
+document.getElementById('btnClosePayment').addEventListener('click', () => paymentModal.classList.remove('show'));
+
+document.getElementById('btnEditPayment').addEventListener('click', () => {
+  paymentText.style.display = 'none';
+  paymentInput.style.display = 'block';
+  paymentViewActions.style.display = 'none';
+  paymentEditActions.style.display = 'flex';
+});
+
+document.getElementById('btnCancelPayment').addEventListener('click', () => {
+  paymentText.style.display = 'block';
+  paymentInput.style.display = 'none';
+  paymentViewActions.style.display = 'flex';
+  paymentEditActions.style.display = 'none';
+});
+
+document.getElementById('btnSavePayment').addEventListener('click', () => {
+  paymentInfo = paymentInput.value.trim() || defaultPayment;
+  localStorage.setItem('ongkir_payment', paymentInfo);
+  renderPaymentInfo();
+  paymentText.style.display = 'block';
+  paymentInput.style.display = 'none';
+  paymentViewActions.style.display = 'flex';
+  paymentEditActions.style.display = 'none';
+});
 
 /* ================= FULLSCREEN API ================= */
 const btnFullscreen = document.getElementById('btnFullscreen');
@@ -738,19 +835,17 @@ const renderStack = () => {
     row.className = 'route-row';
     const hasLocation = pt.lat != null;
     
-    // Icon Pencil added for Editing Custom Label
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
       <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}">
         <div class="field-text">${getPtLabel(pt)}</div>
         ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
         ${hasLocation ? `<button class="field-clear" data-clear="${pt.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
-        ${pt.role === 'waypoint' ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+        ${pt.role === 'waypoint' || (pt.role === 'dest' && points.length > 2) ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
       </div>`;
     routeStack.appendChild(row);
   });
   
-  // Tombol Swap
   if (points.length >= 2) {
     const swapBtn = document.createElement('button');
     swapBtn.className = 'swap-btn';
@@ -760,15 +855,11 @@ const renderStack = () => {
        const lastIdx = points.length - 1;
        const temp = { lat: points[0].lat, lng: points[0].lng, address: points[0].address, customName: points[0].customName };
        
-       points[0].lat = points[lastIdx].lat;
-       points[0].lng = points[lastIdx].lng;
-       points[0].address = points[lastIdx].address;
-       points[0].customName = points[lastIdx].customName;
+       points[0].lat = points[lastIdx].lat; points[0].lng = points[lastIdx].lng;
+       points[0].address = points[lastIdx].address; points[0].customName = points[lastIdx].customName;
        
-       points[lastIdx].lat = temp.lat;
-       points[lastIdx].lng = temp.lng;
-       points[lastIdx].address = temp.address;
-       points[lastIdx].customName = temp.customName;
+       points[lastIdx].lat = temp.lat; points[lastIdx].lng = temp.lng;
+       points[lastIdx].address = temp.address; points[lastIdx].customName = temp.customName;
        
        renderStack();
        if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
@@ -786,11 +877,10 @@ routeStack.addEventListener('click', (e) => {
   const edit = e.target.closest('[data-edit]');
   const field = e.target.closest('.route-field');
   
-  // FITUR EDIT NAMA (LABEL CUSTOM)
   if (edit) {
     const pt = points.find(p => p.id === edit.getAttribute('data-edit'));
     if (pt) {
-      const newName = prompt("Ubah nama/label tujuan ini (misal: Rumah Sarah):", pt.customName || "");
+      const newName = prompt("Ubah nama/label tujuan ini (misal: Rumah Budi):", pt.customName || "");
       if (newName !== null) {
         pt.customName = newName.trim();
         renderStack();
@@ -800,36 +890,35 @@ routeStack.addEventListener('click', (e) => {
     e.stopPropagation(); return;
   }
 
-  // HAPUS "X" INPUT
+  // FIX Hapus X: membersihkan garis dari peta langsung
   if (clear) {
     const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
     if (pt) { 
       pt.lat = null; pt.lng = null; pt.address = ''; pt.customName = '';
-      renderStack();
       clearRouteLayers();
-      if(document.getElementById('resultView').classList.contains('show')){
-         backToForm();
-      }
+      renderStack();
+      if(document.getElementById('resultView').classList.contains('show')) backToForm();
     }
     e.stopPropagation(); return;
   }
   
-  // HAPUS TUJUAN (WAYPOINT)
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
-    if(points[points.length-1].role === 'waypoint') {
-       points[points.length-1].role = 'dest';
-       points[points.length-1].label = 'Tujuan akhir';
-    }
-    renderStack();
     
+    // Rapihkan urutan dan label
+    points.forEach((p, idx) => {
+      if (idx === 0) { p.role = 'origin'; p.label = 'Titik awal'; }
+      else if (idx === points.length - 1) { p.role = 'dest'; p.label = 'Tujuan akhir'; }
+      else { p.role = 'waypoint'; p.label = `Tujuan ${idx}`; }
+    });
+
+    renderStack();
     if (points.every(p => p.lat != null && p.lng != null)) {
       if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
     } else {
       clearRouteLayers();
       backToForm();
     }
-    
     e.stopPropagation(); return;
   }
   
@@ -892,7 +981,7 @@ document.getElementById('btnReset').addEventListener('click', () => {
   for (let k in markers) delete markers[k];
   
   map.setView([-6.2088, 106.8456], 12);
-  document.getElementById('toggleRoundTrip').checked = false; // Reset toggle
+  document.getElementById('toggleRoundTrip').checked = false; 
   
   document.getElementById('cbPrice').textContent = 'Rp 0';
   document.getElementById('cbDist').textContent = '0 km • 0 tujuan';
@@ -910,7 +999,6 @@ document.getElementById('btnReset').addEventListener('click', () => {
 
 /* ================= MARKERS ================= */
 const syncMarkers = () => {
-  // Sync dengan routePointsForNav jika mode result, untuk marker Return Trip (jika PP aktif)
   const isResult = document.getElementById('resultView').classList.contains('show');
   const displayPoints = isResult && routePointsForNav.length > points.length ? routePointsForNav : points;
   
@@ -926,14 +1014,13 @@ const syncMarkers = () => {
       return;
     }
     
-    // Label Marker: Jika return trip, label icon jadi "A" tapi warna beda (di-handle oleh badgeIcon)
     const label = pt.role === 'origin' || pt.role === 'return' ? 'A' : pt.role === 'dest' ? 'B' : String(++wpIdx);
     
     if (markers[pt.id]) {
       markers[pt.id].setLatLng([pt.lat, pt.lng]);
       markers[pt.id].setIcon(badgeIcon(pt.role, label));
     } else {
-      const m = L.marker([pt.lat, pt.lng], { icon: badgeIcon(pt.role, label), draggable: pt.role !== 'return' }); // Return trip marker non-draggable
+      const m = L.marker([pt.lat, pt.lng], { icon: badgeIcon(pt.role, label), draggable: pt.role !== 'return' }); 
       m.addTo(map);
       
       if(pt.role !== 'return'){
@@ -1119,7 +1206,6 @@ window.executeCalc = async (silent = false) => {
     const isRoundTrip = toggleRoundTrip.checked;
     routePointsForNav = [...points];
     
-    // Fitur Pulang-Pergi: Menambahkan titik origin di akhir array untuk kalkulasi jarak & segmen
     if (isRoundTrip && points.length >= 2) {
        routePointsForNav.push({
          ...points[0], 
@@ -1132,6 +1218,16 @@ window.executeCalc = async (silent = false) => {
 
     const list = routePointsForNav.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
+    
+    // Munculkan note hanya jika hasil perhitungan OSRM (estimasi garis jalan)
+    // Walau OSRM bisa dapat jalan lurus (estimated:true), note ini valid u/ OSRM engine.
+    const noteText = document.getElementById('noteText');
+    if (res.estimated) {
+       noteText.textContent = "Rute jalan tidak tersedia, jarak dihitung berdasarkan garis lurus × faktor jalan.";
+    } else {
+       noteText.textContent = "Estimasi jarak via OSRM (OpenStreetMap). Bisa berbeda ±10% dengan Google Maps.";
+    }
+
     showResult(res, silent);
   } finally {
     if (!silent) {
@@ -1152,12 +1248,11 @@ const showResult = (res, silent) => {
   const rawFare = calculateFareLogic(totalKm);
   const fare = roundFare(rawFare);
   
-  // Total Tujuan tidak menghitung titik Pulang ke awal
   const isRoundTrip = toggleRoundTrip.checked;
   const destCount = isRoundTrip ? routePointsForNav.length - 2 : routePointsForNav.length - 1;
 
   drawRoute(res.coords);
-  syncMarkers(); // Sync marker u/ menampilkan titik return
+  syncMarkers(); 
 
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
@@ -1174,13 +1269,11 @@ const showResult = (res, silent) => {
   const segList = document.getElementById('segmentList');
   segList.innerHTML = '<div class="segment-title">Rincian segmen</div>';
   
-  // Looping render Segmen berdasarkan routePointsForNav (Bisa berisi Return point)
   for (let i = 0; i < routePointsForNav.length - 1; i++) {
     const a = routePointsForNav[i], b = routePointsForNav[i + 1];
     const segKm = res.segments[i] || 0;
     const segFare = roundFare( (segKm / totalKm) * rawFare );
     
-    // Khusus trip kembali
     const titleA = getPtLabel(a);
     const titleB = getPtLabel(b);
     
@@ -1196,7 +1289,7 @@ const showResult = (res, silent) => {
     segList.appendChild(row);
   }
 
-  document.getElementById('routeNote').style.display = res.estimated ? 'flex' : 'none';
+  document.getElementById('routeNote').style.display = 'flex';
   
   if (!silent) {
     formView.style.display = 'none';
@@ -1207,7 +1300,6 @@ const showResult = (res, silent) => {
 const backToForm = () => {
   resultView.classList.remove('show');
   formView.style.display = 'block';
-  // Hapus marker return jika kembali ke edit form
   routePointsForNav = [...points]; 
   syncMarkers();
 };
@@ -1243,7 +1335,6 @@ window.handleShare = async (btnElement, isCompact = false) => {
     const shareUrl = new URL(window.location.href);
     shareUrl.search = ''; 
     
-    // Serialize Points include CustomName via URL encoding
     const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)},${encodeURIComponent(p.customName || '')}`).join(';');
     shareUrl.searchParams.set('pts', ptsParam);
     shareUrl.searchParams.set('p', pricePerKm);
@@ -1279,7 +1370,7 @@ window.handleShare = async (btnElement, isCompact = false) => {
       
       const shareData = {
         title: 'Estimasi Ongkos Jarak',
-        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${link}`,
+        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${link}\n\n💳 *Info Pembayaran:*\n${paymentInfo}`,
         files: [file]
       };
 
