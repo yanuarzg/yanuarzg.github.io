@@ -83,6 +83,7 @@ input{font-family:inherit;}
   border-radius:0 0 var(--radius-lg) var(--radius-lg);
   padding:20px 18px; transform:translateY(-110%);
   transition:transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 85vh; overflow-y: auto; /* Agar bisa di scroll */
 }
 .top-menu.show { transform:translateY(0); }
 .top-menu-title { font-weight:800; font-size:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
@@ -267,12 +268,6 @@ input{font-family:inherit;}
 .segment-dist{font-size:11px;color:var(--ink-soft);margin-top:1px;}
 .segment-fare{font-size:12.5px;font-weight:700;flex:none;}
 
-.note{
-  margin-top:14px;padding:10px 12px;background:#FBF1E1;border-radius:var(--radius-sm);
-  font-size:11.5px;color:var(--accent-ink);display:flex;gap:8px;align-items:flex-start;line-height:1.5;
-}
-.note svg{width:15px;height:15px;flex:none;margin-top:1px;}
-
 .action-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;}
 .btn-full { grid-column: span 2; }
 .recalc-btn{
@@ -301,12 +296,20 @@ input{font-family:inherit;}
 }
 .modal-overlay.show .modal-card { transform: translateY(0); }
 .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;}
-.modal-body textarea { width: 100%; height: 160px; font-family: inherit; font-size: 13px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); resize: none; outline:none; }
-.modal-body pre { font-family: inherit; font-size: 13px; white-space: pre-wrap; margin:0; line-height:1.5; color:var(--ink-soft); }
-.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-.btn-modal { flex: 1; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; text-align:center; }
-.btn-modal.primary { background: var(--ink); color: #fff; }
-.btn-modal.secondary { background: var(--surface); color: var(--ink); }
+
+.pay-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px; background: var(--surface); border-radius: var(--radius-sm); margin-bottom: 8px;
+}
+.pay-item:last-child { margin-bottom: 0; }
+.pay-item-info { display: flex; flex-direction: column; }
+.pay-bank { font-size: 11px; color: var(--ink-soft); font-weight: 700; text-transform: uppercase; margin-bottom: 2px;}
+.pay-acc { font-size: 15px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; color: var(--ink); }
+.btn-copy {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--card); color: var(--teal);
+  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-card);
+}
+.btn-copy:active { transform: scale(0.92); }
 
 /* ---------- SEARCH PANEL ---------- */
 .search-panel{
@@ -425,9 +428,10 @@ input{font-family:inherit;}
 <!-- ============ TOP SETTINGS PANEL ============ -->
 <div class="top-menu" id="topMenu">
   <div class="top-menu-title">
-    Aturan Ongkos & Jarak
+    Pengaturan Kalkulator
     <button id="btnCloseSettings" style="color:var(--ink-soft);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
   </div>
+  
   <div class="settings-row">
     <div class="label">Jarak Dasar Minimal</div>
     <div class="price-edit">
@@ -442,7 +446,7 @@ input{font-family:inherit;}
       <input type="number" id="minFare" inputmode="numeric" value="10000">
     </div>
   </div>
-  <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:12px; padding-top:16px;">
+  <div class="settings-row">
     <div class="label" style="color:var(--ink);">Tarif Jarak Selanjutnya</div>
     <div class="price-edit">
       <span class="unit">Rp</span>
@@ -450,6 +454,19 @@ input{font-family:inherit;}
       <span class="unit">/km</span>
     </div>
   </div>
+
+  <!-- Settings Pembayaran -->
+  <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:16px; padding-top:16px; margin-bottom:8px;">
+    <div class="label" style="color:var(--ink); width:100%; font-size:14px;">Rekening & E-Wallet</div>
+  </div>
+  <div class="settings-row"><div class="label">Atas Nama</div><div class="price-edit"><input type="text" id="payName" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">DANA</div><div class="price-edit"><input type="text" id="payDana" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">GOPAY</div><div class="price-edit"><input type="text" id="payGopay" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">ShopeePay</div><div class="price-edit"><input type="text" id="payShopee" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">BRI</div><div class="price-edit"><input type="text" id="payBri" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">Jago</div><div class="price-edit"><input type="text" id="payJago" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">Seabank</div><div class="price-edit"><input type="text" id="paySeabank" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+
 </div>
 
 <!-- ============ BOTTOM SHEET ============ -->
@@ -515,12 +532,7 @@ input{font-family:inherit;}
 
       <div class="segment-list" id="segmentList"></div>
 
-      <div class="note" id="routeNote" style="display:flex;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-        <span id="noteText">Estimasi jarak via OSRM (OpenStreetMap). Bisa sedikit berbeda dengan Google Maps.</span>
-      </div>
-
-      <!-- Tombol Navigasi Google Maps (Lebar Penuh) -->
+      <!-- Tombol Navigasi Google Maps -->
       <button class="nav-btn btn-full" id="btnNavMaps">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Mulai Navigasi (Google Maps)
@@ -564,19 +576,14 @@ input{font-family:inherit;}
 <div class="modal-overlay" id="paymentModal">
   <div class="modal-card">
     <div class="modal-title">
-      Info Pembayaran
+      Pilihan Pembayaran
       <button id="btnClosePayment" style="color:var(--ink-soft);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-    <div class="modal-body">
-      <pre id="paymentText"></pre>
-      <textarea id="paymentInput" style="display:none;"></textarea>
+    <div class="modal-body" id="paymentListContainer">
+       <!-- Dirender via JS -->
     </div>
-    <div class="modal-actions" id="paymentViewActions">
-      <button class="btn-modal secondary" id="btnEditPayment">Edit Info</button>
-    </div>
-    <div class="modal-actions" id="paymentEditActions" style="display:none;">
-      <button class="btn-modal secondary" id="btnCancelPayment">Batal</button>
-      <button class="btn-modal primary" id="btnSavePayment">Simpan</button>
+    <div style="margin-top:16px;">
+      <button class="recalc-btn" id="btnModalClose" style="font-weight:700;">Tutup</button>
     </div>
   </div>
 </div>
@@ -641,6 +648,17 @@ let minFare = 10000;
 let pricePerKm = 4000;
 let routePointsForNav = []; 
 
+// Data Payment State
+let payData = JSON.parse(localStorage.getItem('ongkir_payment_data')) || {
+  name: 'Yanuar Zhaldy G',
+  dana: '089507785333',
+  gopay: '089507785333',
+  shopeepay: '089507785333',
+  bri: '012001067003502',
+  jago: '108281218767',
+  seabank: '901030071975'
+};
+
 let activePointId = null;
 let pickMode = false;
 let pickCoords = null;
@@ -675,7 +693,7 @@ const badgeIcon = (role, numLabel) => {
 /* ================= TOAST ================= */
 const toastEl = document.getElementById('toast');
 let toastTimer;
-const toast = (msg) => {
+window.toast = (msg) => {
   toastEl.textContent = msg;
   toastEl.classList.add('show');
   clearTimeout(toastTimer);
@@ -688,55 +706,86 @@ const clearRouteLayers = () => {
   drawnRouteLayers = [];
 };
 
-/* ================= PAYMENT MODAL LOGIC ================= */
-const defaultPayment = `Dana : 089507785333\nGOPAY : 089507785333\nShopeePay : 089507785333\nBRI : 012001067003502\nJago : 108281218767\nSeabank : 901030071975\na.n Yanuar Zhaldy G`;
-let paymentInfo = localStorage.getItem('ongkir_payment') || defaultPayment;
-
-const paymentModal = document.getElementById('paymentModal');
-const paymentText = document.getElementById('paymentText');
-const paymentInput = document.getElementById('paymentInput');
-const paymentViewActions = document.getElementById('paymentViewActions');
-const paymentEditActions = document.getElementById('paymentEditActions');
-
-const renderPaymentInfo = () => {
-  paymentText.textContent = paymentInfo;
-  paymentInput.value = paymentInfo;
+/* ================= PAYMENT DATA & MODAL ================= */
+const initPaymentInputs = () => {
+  document.getElementById('payName').value = payData.name;
+  document.getElementById('payDana').value = payData.dana;
+  document.getElementById('payGopay').value = payData.gopay;
+  document.getElementById('payShopee').value = payData.shopeepay;
+  document.getElementById('payBri').value = payData.bri;
+  document.getElementById('payJago').value = payData.jago;
+  document.getElementById('paySeabank').value = payData.seabank;
 };
 
+const updatePaymentData = () => {
+  payData.name = document.getElementById('payName').value.trim();
+  payData.dana = document.getElementById('payDana').value.trim();
+  payData.gopay = document.getElementById('payGopay').value.trim();
+  payData.shopeepay = document.getElementById('payShopee').value.trim();
+  payData.bri = document.getElementById('payBri').value.trim();
+  payData.jago = document.getElementById('payJago').value.trim();
+  payData.seabank = document.getElementById('paySeabank').value.trim();
+  localStorage.setItem('ongkir_payment_data', JSON.stringify(payData));
+};
+
+['payName','payDana','payGopay','payShopee','payBri','payJago','paySeabank'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updatePaymentData);
+});
+initPaymentInputs();
+
+window.copyToClipboard = (text, btnElement) => {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      const originalHTML = btnElement.innerHTML;
+      btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      setTimeout(() => { btnElement.innerHTML = originalHTML; }, 2000);
+      toast('Nomor rekening disalin');
+    });
+  } else {
+    toast('Gagal menyalin (fitur tidak didukung browser ini)');
+  }
+};
+
+const renderPaymentModal = () => {
+  let html = `<div style="font-size:12.5px; color:var(--ink-soft); margin-bottom:12px;">Penerima: <b>${payData.name || '-'}</b></div>`;
+  const banks = [
+    { id: 'dana', label: 'DANA' },
+    { id: 'gopay', label: 'GOPAY' },
+    { id: 'shopeepay', label: 'ShopeePay' },
+    { id: 'bri', label: 'Bank BRI' },
+    { id: 'jago', label: 'Bank Jago' },
+    { id: 'seabank', label: 'Seabank' }
+  ];
+  
+  let hasItem = false;
+  banks.forEach(b => {
+     const val = payData[b.id];
+     if(val) {
+        hasItem = true;
+        html += `
+        <div class="pay-item">
+          <div class="pay-item-info">
+            <div class="pay-bank">${b.label}</div>
+            <div class="pay-acc">${val}</div>
+          </div>
+          <button class="btn-copy" onclick="copyToClipboard('${val}', this)" aria-label="Salin">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>`;
+     }
+  });
+  
+  if(!hasItem) { html += `<div style="font-size:13px; color:var(--ink-soft); text-align:center; padding:10px;">Belum ada info bayar yang diatur. Buka Pengaturan untuk menambah.</div>`; }
+  document.getElementById('paymentListContainer').innerHTML = html;
+};
+
+const paymentModal = document.getElementById('paymentModal');
 document.getElementById('btnPayment').addEventListener('click', () => {
-  renderPaymentInfo();
-  paymentText.style.display = 'block';
-  paymentInput.style.display = 'none';
-  paymentViewActions.style.display = 'flex';
-  paymentEditActions.style.display = 'none';
+  renderPaymentModal();
   paymentModal.classList.add('show');
 });
-
 document.getElementById('btnClosePayment').addEventListener('click', () => paymentModal.classList.remove('show'));
-
-document.getElementById('btnEditPayment').addEventListener('click', () => {
-  paymentText.style.display = 'none';
-  paymentInput.style.display = 'block';
-  paymentViewActions.style.display = 'none';
-  paymentEditActions.style.display = 'flex';
-});
-
-document.getElementById('btnCancelPayment').addEventListener('click', () => {
-  paymentText.style.display = 'block';
-  paymentInput.style.display = 'none';
-  paymentViewActions.style.display = 'flex';
-  paymentEditActions.style.display = 'none';
-});
-
-document.getElementById('btnSavePayment').addEventListener('click', () => {
-  paymentInfo = paymentInput.value.trim() || defaultPayment;
-  localStorage.setItem('ongkir_payment', paymentInfo);
-  renderPaymentInfo();
-  paymentText.style.display = 'block';
-  paymentInput.style.display = 'none';
-  paymentViewActions.style.display = 'flex';
-  paymentEditActions.style.display = 'none';
-});
+document.getElementById('btnModalClose').addEventListener('click', () => paymentModal.classList.remove('show'));
 
 /* ================= FULLSCREEN API ================= */
 const btnFullscreen = document.getElementById('btnFullscreen');
@@ -830,18 +879,21 @@ const iconFor = (role) => {
 const renderStack = () => {
   routeStack.querySelectorAll('.route-row, .swap-btn').forEach(el => el.remove());
   
-  points.forEach((pt) => {
+  points.forEach((pt, idx) => {
     const row = document.createElement('div');
     row.className = 'route-row';
     const hasLocation = pt.lat != null;
     
+    // Semua titik tujuan selain origin bisa dihapus jika ada titik lebih dari 2
+    const canRemove = points.length > 2 && idx !== 0;
+
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
       <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}">
         <div class="field-text">${getPtLabel(pt)}</div>
         ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
         ${hasLocation ? `<button class="field-clear" data-clear="${pt.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
-        ${pt.role === 'waypoint' || (pt.role === 'dest' && points.length > 2) ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+        ${canRemove ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
       </div>`;
     routeStack.appendChild(row);
   });
@@ -890,7 +942,7 @@ routeStack.addEventListener('click', (e) => {
     e.stopPropagation(); return;
   }
 
-  // FIX Hapus X: membersihkan garis dari peta langsung
+  // Hapus titik input ("X")
   if (clear) {
     const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
     if (pt) { 
@@ -902,10 +954,11 @@ routeStack.addEventListener('click', (e) => {
     e.stopPropagation(); return;
   }
   
+  // Hapus lokasi / waypoint entirely
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
     
-    // Rapihkan urutan dan label
+    // Re-adjust roles
     points.forEach((p, idx) => {
       if (idx === 0) { p.role = 'origin'; p.label = 'Titik awal'; }
       else if (idx === points.length - 1) { p.role = 'dest'; p.label = 'Tujuan akhir'; }
@@ -960,16 +1013,16 @@ const inputMinFare = document.getElementById('minFare');
 document.getElementById('btnSettings').addEventListener('click', () => topMenu.classList.add('show'));
 document.getElementById('btnCloseSettings').addEventListener('click', () => topMenu.classList.remove('show'));
 
-const updatePricing = () => {
+const updatePricingInfo = () => {
   pricePerKm = parseInt(inputPrice.value, 10) || 0;
   minKm = parseFloat(inputMinKm.value) || 0;
   minFare = parseInt(inputMinFare.value, 10) || 0;
   
   if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
 };
-inputPrice.addEventListener('input', updatePricing);
-inputMinKm.addEventListener('input', updatePricing);
-inputMinFare.addEventListener('input', updatePricing);
+inputPrice.addEventListener('input', updatePricingInfo);
+inputMinKm.addEventListener('input', updatePricingInfo);
+inputMinFare.addEventListener('input', updatePricingInfo);
 
 /* ================= RESET BUTTON ================= */
 document.getElementById('btnReset').addEventListener('click', () => {
@@ -1218,16 +1271,6 @@ window.executeCalc = async (silent = false) => {
 
     const list = routePointsForNav.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
-    
-    // Munculkan note hanya jika hasil perhitungan OSRM (estimasi garis jalan)
-    // Walau OSRM bisa dapat jalan lurus (estimated:true), note ini valid u/ OSRM engine.
-    const noteText = document.getElementById('noteText');
-    if (res.estimated) {
-       noteText.textContent = "Rute jalan tidak tersedia, jarak dihitung berdasarkan garis lurus × faktor jalan.";
-    } else {
-       noteText.textContent = "Estimasi jarak via OSRM (OpenStreetMap). Bisa berbeda ±10% dengan Google Maps.";
-    }
-
     showResult(res, silent);
   } finally {
     if (!silent) {
@@ -1288,8 +1331,6 @@ const showResult = (res, silent) => {
       <div class="segment-fare mono">Rp ${fmtRp(segFare)}</div>`;
     segList.appendChild(row);
   }
-
-  document.getElementById('routeNote').style.display = 'flex';
   
   if (!silent) {
     formView.style.display = 'none';
@@ -1345,18 +1386,14 @@ window.handleShare = async (btnElement, isCompact = false) => {
 
     document.querySelector('.topbar').style.display = 'none';
     const isSheetMinimized = sheetEl.classList.contains('minimized');
-    if (isSheetMinimized) {
-       sheetEl.style.display = 'none'; 
-    }
+    if (isSheetMinimized) { sheetEl.style.display = 'none'; }
 
     await new Promise(res => setTimeout(res, 150));
     const w = document.documentElement.clientWidth;
     const h = document.documentElement.clientHeight;
 
     const canvas = await html2canvas(document.body, { 
-      useCORS: true, 
-      allowTaint: false,
-      backgroundColor: '#DCE3EA', 
+      useCORS: true, allowTaint: false, backgroundColor: '#DCE3EA', 
       width: w, height: h, windowWidth: w, windowHeight: h,
       scale: window.devicePixelRatio || 2 
     });
@@ -1368,9 +1405,20 @@ window.handleShare = async (btnElement, isCompact = false) => {
       if(!blob) throw new Error("Blob failed");
       const file = new File([blob], 'ongkos-jarak.png', { type: 'image/png' });
       
+      // Susun teks pembayaran untuk di WhatsApp
+      let payTexts = [];
+      if(payData.dana) payTexts.push(`DANA : ${payData.dana}`);
+      if(payData.gopay) payTexts.push(`GOPAY : ${payData.gopay}`);
+      if(payData.shopeepay) payTexts.push(`ShopeePay : ${payData.shopeepay}`);
+      if(payData.bri) payTexts.push(`BRI : ${payData.bri}`);
+      if(payData.jago) payTexts.push(`Jago : ${payData.jago}`);
+      if(payData.seabank) payTexts.push(`Seabank : ${payData.seabank}`);
+      if(payData.name) payTexts.push(`a.n ${payData.name}`);
+      const payStr = payTexts.length ? `\n\n💳 *Info Pembayaran:*\n${payTexts.join('\n')}` : '';
+
       const shareData = {
         title: 'Estimasi Ongkos Jarak',
-        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${link}\n\n💳 *Info Pembayaran:*\n${paymentInfo}`,
+        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${link}${payStr}`,
         files: [file]
       };
 
