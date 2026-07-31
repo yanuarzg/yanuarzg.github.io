@@ -3,24 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Ongkir · Kalkulator Ongkos Jarak</title>
+<title>Kalkulator Ongkos Jarak</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+<!-- =========================================================================
+     ⚙️ KONFIGURASI WHITE-LABEL (UNTUK PENGGUNA / PEMBELI APLIKASI)
+     Silakan ubah data di bawah ini sesuai dengan identitas bisnis Anda.
+     Aplikasi akan otomatis mengikuti pengaturan ini.
+========================================================================== -->
+<script>
+  const APP_CONFIG = {
+    // 1. Identitas Web
+    namaAplikasi: "Ongkir · Kalkulator Ongkos Jarak",
+    
+    // 2. Tema Warna Merek (Gunakan kode HEX)
+    warna: {
+      gelapTeks: "#17223B",    // Warna dominan (teks, background popup, header)
+      aksenUtama: "#D98C2B",   // Warna tombol Share, penggaris progress, sorotan
+      titikAwal: "#159E86"     // Warna untuk icon penanda lokasi asal (origin)
+    },
+
+    // 3. Lokasi Default Peta Saat Dibuka [Latitude, Longitude]
+    // Saat ini diatur di Jakarta Pusat. Silakan ganti ke koordinat kota Anda.
+    titikPusatPeta: [-6.2088, 106.8456],
+    zoomPeta: 12,
+
+    // 4. Harga / Tarif Dasar
+    tarif: {
+      jarakMinimalKm: 3,       // Jarak yang masuk kategori minimal (contoh: 3 km)
+      ongkosMinimalRp: 10000,  // Harga pas untuk jarak di bawah batas minimal
+      tarifPerKmSelanjutnya: 4000 // Harga per-km jika jarak lebih dari jarak minimal
+    },
+
+    // 5. Data Rekening Default (Otomatis muncul di info bayar)
+    rekening: {
+      name: "Nama Toko / Nama Anda",
+      dana: "081234567890",
+      gopay: "081234567890",
+      shopeepay: "081234567890",
+      bri: "",
+      jago: "",
+      seabank: ""
+    },
+
+    // 6. Template Teks untuk di-Share (WhatsApp / Pesan)
+    // Gunakan parameter urlLink untuk tautan dan infoBayar untuk list rekening
+    teksBagikan: function(urlLink, infoBayar) {
+      return `Halo kak, berikut rincian jarak dan estimasi ongkos pengiriman dari toko kami.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${urlLink}${infoBayar}`;
+    }
+  };
+
+  // Menerapkan konfigurasi otomatis sebelum memuat tampilan (Mencegah FOUC)
+  document.title = APP_CONFIG.namaAplikasi;
+  document.documentElement.style.setProperty('--ink', APP_CONFIG.warna.gelapTeks);
+  document.documentElement.style.setProperty('--accent', APP_CONFIG.warna.aksenUtama);
+  document.documentElement.style.setProperty('--origin', APP_CONFIG.warna.titikAwal);
+</script>
+
 <style>
 :root{
-  --ink:#17223B;
   --ink-soft:#4B5670;
   --line:#E3E7EE;
   --surface:#F3F5F8;
   --card:#FFFFFF;
-  --accent:#D98C2B;
   --accent-ink:#5A3A0E;
   --teal:#159E86;
   --danger:#D3483F;
-  --origin:#159E86;
   --dest:#D3483F;
   --wp:#3E6AE1;
   --radius-lg:20px;
@@ -419,7 +470,7 @@ input{font-family:inherit;}
     <button class="icon-btn ghost" id="btnReset" aria-label="Reset Rute" style="color:var(--danger);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
     </button>
-    <button class="icon-btn ghost" id="btnSettings" aria-label="Pengaturan harga">
+    <button class="icon-btn ghost" id="btnSettings" aria-label="Pengaturan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M8 12h12M4 18h14M20 18h0"/><circle cx="16" cy="6" r="2.2" fill="currentColor"/><circle cx="6" cy="12" r="2.2" fill="currentColor"/><circle cx="18" cy="18" r="2.2" fill="currentColor"/></svg>
     </button>
   </div>
@@ -435,7 +486,7 @@ input{font-family:inherit;}
   <div class="settings-row">
     <div class="label">Jarak Dasar Minimal</div>
     <div class="price-edit">
-      <input type="number" id="minKm" inputmode="numeric" value="3">
+      <input type="number" id="minKm" inputmode="numeric">
       <span class="unit">km</span>
     </div>
   </div>
@@ -443,14 +494,14 @@ input{font-family:inherit;}
     <div class="label">Ongkos Dasar Minimal</div>
     <div class="price-edit">
       <span class="unit">Rp</span>
-      <input type="number" id="minFare" inputmode="numeric" value="10000">
+      <input type="number" id="minFare" inputmode="numeric">
     </div>
   </div>
   <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:12px; padding-top:16px;">
     <div class="label" style="color:var(--ink);">Tarif per Km (> Minimal)</div>
     <div class="price-edit">
       <span class="unit">Rp</span>
-      <input type="number" id="pricePerKm" inputmode="numeric" value="4000">
+      <input type="number" id="pricePerKm" inputmode="numeric">
       <span class="unit">/km</span>
     </div>
   </div>
@@ -466,7 +517,6 @@ input{font-family:inherit;}
   <div class="settings-row"><div class="label">BRI</div><div class="price-edit"><input type="text" id="payBri" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">Jago</div><div class="price-edit"><input type="text" id="payJago" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">Seabank</div><div class="price-edit"><input type="text" id="paySeabank" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
-
 </div>
 
 <!-- ============ BOTTOM SHEET ============ -->
@@ -643,21 +693,14 @@ const getEmptyPoints = () => [
 
 let points = getEmptyPoints();
 
-let minKm = 3;
-let minFare = 10000;
-let pricePerKm = 4000;
+// Menarik dari config utama (APP_CONFIG)
+let minKm = APP_CONFIG.tarif.jarakMinimalKm;
+let minFare = APP_CONFIG.tarif.ongkosMinimalRp;
+let pricePerKm = APP_CONFIG.tarif.tarifPerKmSelanjutnya;
 let routePointsForNav = []; 
 
-// Data Payment State (Bisa diedit via Setting Top Menu)
-let payData = JSON.parse(localStorage.getItem('ongkir_payment_data')) || {
-  name: 'Yanuar Zhaldy G',
-  dana: '089507785333',
-  gopay: '089507785333',
-  shopeepay: '089507785333',
-  bri: '012001067003502',
-  jago: '108281218767',
-  seabank: '901030071975'
-};
+// Data Payment State (Mencoba Load LocalStorage dlu, jika kosong pakai APP_CONFIG)
+let payData = JSON.parse(localStorage.getItem('ongkir_payment_data')) || APP_CONFIG.rekening;
 
 let activePointId = null;
 let pickMode = false;
@@ -674,7 +717,7 @@ const map = L.map('map', {
   zoomControl: false, 
   attributionControl: true,
   preferCanvas: true 
-}).setView([-6.2088, 106.8456], 12);
+}).setView(APP_CONFIG.titikPusatPeta, APP_CONFIG.zoomPeta);
 
 L.tileLayer('https://mt0.google.com/vt/lyrs=m&hl=id&x={x}&y={y}&z={z}', {
   maxZoom: 19, attribution: '© Google Maps', crossOrigin: true 
@@ -685,7 +728,7 @@ L.control.zoom({ position: 'bottomright' }).addTo(map);
 const pinSVG = (color) => `<svg viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="${color}"/><circle cx="12" cy="12" r="4.4" fill="#fff"/></svg>`;
 
 const badgeIcon = (role, numLabel) => {
-  const color = role === 'origin' ? '#159E86' : role === 'dest' || role === 'return' ? '#D3483F' : '#3E6AE1';
+  const color = role === 'origin' ? 'var(--origin)' : role === 'dest' || role === 'return' ? 'var(--dest)' : 'var(--wp)';
   const html = `<div class="pt-badge">${pinSVG(color)}<div class="num">${numLabel || ''}</div></div>`;
   return L.divIcon({ html, className: '', iconSize: [26, 34], iconAnchor: [13, 34] });
 };
@@ -707,7 +750,15 @@ const clearRouteLayers = () => {
 };
 
 /* ================= PAYMENT DATA & MODAL ================= */
-const initPaymentInputs = () => {
+const inputPrice = document.getElementById('pricePerKm');
+const inputMinKm = document.getElementById('minKm');
+const inputMinFare = document.getElementById('minFare');
+
+const initAppValues = () => {
+  inputPrice.value = pricePerKm;
+  inputMinKm.value = minKm;
+  inputMinFare.value = minFare;
+  
   document.getElementById('payName').value = payData.name;
   document.getElementById('payDana').value = payData.dana;
   document.getElementById('payGopay').value = payData.gopay;
@@ -731,7 +782,7 @@ const updatePaymentData = () => {
 ['payName','payDana','payGopay','payShopee','payBri','payJago','paySeabank'].forEach(id => {
   document.getElementById(id).addEventListener('input', updatePaymentData);
 });
-initPaymentInputs();
+
 
 window.copyToClipboard = (text, btnElement) => {
   if (navigator.clipboard && window.isSecureContext) {
@@ -883,8 +934,6 @@ const renderStack = () => {
     const row = document.createElement('div');
     row.className = 'route-row';
     const hasLocation = pt.lat != null;
-    
-    // Titik waypoint atau dest bisa dihapus (asal sisa titik lebih dari 2)
     const canRemove = points.length > 2 && idx !== 0;
 
     row.innerHTML = `
@@ -1002,9 +1051,6 @@ document.getElementById('cbExpand').addEventListener('click', toggleSheet);
 
 /* ================= SETTINGS (COLLAPSIBLE TOP) ================= */
 const topMenu = document.getElementById('topMenu');
-const inputPrice = document.getElementById('pricePerKm');
-const inputMinKm = document.getElementById('minKm');
-const inputMinFare = document.getElementById('minFare');
 
 document.getElementById('btnSettings').addEventListener('click', () => topMenu.classList.add('show'));
 document.getElementById('btnCloseSettings').addEventListener('click', () => topMenu.classList.remove('show'));
@@ -1029,7 +1075,7 @@ document.getElementById('btnReset').addEventListener('click', () => {
   Object.values(markers).forEach(m => map.removeLayer(m));
   for (let k in markers) delete markers[k];
   
-  map.setView([-6.2088, 106.8456], 12);
+  map.setView(APP_CONFIG.titikPusatPeta, APP_CONFIG.zoomPeta);
   document.getElementById('toggleRoundTrip').checked = false; 
   
   document.getElementById('cbPrice').textContent = 'Rp 0';
@@ -1232,13 +1278,14 @@ const toggleRoundTrip = document.getElementById('toggleRoundTrip');
 
 const drawRoute = (coords) => {
   clearRouteLayers();
-  const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  // Garis rute warna app
+  const casing = L.polyline(coords, { color: 'var(--ink)', weight: 9, opacity: 0.18, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  const route = L.polyline(coords, { color: 'var(--accent)', weight: 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   drawnRouteLayers.push(casing, route);
   map.fitBounds(route.getBounds(), { padding: [60, 60] });
 };
 
-// UPDATE LOGIKA: Jika > minKm maka Tarif Dasar x Jarak, jika tidak Tarif Minimal. Dibatasi minimal minFare
+// LOGIKA PERHITUNGAN BARU
 const calculateFareLogic = (kmTotal) => {
   if (kmTotal <= minKm) return minFare;
   return Math.max(minFare, kmTotal * pricePerKm);
@@ -1268,7 +1315,6 @@ window.executeCalc = async (silent = false) => {
 
     const list = routePointsForNav.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
-
     showResult(res, silent);
   } finally {
     if (!silent) {
@@ -1418,8 +1464,8 @@ window.handleShare = async (btnElement, isCompact = false) => {
       const payStr = payTexts.length ? `\n\n💳 *Info Pembayaran:*\n${payTexts.join('\n')}` : '';
 
       const shareData = {
-        title: 'Estimasi Ongkos Jarak',
-        text: `Berikut rincian jarak dan estimasi ongkos perjalanan.\n\n📍 Cek rute atau ubah rincian langsung di web:\n${link}${payStr}`,
+        title: APP_CONFIG.namaAplikasi,
+        text: APP_CONFIG.teksBagikan(link, payStr),
         files: [file]
       };
 
@@ -1447,6 +1493,8 @@ window.handleShare = async (btnElement, isCompact = false) => {
 
 /* ================= INIT & LOAD URL PARAMS ================= */
 const initApp = async () => {
+  initAppValues(); // Memuat data UI dari CONFIG awal
+
   const params = new URLSearchParams(window.location.search);
   const ptsStr = params.get('pts');
   
