@@ -7,6 +7,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<!-- HTML2Canvas untuk fitur Share (Screenshot) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
 :root{
   --ink:#17223B;
@@ -29,7 +32,6 @@
   --shadow-fab:0 4px 14px rgba(23,34,59,0.22);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-/* Perbaikan viewport mobile dengan dvh */
 html,body{height:100dvh;margin:0;overscroll-behavior:none;}
 body{
   font-family:'Manrope',system-ui,sans-serif;
@@ -64,6 +66,9 @@ input{font-family:inherit;}
   display:flex;justify-content:space-between;align-items:flex-start;
   pointer-events:none;
 }
+.topbar-right {
+  display:flex; gap:10px;
+}
 .icon-btn{
   width:42px;height:42px;border-radius:50%;
   background:var(--card);box-shadow:var(--shadow-card);
@@ -74,6 +79,29 @@ input{font-family:inherit;}
 .icon-btn:active{transform:scale(.94);}
 .icon-btn.ghost{background:rgba(255,255,255,.92);}
 
+/* ---------- TOP SETTINGS (COLLAPSIBLE) ---------- */
+.top-menu{
+  position:absolute; top:0; left:0; right:0; z-index:25;
+  background:var(--card); box-shadow:var(--shadow-sheet);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  padding:20px 18px; transform:translateY(-110%);
+  transition:transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.top-menu.show { transform:translateY(0); }
+.top-menu-title { font-weight:800; font-size:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:8px;padding:12px 14px;background:var(--surface);border-radius:var(--radius-md);
+}
+.settings-row .label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft);}
+.price-edit{display:flex;align-items:center;gap:6px;}
+.price-edit input{
+  width:70px;text-align:right;border:none;background:transparent;
+  font-size:14px;font-weight:700;color:var(--ink);
+}
+.price-edit input:focus{outline:none;}
+.price-edit .unit{font-size:12px;color:var(--ink-soft);font-weight:600;}
+
 /* ---------- BOTTOM SHEET ---------- */
 .sheet{
   position:absolute;left:0;right:0;bottom:0;z-index:20;
@@ -82,19 +110,34 @@ input{font-family:inherit;}
   box-shadow:var(--shadow-sheet);
   max-height:88vh;
   display:flex;flex-direction:column;
-  transition:transform .28s cubic-bezier(.32,.72,0,1);
+  transition:transform .28s cubic-bezier(.32,.72,0,1), opacity 0.2s;
+}
+.sheet.minimized {
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
 }
 .sheet-handle{width:100%;padding:10px 0 6px;display:flex;justify-content:center;flex:none;}
 .sheet-handle span{
   width:38px;height:4px;border-radius:3px;background:var(--line);
   position:relative;
 }
-.sheet-handle span::before,.sheet-handle span::after{
-  content:'';position:absolute;top:0;width:3px;height:4px;background:var(--line);
-}
 .sheet-body{padding:2px 18px 22px;overflow-y:auto;}
 .sheet-title{font-size:17px;font-weight:800;letter-spacing:-.2px;margin:2px 0 14px;display:flex;align-items:center;justify-content:space-between;}
 .sheet-title small{font-size:12px;font-weight:600;color:var(--ink-soft);}
+.btn-minimize { color:var(--ink-soft); display:flex; align-items:center; justify-content:center; padding:4px;}
+
+/* FAB */
+.fab{
+  position:absolute; right:16px; bottom:24px; z-index:15;
+  width:54px; height:54px; border-radius:50%;
+  background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-fab);
+  transform:scale(0); transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events:auto;
+}
+.fab.show { transform:scale(1); }
 
 /* route stack */
 .route-stack{position:relative;padding-left:26px;}
@@ -134,21 +177,6 @@ input{font-family:inherit;}
 }
 .add-stop-btn svg{width:17px;height:17px;}
 
-/* settings row */
-.settings-row{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:16px;padding:12px 14px;background:var(--surface);border-radius:var(--radius-md);
-}
-.settings-row .label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft);}
-.settings-row .label svg{width:16px;height:16px;}
-.price-edit{display:flex;align-items:center;gap:6px;}
-.price-edit input{
-  width:84px;text-align:right;border:none;background:transparent;
-  font-size:14px;font-weight:700;color:var(--ink);
-}
-.price-edit input:focus{outline:none;}
-.price-edit .unit{font-size:12px;color:var(--ink-soft);font-weight:600;}
-
 /* CTA */
 .cta{
   margin-top:16px;width:100%;padding:15px;border-radius:var(--radius-md);
@@ -165,7 +193,8 @@ input{font-family:inherit;}
 /* ---------- RESULT VIEW ---------- */
 .result{display:none;}
 .result.show{display:block;}
-.result-back{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:14px;}
+.result-actions-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+.result-back{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft);}
 .result-back svg{width:16px;height:16px;}
 
 .meter-card{
@@ -209,12 +238,18 @@ input{font-family:inherit;}
 }
 .note svg{width:15px;height:15px;flex:none;margin-top:1px;}
 
+.action-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:14px;}
 .recalc-btn{
-  margin-top:14px;width:100%;padding:13px;border-radius:var(--radius-md);
+  width:100%;padding:13px;border-radius:var(--radius-md);
   background:var(--surface);color:var(--ink);font-weight:800;font-size:14px;
   display:flex;align-items:center;justify-content:center;gap:8px;
 }
-.recalc-btn svg{width:16px;height:16px;}
+.share-btn {
+  width:100%;padding:13px;border-radius:var(--radius-md);
+  background:var(--accent);color:#fff;font-weight:800;font-size:14px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.share-btn svg, .recalc-btn svg{width:16px;height:16px;}
 
 /* ---------- SEARCH PANEL ---------- */
 .search-panel{
@@ -311,13 +346,49 @@ input{font-family:inherit;}
   <div class="dot"></div>
 </div>
 
+<!-- ============ TOP BAR ============ -->
 <div class="topbar">
   <button class="icon-btn ghost" id="btnLocate" aria-label="Lokasi saya">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
   </button>
-  <button class="icon-btn ghost" id="btnSettings" aria-label="Pengaturan harga">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M8 12h12M4 18h14M20 18h0"/><circle cx="16" cy="6" r="2.2" fill="currentColor" stroke="none"/><circle cx="6" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="18" cy="18" r="2.2" fill="currentColor" stroke="none"/></svg>
-  </button>
+  <div class="topbar-right">
+    <button class="icon-btn ghost" id="btnReset" aria-label="Reset Rute" style="color:var(--danger);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg>
+    </button>
+    <button class="icon-btn ghost" id="btnSettings" aria-label="Pengaturan harga">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M8 12h12M4 18h14M20 18h0"/><circle cx="16" cy="6" r="2.2" fill="currentColor"/><circle cx="6" cy="12" r="2.2" fill="currentColor"/><circle cx="18" cy="18" r="2.2" fill="currentColor"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============ TOP SETTINGS PANEL ============ -->
+<div class="top-menu" id="topMenu">
+  <div class="top-menu-title">
+    Aturan Ongkos & Jarak
+    <button id="btnCloseSettings" style="color:var(--ink-soft);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="settings-row">
+    <div class="label">Jarak Dasar Minimal</div>
+    <div class="price-edit">
+      <input type="number" id="minKm" inputmode="numeric" value="3">
+      <span class="unit">km</span>
+    </div>
+  </div>
+  <div class="settings-row">
+    <div class="label">Ongkos Dasar Minimal</div>
+    <div class="price-edit">
+      <span class="unit">Rp</span>
+      <input type="number" id="minFare" inputmode="numeric" value="10000">
+    </div>
+  </div>
+  <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:12px; padding-top:16px;">
+    <div class="label" style="color:var(--ink);">Tarif Jarak Selanjutnya</div>
+    <div class="price-edit">
+      <span class="unit">Rp</span>
+      <input type="number" id="pricePerKm" inputmode="numeric" value="4000">
+      <span class="unit">/km</span>
+    </div>
+  </div>
 </div>
 
 <!-- ============ BOTTOM SHEET ============ -->
@@ -325,7 +396,12 @@ input{font-family:inherit;}
   <div class="sheet-handle"><span></span></div>
   <div class="sheet-body">
     <div id="formView">
-      <div class="sheet-title">Hitung Ongkos<small id="ptCount"></small></div>
+      <div class="sheet-title">
+        <span>Hitung Ongkos<small id="ptCount" style="margin-left:8px;"></small></span>
+        <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Minimize">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
 
       <div class="route-stack" id="routeStack">
         <div class="route-rail"></div>
@@ -336,18 +412,6 @@ input{font-family:inherit;}
         Tambah titik singgah
       </button>
 
-      <div class="settings-row">
-        <div class="label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Tarif per km
-        </div>
-        <div class="price-edit">
-          <span class="unit">Rp</span>
-          <input type="number" id="pricePerKm" inputmode="numeric" value="4000">
-          <span class="unit">/km</span>
-        </div>
-      </div>
-
       <button class="cta" id="btnCalc" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
         Hitung Jarak &amp; Ongkos
@@ -356,18 +420,22 @@ input{font-family:inherit;}
 
     <!-- RESULT VIEW -->
     <div id="resultView" class="result">
-      <button class="result-back" id="btnBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        Ubah rute
-      </button>
+      <div class="result-actions-top">
+        <button class="result-back" id="btnBack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          Ubah rute
+        </button>
+        <button class="btn-minimize" id="btnMinimizeResult" aria-label="Minimize">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
 
       <div class="meter-card">
         <div class="meter-label">Estimasi ongkos</div>
         <div class="meter-value mono"><span class="curr">Rp</span><span id="fareValue">0</span></div>
         <div class="meter-sub">
           <div>Jarak tempuh<b class="mono" id="distValue">0 km</b></div>
-          <div>Tarif berlaku<b class="mono" id="rateValue">Rp 0/km</b></div>
-          <div>Titik singgah<b class="mono" id="wpValue">0</b></div>
+          <div>Tarif/km<b class="mono" id="rateValue">Rp 0</b></div>
         </div>
         <div class="ruler">
           <div class="ruler-track"><div class="ruler-fill" id="rulerFill"></div></div>
@@ -382,13 +450,24 @@ input{font-family:inherit;}
         <span>Rute jalan tidak tersedia, jarak dihitung garis lurus × faktor jalan.</span>
       </div>
 
-      <button class="recalc-btn" id="btnRecalc">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
-        Hitung ulang
-      </button>
+      <div class="action-grid">
+        <button class="recalc-btn" id="btnRecalc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+          Hitung ulang
+        </button>
+        <button class="share-btn" id="btnShare">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Bagikan
+        </button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- ============ FAB TO RESTORE SHEET ============ -->
+<button class="fab" id="fabShowSheet" aria-label="Tampilkan Menu">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
 
 <!-- ============ SEARCH PANEL ============ -->
 <div class="search-panel" id="searchPanel">
@@ -438,24 +517,33 @@ input{font-family:inherit;}
 /* ================= STATE ================= */
 const cryptoId = () => window.crypto?.randomUUID ? crypto.randomUUID() : 'p' + Math.random().toString(36).slice(2, 10);
 
-let points = [
+const getEmptyPoints = () => [
   { id: cryptoId(), role: 'origin', label: 'Titik awal', lat: null, lng: null, address: '' },
   { id: cryptoId(), role: 'dest', label: 'Titik tujuan', lat: null, lng: null, address: '' }
 ];
 
+let points = getEmptyPoints();
+
+// Tarif dan aturan jarak
+let minKm = 3;
+let minFare = 10000;
 let pricePerKm = 4000;
+
 let activePointId = null;
 let pickMode = false;
 let pickCoords = null;
 let pickTimer = null;
 let searchTimer = null;
-let drawnRouteLayers = []; // Perbaikan: Track array layer untuk menghindari memory leak
+let drawnRouteLayers = [];
 const markers = {};
 
-/* ================= MAP INIT ================= */
+/* ================= MAP INIT (Google Maps Style) ================= */
 const map = L.map('map', { zoomControl: false, attributionControl: true }).setView([-6.2088, 106.8456], 12);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19, attribution: '© OpenStreetMap'
+// Menggunakan server Google Maps MT. `crossOrigin: true` wajib ada agar fitur Screenshot (html2canvas) tidak di-block (tainted canvas)
+L.tileLayer('https://mt0.google.com/vt/lyrs=m&hl=id&x={x}&y={y}&z={z}', {
+  maxZoom: 19,
+  attribution: '© Google Maps',
+  crossOrigin: true 
 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -479,7 +567,6 @@ const toast = (msg) => {
 };
 
 /* ================= OSRM & NOMINATIM ================= */
-// Perbaikan: Konversi ke async/await dan penambahan timeout preventif
 const geocodeSearch = async (q) => {
   const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=8&countrycodes=id&q=${encodeURIComponent(q)}`;
   try {
@@ -512,13 +599,11 @@ const haversine = (a, b) => {
 const routeBetween = async (list) => {
   const coordsStr = list.map(p => `${p.lng},${p.lat}`).join(';');
   const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson&steps=false`;
-  
   try {
     const r = await fetch(url);
     if (!r.ok) throw new Error('osrm-fail');
     const data = await r.json();
     if (!data.routes?.length) throw new Error('no-route');
-    
     const route = data.routes[0];
     return {
       distanceKm: route.distance / 1000,
@@ -565,7 +650,6 @@ const renderStack = () => {
   
   const wpCount = points.filter(p => p.role === 'waypoint').length;
   ptCount.textContent = wpCount ? `${wpCount} titik singgah` : '';
-  
   document.getElementById('btnCalc').disabled = !points.every(p => p.lat != null && p.lng != null);
   syncMarkers();
 };
@@ -585,9 +669,7 @@ routeStack.addEventListener('click', (e) => {
     renderStack();
     e.stopPropagation(); return;
   }
-  if (field) {
-    openSearchPanel(field.getAttribute('data-id'));
-  }
+  if (field) openSearchPanel(field.getAttribute('data-id'));
 });
 
 document.getElementById('btnAddStop').addEventListener('click', () => {
@@ -598,6 +680,59 @@ document.getElementById('btnAddStop').addEventListener('click', () => {
   points.push(dest);
   renderStack();
 });
+
+/* ================= BOTTOM SHEET MINIMIZE / FAB ================= */
+const sheetEl = document.getElementById('sheet');
+const fabEl = document.getElementById('fabShowSheet');
+const toggleSheet = () => {
+  const isMinimized = sheetEl.classList.toggle('minimized');
+  if (isMinimized) {
+    fabEl.classList.add('show');
+  } else {
+    fabEl.classList.remove('show');
+  }
+};
+document.getElementById('btnMinimizeSheet').addEventListener('click', toggleSheet);
+document.getElementById('btnMinimizeResult').addEventListener('click', toggleSheet);
+fabEl.addEventListener('click', toggleSheet);
+
+/* ================= SETTINGS (COLLAPSIBLE TOP) ================= */
+const topMenu = document.getElementById('topMenu');
+const inputPrice = document.getElementById('pricePerKm');
+const inputMinKm = document.getElementById('minKm');
+const inputMinFare = document.getElementById('minFare');
+
+document.getElementById('btnSettings').addEventListener('click', () => topMenu.classList.add('show'));
+document.getElementById('btnCloseSettings').addEventListener('click', () => topMenu.classList.remove('show'));
+
+const updatePricing = () => {
+  pricePerKm = parseInt(inputPrice.value, 10) || 0;
+  minKm = parseFloat(inputMinKm.value) || 0;
+  minFare = parseInt(inputMinFare.value, 10) || 0;
+};
+inputPrice.addEventListener('input', updatePricing);
+inputMinKm.addEventListener('input', updatePricing);
+inputMinFare.addEventListener('input', updatePricing);
+
+/* ================= RESET BUTTON ================= */
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!confirm("Hapus semua titik rute dan reset pengaturan?")) return;
+  points = getEmptyPoints();
+  activePointId = null;
+  drawnRouteLayers.forEach(layer => map.removeLayer(layer));
+  drawnRouteLayers = [];
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  for (let k in markers) delete markers[k];
+  
+  map.setView([-6.2088, 106.8456], 12);
+  document.getElementById('resultView').classList.remove('show');
+  document.getElementById('formView').style.display = 'block';
+  
+  if (sheetEl.classList.contains('minimized')) toggleSheet(); // Buka kembali jika diminimize
+  renderStack();
+  toast('Data rute telah dihapus');
+});
+
 
 /* ================= MARKERS ================= */
 const syncMarkers = () => {
@@ -667,14 +802,12 @@ searchInput.addEventListener('input', () => {
   quickActions.style.display = 'none';
   resultList.innerHTML = '<div class="search-empty">Mencari…</div>';
   
-  // Perbaikan: Debounce dinaikkan ke 1000ms untuk mematuhi rate limit Nominatim
   searchTimer = setTimeout(async () => {
     const list = await geocodeSearch(q);
     if (!list.length) { 
       resultList.innerHTML = '<div class="search-empty">Alamat tidak ditemukan. Coba kata kunci lain atau tandai di peta.</div>'; 
       return; 
     }
-    
     resultList.innerHTML = '';
     list.forEach(item => {
       const row = document.createElement('div');
@@ -737,16 +870,15 @@ const enterPickMode = () => {
   pickMode = true;
   crosshair.classList.add('show');
   pickBar.classList.add('show');
-  document.getElementById('sheet').style.transform = 'translateY(120%)';
+  sheetEl.style.transform = 'translateY(120%)';
   onMapMoveEnd();
   map.on('moveend', onMapMoveEnd);
 };
-
 const exitPickMode = () => {
   pickMode = false;
   crosshair.classList.remove('show');
   pickBar.classList.remove('show');
-  document.getElementById('sheet').style.transform = '';
+  sheetEl.style.transform = '';
   map.off('moveend', onMapMoveEnd);
 };
 
@@ -756,8 +888,6 @@ document.getElementById('pickConfirm').addEventListener('click', () => {
   exitPickMode();
 });
 document.getElementById('pickCancel').addEventListener('click', exitPickMode);
-
-/* ================= ACTIONS ================= */
 document.getElementById('btnLocate').addEventListener('click', () => {
   if (!navigator.geolocation) { toast('GPS tidak didukung'); return; }
   navigator.geolocation.getCurrentPosition(
@@ -766,33 +896,23 @@ document.getElementById('btnLocate').addEventListener('click', () => {
   );
 });
 
-document.getElementById('btnSettings').addEventListener('click', () => {
-  document.querySelector('.sheet-body').scrollTo({ top: 0, behavior: 'smooth' });
-  document.getElementById('pricePerKm').focus();
-  toast('Atur tarif per km di bawah');
-});
-
-const priceInput = document.getElementById('pricePerKm');
-priceInput.addEventListener('input', () => {
-  const v = parseInt(priceInput.value, 10);
-  pricePerKm = (isNaN(v) || v <= 0) ? 0 : v;
-});
-
 /* ================= CALCULATE & RESULT ================= */
 const formView = document.getElementById('formView');
 const resultView = document.getElementById('resultView');
 const btnCalc = document.getElementById('btnCalc');
 
-// Perbaikan: Memory Leak Casing Line
 const drawRoute = (coords) => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
   drawnRouteLayers = [];
-  
   const casing = L.polyline(coords, { color: '#17223B', weight: 8, opacity: .18, lineCap: 'round' }).addTo(map);
   const route = L.polyline(coords, { color: '#D98C2B', weight: 5, opacity: .92, lineCap: 'round' }).addTo(map);
-  
   drawnRouteLayers.push(casing, route);
   map.fitBounds(route.getBounds(), { padding: [60, 60] });
+};
+
+const calculateFareLogic = (kmTotal) => {
+  if (kmTotal <= minKm) return minFare;
+  return minFare + ((kmTotal - minKm) * pricePerKm);
 };
 
 btnCalc.addEventListener('click', async () => {
@@ -816,20 +936,19 @@ const shortLabel = (pt) => (pt.address || pt.label).length > 18 ? (pt.address ||
 
 const showResult = (res) => {
   const totalKm = res.distanceKm;
-  const fare = roundFare(totalKm * pricePerKm);
+  const rawFare = calculateFareLogic(totalKm);
+  const fare = roundFare(rawFare);
 
   drawRoute(res.coords);
 
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
-  document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}/km`;
-  document.getElementById('wpValue').textContent = String(points.length - 2);
+  document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
 
   const fillPct = Math.min(100, totalKm <= 5 ? totalKm / 5 * 35 : totalKm <= 20 ? 35 + (totalKm - 5) / 15 * 40 : 75 + Math.min(25, (totalKm - 20) / 30 * 25));
   requestAnimationFrame(() => {
     document.getElementById('rulerFill').style.width = `${fillPct}%`;
   });
-  
   document.getElementById('rulerMid').textContent = `${(totalKm / 2).toFixed(1)} km`;
   document.getElementById('rulerMax').textContent = `${totalKm.toFixed(1)} km`;
 
@@ -839,7 +958,8 @@ const showResult = (res) => {
   for (let i = 0; i < points.length - 1; i++) {
     const a = points[i], b = points[i + 1];
     const segKm = res.segments[i] || 0;
-    const segFare = roundFare(segKm * pricePerKm);
+    // Taksiran proporsional berdasarkan jarak segmen vs total jarak
+    const segFare = roundFare( (segKm / totalKm) * rawFare );
     
     const row = document.createElement('div');
     row.className = 'segment';
@@ -862,9 +982,54 @@ const backToForm = () => {
   resultView.classList.remove('show');
   formView.style.display = 'block';
 };
-
 document.getElementById('btnBack').addEventListener('click', backToForm);
 document.getElementById('btnRecalc').addEventListener('click', backToForm);
+
+/* ================= SHARE / SCREENSHOT API ================= */
+document.getElementById('btnShare').addEventListener('click', async () => {
+  const btn = document.getElementById('btnShare');
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="animation:spin 1s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> Memproses...';
+  
+  try {
+    // Sembunyikan topbar sesaat saat screenshot
+    document.querySelector('.topbar').style.display = 'none';
+    const canvas = await html2canvas(document.body, { 
+      useCORS: true, 
+      allowTaint: false,
+      backgroundColor: '#F3F5F8'
+    });
+    document.querySelector('.topbar').style.display = 'flex';
+
+    canvas.toBlob(async (blob) => {
+      if(!blob) throw new Error("Blob failed");
+      const file = new File([blob], 'ongkos-jarak.png', { type: 'image/png' });
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Estimasi Ongkos Jarak',
+          text: 'Berikut rincian jarak dan estimasi ongkos rute perjalanan.',
+          files: [file]
+        });
+      } else {
+        toast('Perangkat tidak mendukung Share Gambar otomatis. Gambar akan diunduh.');
+        // Fallback: Download file
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ongkos-jarak.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      btn.innerHTML = originalHtml;
+    });
+  } catch (error) {
+    console.error(error);
+    document.querySelector('.topbar').style.display = 'flex';
+    toast('Gagal memproses gambar untuk dibagikan.');
+    btn.innerHTML = originalHtml;
+  }
+});
 
 /* ================= INIT ================= */
 renderStack();
