@@ -1,758 +1,1662 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Cek Biaya Jarak</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    :root {
-      --primary: #00aa5b;
-      --primary-dark: #008c4a;
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --surface-2: #252525;
-      --text: #ffffff;
-      --text-secondary: #b0b0b0;
-      --border: #333;
-      --danger: #ff4d4f;
-      --shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Cek Biaya - Hitung Ongkos Per KM</title>
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      height: 100dvh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --blue: #3B82F6;
+            --blue-dark: #2563EB;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+            --radius-sm: 10px;
+            --radius: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    /* Map */
-    #map {
-      flex: 1;
-      width: 100%;
-      z-index: 1;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Top bar */
-    .top-bar {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      z-index: 1000;
-      padding: 12px 12px 0;
-      pointer-events: none;
-    }
-    .top-bar > * { pointer-events: auto; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #E8EDF2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            overflow: hidden;
+        }
 
-    .search-card {
-      background: var(--surface);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
+        /* Mobile container */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+            background: var(--gray-100);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
 
-    .point-row {
-      display: flex;
-      align-items: center;
-      padding: 10px 12px;
-      gap: 10px;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-    }
-    .point-row:last-child { border-bottom: none; }
+        @media (min-width: 481px) {
+            .app-container {
+                border-radius: var(--radius-xl);
+                height: 92vh;
+                height: 92dvh;
+                margin: 0 12px;
+            }
+        }
 
-    .point-icon {
-      width: 18px; height: 18px;
-      flex-shrink: 0;
-    }
-    .point-icon.start { color: var(--primary); }
-    .point-icon.end { color: #ff6b6b; }
-    .point-icon.via { color: #f0ad4e; }
+        /* ===== MAP ===== */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: #d4dbe4;
+        }
 
-    .point-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-      padding: 4px 0;
-    }
-    .point-input::placeholder { color: var(--text-secondary); }
+        /* ===== TOP PANEL ===== */
+        .top-panel {
+            position: absolute;
+            top: 12px;
+            left: 10px;
+            right: 10px;
+            z-index: 10;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 14px 14px 10px;
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition);
+        }
 
-    .btn-icon {
-      width: 36px; height: 36px;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .btn-icon:active { background: var(--surface-2); }
-    .btn-icon svg { width: 20px; height: 20px; }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 0 2px;
+        }
 
-    .suggestions {
-      position: absolute;
-      left: 40px; right: 12px;
-      top: 100%;
-      background: var(--surface);
-      border-radius: 0 0 12px 12px;
-      max-height: 180px;
-      overflow-y: auto;
-      z-index: 20;
-      box-shadow: var(--shadow);
-      display: none;
-    }
-    .suggestions.show { display: block; }
-    .suggestion-item {
-      padding: 12px 14px;
-      font-size: 14px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .suggestion-item:active { background: var(--surface-2); }
-    .suggestion-item:last-child { border-bottom: none; }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: -0.01em;
+        }
 
-    /* Floating buttons */
-    .fab-group {
-      position: absolute;
-      right: 14px;
-      bottom: 280px;
-      z-index: 900;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .fab {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: none;
-      color: var(--text);
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .fab:active { transform: scale(0.94); }
-    .fab svg { width: 22px; height: 22px; }
-    .fab.primary { background: var(--primary); color: #fff; }
+        .panel-title .icon-svg {
+            width: 22px;
+            height: 22px;
+            color: var(--primary);
+        }
 
-    /* Bottom sheet */
-    .bottom-sheet {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      z-index: 1000;
-      background: var(--surface);
-      border-radius: 20px 20px 0 0;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.5);
-      padding: 8px 16px 24px;
-      max-height: 42vh;
-      overflow-y: auto;
-    }
-    .handle {
-      width: 40px; height: 4px;
-      background: #555;
-      border-radius: 2px;
-      margin: 0 auto 14px;
-    }
+        .badge-price {
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: #ECFDF5;
+            color: var(--primary-dark);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all var(--transition);
+            white-space: nowrap;
+            border: 1.5px solid #D1FAE5;
+            letter-spacing: -0.01em;
+        }
+        .badge-price:active {
+            background: #D1FAE5;
+            transform: scale(0.96);
+        }
+        .badge-price .icon-svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
 
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .result-label { font-size: 13px; color: var(--text-secondary); }
-    .result-value { font-size: 22px; font-weight: 700; }
-    .result-value.price { color: var(--primary); }
+        /* Location rows */
+        .location-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+        }
 
-    .price-setting {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--surface-2);
-      border-radius: 12px;
-      padding: 10px 14px;
-      margin-bottom: 14px;
-    }
-    .price-setting label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
-    .price-setting input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 600;
-      outline: none;
-      text-align: right;
-    }
+        .loc-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            border: 2px solid transparent;
+            transition: all var(--transition);
+            position: relative;
+            min-height: 44px;
+        }
+        .loc-row:focus-within {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
+        }
+        .loc-row.start-row .dot {
+            background: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        .loc-row.end-row .dot {
+            background: #EF4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+        .loc-row.waypoint-row .dot {
+            background: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
 
-    .btn-row {
-      display: flex;
-      gap: 10px;
-    }
-    .btn {
-      flex: 1;
-      height: 48px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-    .btn-primary:active { background: var(--primary-dark); }
-    .btn-outline {
-      background: transparent;
-      border: 1.5px solid var(--border);
-      color: var(--text);
-    }
-    .btn-outline:active { background: var(--surface-2); }
-    .btn svg { width: 18px; height: 18px; }
+        .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+        .dot.start-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot.end-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        .dot.waypoint-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
 
-    .waypoint-list {
-      margin-bottom: 12px;
-    }
-    .waypoint-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 0;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
+        .loc-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.88rem;
+            color: var(--gray-800);
+            outline: none;
+            min-width: 0;
+            font-family: inherit;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+        }
+        .loc-input::placeholder {
+            color: var(--gray-400);
+            font-size: 0.82rem;
+        }
 
-    /* Toast */
-    .toast {
-      position: fixed;
-      top: 70px; left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: #333;
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 24px;
-      font-size: 14px;
-      z-index: 2000;
-      opacity: 0;
-      transition: all 0.3s;
-      pointer-events: none;
-    }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+        .loc-actions {
+            display: flex;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        .btn-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+        .btn-icon:active {
+            background: var(--gray-200);
+            transform: scale(0.92);
+        }
+        .btn-icon .icon-svg {
+            width: 17px;
+            height: 17px;
+        }
+        .btn-icon.gps-btn {
+            color: var(--blue);
+        }
+        .btn-icon.gps-btn:active {
+            background: #EFF6FF;
+        }
+        .btn-icon.delete-btn {
+            color: var(--danger);
+        }
+        .btn-icon.delete-btn:active {
+            background: #FEF2F2;
+        }
+        .btn-icon.swap-btn {
+            color: var(--gray-600);
+            background: var(--gray-100);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+        }
+        .btn-icon.swap-btn:active {
+            background: var(--gray-200);
+        }
 
-    /* Loading overlay */
-    .loading {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1500;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    .loading.show { display: flex; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #555;
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        /* Swap button - positioned between rows */
+        .swap-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 6px;
+            margin: -2px 0;
+            position: relative;
+            z-index: 2;
+        }
 
-    /* Marker custom */
-    .leaflet-div-icon {
-      background: transparent;
-      border: none;
-    }
-  </style>
+        /* Add waypoint button */
+        .add-waypoint-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--blue);
+            background: #EFF6FF;
+            border: 1.5px dashed #BFDBFE;
+            border-radius: 20px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+            align-self: flex-start;
+            margin-top: 2px;
+            letter-spacing: -0.01em;
+        }
+        .add-waypoint-btn:active {
+            background: #DBEAFE;
+            transform: scale(0.96);
+        }
+        .add-waypoint-btn .icon-svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        /* Autocomplete dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            z-index: 20;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 4px;
+            border: 1px solid var(--gray-200);
+        }
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+        .autocomplete-item {
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-100);
+            transition: background var(--transition);
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:active,
+        .autocomplete-item:hover {
+            background: var(--gray-50);
+        }
+        .autocomplete-item .ac-sub {
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            margin-top: 1px;
+        }
+
+        /* ===== BOTTOM RESULT CARD ===== */
+        .bottom-card {
+            position: absolute;
+            bottom: 16px;
+            bottom: calc(16px + var(--safe-bottom));
+            left: 10px;
+            right: 10px;
+            z-index: 10;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: all var(--transition);
+            border: 2px solid transparent;
+        }
+        .bottom-card.has-route {
+            border-color: #D1FAE5;
+        }
+        .bottom-card.no-route {
+            border-color: #FEE2E2;
+            background: #FFFBFB;
+        }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .result-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .result-distance {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            letter-spacing: -0.01em;
+        }
+        .result-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .result-no-data {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        .btn-recalc {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .btn-recalc:active {
+            background: var(--primary-dark);
+            transform: scale(0.95);
+        }
+        .btn-recalc .icon-svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ===== SETTINGS MODAL ===== */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition);
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-sheet {
+            background: var(--white);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            padding: 20px 18px 24px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow-xl);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-bottom: calc(24px + var(--safe-bottom));
+        }
+        .modal-overlay.active .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--gray-300);
+            border-radius: 2px;
+            margin: 0 auto 16px;
+        }
+        .modal-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--gray-800);
+            margin-bottom: 14px;
+            letter-spacing: -0.01em;
+        }
+        .modal-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+        }
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            border: 2px solid var(--gray-200);
+            transition: all var(--transition);
+        }
+        .price-input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.06);
+        }
+        .price-prefix {
+            font-weight: 700;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .price-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            outline: none;
+            font-family: inherit;
+            letter-spacing: -0.01em;
+        }
+        .price-suffix {
+            font-weight: 600;
+            color: var(--gray-500);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .btn-modal {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            letter-spacing: -0.01em;
+        }
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-save:active {
+            background: var(--primary-dark);
+            transform: scale(0.96);
+        }
+        .btn-cancel {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+        .btn-cancel:active {
+            background: var(--gray-200);
+            transform: scale(0.96);
+        }
+
+        /* ===== LOADING PULSE ===== */
+        .loading-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: var(--gray-800);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: -0.01em;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .autocomplete-dropdown::-webkit-scrollbar {
+            width: 3px;
+        }
+        .autocomplete-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .autocomplete-dropdown::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 10px;
+        }
+
+        /* Leaflet overrides */
+        .leaflet-control-zoom {
+            display: none;
+        }
+        .leaflet-control-attribution {
+            font-size: 8px !important;
+            opacity: 0.6;
+            bottom: 2px !important;
+            right: 4px !important;
+        }
+        .leaflet-container {
+            font-family: inherit;
+        }
+    </style>
 </head>
 <body>
-  <div id="map"></div>
 
-  <!-- Top search card -->
-  <div class="top-bar">
-    <div class="search-card" id="searchCard">
-      <!-- Start -->
-      <div class="point-row" data-type="start">
-        <svg class="point-icon start" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="12" r="8"/>
-        </svg>
-        <input class="point-input" id="inputStart" placeholder="Titik awal" autocomplete="off" />
-        <button class="btn-icon" id="btnMyLoc" title="Lokasi saya">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
-          </svg>
-        </button>
-        <div class="suggestions" id="sugStart"></div>
-      </div>
+    <div class="app-container" id="appContainer">
+        <!-- MAP -->
+        <div id="map"></div>
 
-      <!-- Waypoints container -->
-      <div id="waypointsContainer"></div>
+        <!-- TOP INPUT PANEL -->
+        <div class="top-panel" id="topPanel">
+            <div class="panel-header">
+                <span class="panel-title">
+                    <!-- SVG: Map Pin icon -->
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Estimasi Biaya
+                </span>
+                <button class="badge-price" id="btnOpenSettings" aria-label="Atur harga per km">
+                    <!-- SVG: Dollar/Price icon -->
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Rp<span id="pricePerKmDisplay">4.000</span>/km
+                </button>
+            </div>
 
-      <!-- End -->
-      <div class="point-row" data-type="end">
-        <svg class="point-icon end" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
-        </svg>
-        <input class="point-input" id="inputEnd" placeholder="Tujuan" autocomplete="off" />
-        <button class="btn-icon" id="btnAddVia" title="Tambah titik">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </button>
-        <div class="suggestions" id="sugEnd"></div>
-      </div>
-    </div>
-  </div>
+            <div class="location-rows" id="locationRows">
+                <!-- START ROW -->
+                <div class="loc-row start-row" id="startRow">
+                    <span class="dot start-dot"></span>
+                    <input type="text" class="loc-input" id="inputStart" placeholder="Lokasi penjemputan..." autocomplete="off">
+                    <div class="loc-actions">
+                        <button class="btn-icon gps-btn" id="btnGpsStart" aria-label="Gunakan lokasi saya">
+                            <!-- SVG: Crosshair/GPS -->
+                            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="6"/>
+                                <circle cx="12" cy="12" r="2"/>
+                                <line x1="12" y1="2" x2="12" y2="6"/>
+                                <line x1="12" y1="18" x2="12" y2="22"/>
+                                <line x1="2" y1="12" x2="6" y2="12"/>
+                                <line x1="18" y1="12" x2="22" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="autocomplete-dropdown" id="acStart"></div>
+                </div>
 
-  <!-- Floating action buttons -->
-  <div class="fab-group">
-    <button class="fab" id="btnLocate" title="Lokasi saya">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
-      </svg>
-    </button>
-    <button class="fab primary" id="btnCalc" title="Hitung">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>
-    </button>
-  </div>
+                <!-- SWAP BUTTON -->
+                <div class="swap-wrapper">
+                    <button class="btn-icon swap-btn" id="btnSwap" aria-label="Tukar lokasi">
+                        <!-- SVG: Swap/Arrows -->
+                        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polyline points="7 16 12 21 17 16"/>
+                            <polyline points="7 8 12 3 17 8"/>
+                            <line x1="12" y1="3" x2="12" y2="21"/>
+                        </svg>
+                    </button>
+                </div>
 
-  <!-- Bottom sheet -->
-  <div class="bottom-sheet">
-    <div class="handle"></div>
+                <!-- WAYPOINTS CONTAINER (dynamic) -->
+                <div id="waypointsContainer"></div>
 
-    <div class="result-row">
-      <div>
-        <div class="result-label">Jarak</div>
-        <div class="result-value" id="distanceText">– km</div>
-      </div>
-      <div style="text-align:right">
-        <div class="result-label">Estimasi Biaya</div>
-        <div class="result-value price" id="priceText">Rp –</div>
-      </div>
-    </div>
+                <!-- ADD WAYPOINT BUTTON -->
+                <button class="add-waypoint-btn" id="btnAddWaypoint">
+                    <!-- SVG: Plus circle -->
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    Tambah titik antar
+                </button>
 
-    <div class="price-setting">
-      <label>Harga / km</label>
-      <input type="number" id="pricePerKm" value="4000" min="0" step="500" />
-      <span style="font-size:13px;color:var(--text-secondary)">Rp</span>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-outline" id="btnClear">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-        </svg>
-        Reset
-      </button>
-      <button class="btn btn-primary" id="btnRecalc">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
-        </svg>
-        Hitung Ulang
-      </button>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-  <div class="loading" id="loading"><div class="spinner"></div></div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    // ========== STATE ==========
-    let map, routeLayer;
-    let points = {
-      start: null,   // {lat, lng, name}
-      end: null,
-      vias: []       // array of {lat, lng, name}
-    };
-    let markers = { start: null, end: null, vias: [] };
-    let pricePerKm = 4000;
-    let debounceTimers = {};
-
-    // ========== INIT MAP ==========
-    function initMap() {
-      map = L.map('map', {
-        zoomControl: false,
-        attributionControl: false
-      }).setView([-6.2088, 106.8456], 13); // Jakarta default
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19
-      }).addTo(map);
-
-      // Click on map to set missing point
-      map.on('click', (e) => {
-        if (!points.start) {
-          setPoint('start', e.latlng.lat, e.latlng.lng);
-        } else if (!points.end) {
-          setPoint('end', e.latlng.lat, e.latlng.lng);
-        } else {
-          // add via
-          addVia(e.latlng.lat, e.latlng.lng);
-        }
-      });
-    }
-
-    // ========== MARKERS ==========
-    function createMarkerIcon(type) {
-      const colors = { start: '#00aa5b', end: '#ff6b6b', via: '#f0ad4e' };
-      const color = colors[type] || '#888';
-      return L.divIcon({
-        className: 'custom-marker',
-        html: `<div style="
-          width:28px;height:28px;border-radius:50% 50% 50% 0;
-          background:${color};border:3px solid #fff;
-          transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.4);
-          display:flex;align-items:center;justify-content:center;
-        "><div style="width:8px;height:8px;background:#fff;border-radius:50%;transform:rotate(45deg)"></div></div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 28]
-      });
-    }
-
-    function setPoint(type, lat, lng, name = null) {
-      points[type] = { lat, lng, name: name || `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
-
-      if (markers[type]) map.removeLayer(markers[type]);
-
-      markers[type] = L.marker([lat, lng], {
-        icon: createMarkerIcon(type),
-        draggable: true
-      }).addTo(map);
-
-      markers[type].on('dragend', (e) => {
-        const pos = e.target.getLatLng();
-        points[type].lat = pos.lat;
-        points[type].lng = pos.lng;
-        reverseGeocode(pos.lat, pos.lng).then(n => {
-          points[type].name = n;
-          updateInput(type);
-        });
-        calculateRoute();
-      });
-
-      updateInput(type);
-      if (!name) {
-        reverseGeocode(lat, lng).then(n => {
-          points[type].name = n;
-          updateInput(type);
-        });
-      }
-
-      fitBounds();
-      if (points.start && points.end) calculateRoute();
-    }
-
-    function addVia(lat, lng, name = null) {
-      const via = { lat, lng, name: name || `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
-      points.vias.push(via);
-
-      const marker = L.marker([lat, lng], {
-        icon: createMarkerIcon('via'),
-        draggable: true
-      }).addTo(map);
-
-      const idx = points.vias.length - 1;
-      marker.on('dragend', (e) => {
-        const pos = e.target.getLatLng();
-        points.vias[idx].lat = pos.lat;
-        points.vias[idx].lng = pos.lng;
-        reverseGeocode(pos.lat, pos.lng).then(n => {
-          points.vias[idx].name = n;
-          renderWaypointsUI();
-        });
-        calculateRoute();
-      });
-
-      markers.vias.push(marker);
-      renderWaypointsUI();
-
-      if (!name) {
-        reverseGeocode(lat, lng).then(n => {
-          points.vias[idx].name = n;
-          renderWaypointsUI();
-        });
-      }
-
-      fitBounds();
-      if (points.start && points.end) calculateRoute();
-    }
-
-    function removeVia(index) {
-      if (markers.vias[index]) map.removeLayer(markers.vias[index]);
-      markers.vias.splice(index, 1);
-      points.vias.splice(index, 1);
-      renderWaypointsUI();
-      calculateRoute();
-    }
-
-    function updateInput(type) {
-      const el = document.getElementById(type === 'start' ? 'inputStart' : 'inputEnd');
-      if (el && points[type]) el.value = points[type].name;
-    }
-
-    function renderWaypointsUI() {
-      const container = document.getElementById('waypointsContainer');
-      container.innerHTML = '';
-      points.vias.forEach((v, i) => {
-        const row = document.createElement('div');
-        row.className = 'point-row';
-        row.innerHTML = `
-          <svg class="point-icon via" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="12" r="6"/>
-          </svg>
-          <input class="point-input" value="${v.name}" readonly />
-          <button class="btn-icon" data-idx="${i}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        `;
-        row.querySelector('button').onclick = () => removeVia(i);
-        container.appendChild(row);
-      });
-    }
-
-    function fitBounds() {
-      const coords = [];
-      if (points.start) coords.push([points.start.lat, points.start.lng]);
-      points.vias.forEach(v => coords.push([v.lat, v.lng]));
-      if (points.end) coords.push([points.end.lat, points.end.lng]);
-      if (coords.length >= 2) {
-        map.fitBounds(coords, { padding: [80, 80, 280, 80] });
-      } else if (coords.length === 1) {
-        map.setView(coords[0], 15);
-      }
-    }
-
-    // ========== GEOCODING ==========
-    async function reverseGeocode(lat, lng) {
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=\( {lat}&lon= \){lng}&format=json&addressdetails=1`, {
-          headers: { 'Accept-Language': 'id' }
-        });
-        const data = await res.json();
-        if (data.display_name) {
-          // simplify
-          const parts = data.display_name.split(',').slice(0, 3);
-          return parts.join(',').trim();
-        }
-      } catch (e) {}
-      return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    }
-
-    async function searchAddress(query, type) {
-      if (!query || query.length < 3) return [];
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=id`, {
-          headers: { 'Accept-Language': 'id' }
-        });
-        return await res.json();
-      } catch (e) {
-        return [];
-      }
-    }
-
-    function showSuggestions(items, type) {
-      const box = document.getElementById(type === 'start' ? 'sugStart' : 'sugEnd');
-      if (!items.length) {
-        box.classList.remove('show');
-        return;
-      }
-      box.innerHTML = items.map(item => `
-        <div class="suggestion-item" data-lat="\( {item.lat}" data-lng=" \){item.lon}" data-name="${item.display_name.split(',').slice(0,3).join(',').trim()}">
-          ${item.display_name.split(',').slice(0,3).join(',').trim()}
+                <!-- END ROW -->
+                <div class="loc-row end-row" id="endRow">
+                    <span class="dot end-dot"></span>
+                    <input type="text" class="loc-input" id="inputEnd" placeholder="Tujuan pengantaran..." autocomplete="off">
+                    <div class="loc-actions">
+                        <button class="btn-icon gps-btn" id="btnGpsEnd" aria-label="Gunakan lokasi saya">
+                            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="6"/>
+                                <circle cx="12" cy="12" r="2"/>
+                                <line x1="12" y1="2" x2="12" y2="6"/>
+                                <line x1="12" y1="18" x2="12" y2="22"/>
+                                <line x1="2" y1="12" x2="6" y2="12"/>
+                                <line x1="18" y1="12" x2="22" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="autocomplete-dropdown" id="acEnd"></div>
+                </div>
+            </div>
         </div>
-      `).join('');
-      box.classList.add('show');
 
-      box.querySelectorAll('.suggestion-item').forEach(el => {
-        el.onclick = () => {
-          const lat = parseFloat(el.dataset.lat);
-          const lng = parseFloat(el.dataset.lng);
-          const name = el.dataset.name;
-          setPoint(type, lat, lng, name);
-          box.classList.remove('show');
-        };
-      });
-    }
+        <!-- BOTTOM RESULT CARD -->
+        <div class="bottom-card no-route" id="bottomCard">
+            <div class="result-info">
+                <span class="result-label">Total Estimasi</span>
+                <span class="result-distance" id="resultDistance">-- km</span>
+                <span class="result-price" id="resultPrice">Rp 0</span>
+                <span class="result-no-data" id="resultHint">Atur titik jemput & tujuan</span>
+            </div>
+            <button class="btn-recalc" id="btnRecalc">
+                <!-- SVG: Refresh -->
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+                Hitung
+            </button>
+        </div>
 
-    // ========== ROUTING (OSRM) ==========
-    async function calculateRoute() {
-      if (!points.start || !points.end) return;
+        <!-- SETTINGS MODAL -->
+        <div class="modal-overlay" id="settingsModal">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <div class="modal-title">Pengaturan Harga per KM</div>
+                <div class="modal-label">Biaya per kilometer (Rp)</div>
+                <div class="price-input-group">
+                    <span class="price-prefix">Rp</span>
+                    <input type="number" class="price-input" id="inputPricePerKm" value="4000" min="500" max="100000" step="100">
+                    <span class="price-suffix">/ km</span>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-cancel" id="btnCancelSettings">Batal</button>
+                    <button class="btn-modal btn-save" id="btnSaveSettings">Simpan</button>
+                </div>
+            </div>
+        </div>
 
-      showLoading(true);
-      try {
-        const coords = [
-          `\( {points.start.lng}, \){points.start.lat}`,
-          ...points.vias.map(v => `\( {v.lng}, \){v.lat}`),
-          `\( {points.end.lng}, \){points.end.lat}`
-        ].join(';');
+        <!-- TOAST -->
+        <div class="toast" id="toast"></div>
+    </div>
 
-        const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
-        const res = await fetch(url);
-        const data = await res.json();
+    <script>
+        (function() {
+            // ==================== DOM ELEMENTS ====================
+            const mapEl = document.getElementById('map');
+            const inputStart = document.getElementById('inputStart');
+            const inputEnd = document.getElementById('inputEnd');
+            const acStart = document.getElementById('acStart');
+            const acEnd = document.getElementById('acEnd');
+            const waypointsContainer = document.getElementById('waypointsContainer');
+            const btnAddWaypoint = document.getElementById('btnAddWaypoint');
+            const btnSwap = document.getElementById('btnSwap');
+            const btnGpsStart = document.getElementById('btnGpsStart');
+            const btnGpsEnd = document.getElementById('btnGpsEnd');
+            const btnOpenSettings = document.getElementById('btnOpenSettings');
+            const settingsModal = document.getElementById('settingsModal');
+            const inputPricePerKm = document.getElementById('inputPricePerKm');
+            const btnSaveSettings = document.getElementById('btnSaveSettings');
+            const btnCancelSettings = document.getElementById('btnCancelSettings');
+            const pricePerKmDisplay = document.getElementById('pricePerKmDisplay');
+            const resultDistance = document.getElementById('resultDistance');
+            const resultPrice = document.getElementById('resultPrice');
+            const resultHint = document.getElementById('resultHint');
+            const bottomCard = document.getElementById('bottomCard');
+            const btnRecalc = document.getElementById('btnRecalc');
+            const toast = document.getElementById('toast');
+            const topPanel = document.getElementById('topPanel');
 
-        if (data.code !== 'Ok' || !data.routes.length) {
-          toast('Rute tidak ditemukan');
-          showLoading(false);
-          return;
-        }
+            // ==================== STATE ====================
+            let pricePerKm = 4000;
+            let startCoords = null; // { lat, lng, address }
+            let endCoords = null; // { lat, lng, address }
+            let waypoints = []; // [{ id, lat, lng, address }]
+            let waypointIdCounter = 0;
+            let routeDistanceMeters = 0; // dalam meter
+            let routeLayer = null; // Leaflet polyline layer
+            let isCalculating = false;
+            let activeAutocomplete = null; // 'start' | 'end' | null
+            let autocompleteTimer = null;
 
-        const route = data.routes[0];
-        const distanceKm = route.distance / 1000;
-        const cost = Math.round(distanceKm * pricePerKm);
+            // ==================== MAP INIT ====================
+            const map = L.map('map', {
+                center: [-6.2088, 106.8456], // Jakarta default
+                zoom: 13,
+                zoomControl: false,
+                attributionControl: true,
+                dragging: true,
+                tap: true,
+            });
 
-        // Draw route
-        if (routeLayer) map.removeLayer(routeLayer);
-        routeLayer = L.geoJSON(route.geometry, {
-          style: { color: '#00aa5b', weight: 5, opacity: 0.85 }
-        }).addTo(map);
+            // Tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+                maxZoom: 19,
+            }).addTo(map);
 
-        document.getElementById('distanceText').textContent = distanceKm.toFixed(1) + ' km';
-        document.getElementById('priceText').textContent = 'Rp ' + cost.toLocaleString('id-ID');
+            // ==================== CUSTOM MARKERS ====================
+            let startMarker = null;
+            let endMarker = null;
+            let waypointMarkers = {}; // { id: marker }
 
-        fitBounds();
-      } catch (e) {
-        console.error(e);
-        toast('Gagal menghitung rute');
-      }
-      showLoading(false);
-    }
+            function createStartIcon() {
+                return L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `
+                <div style="
+                  width: 30px; height: 30px;
+                  background: #10B981;
+                  border-radius: 50%;
+                  border: 3px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                  display: flex; align-items: center; justify-content: center;
+                  position: relative;
+                ">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                    <circle cx="12" cy="12" r="5"/>
+                  </svg>
+                  <div style="
+                    position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%);
+                    width: 8px; height: 8px; background: #10B981; border-radius: 50%;
+                    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+                  "></div>
+                </div>`,
+                    iconSize: [30, 36],
+                    iconAnchor: [15, 34],
+                    popupAnchor: [0, -36],
+                });
+            }
 
-    // ========== GPS ==========
-    function getMyLocation(setAsStart = true) {
-      if (!navigator.geolocation) {
-        toast('GPS tidak didukung');
-        return;
-      }
-      showLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          if (setAsStart) {
-            setPoint('start', latitude, longitude);
-            map.setView([latitude, longitude], 15);
-          } else {
-            map.setView([latitude, longitude], 15);
-          }
-          showLoading(false);
-          toast('Lokasi ditemukan');
-        },
-        (err) => {
-          showLoading(false);
-          toast('Gagal mendapatkan lokasi');
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    }
+            function createEndIcon() {
+                return L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `
+                <div style="
+                  width: 30px; height: 38px;
+                  position: relative;
+                ">
+                  <div style="
+                    width: 30px; height: 30px;
+                    background: #EF4444;
+                    border-radius: 50% 50% 50% 0;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                    transform: rotate(-45deg);
+                    display: flex; align-items: center; justify-content: center;
+                  ">
+                    <div style="transform: rotate(45deg);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+                        <rect x="8" y="8" width="8" height="8" rx="1"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div style="
+                    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+                    width: 8px; height: 8px; background: #EF4444; border-radius: 50%;
+                    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+                  "></div>
+                </div>`,
+                    iconSize: [30, 42],
+                    iconAnchor: [15, 40],
+                    popupAnchor: [0, -42],
+                });
+            }
 
-    // ========== UI HELPERS ==========
-    function toast(msg) {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 2500);
-    }
+            function createWaypointIcon(index) {
+                return L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `
+                <div style="
+                  width: 26px; height: 26px;
+                  background: #3B82F6;
+                  border-radius: 50%;
+                  border: 3px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                  display: flex; align-items: center; justify-content: center;
+                  font-size: 11px; font-weight: 700; color: white;
+                  font-family: 'Inter', 'Segoe UI', sans-serif;
+                  letter-spacing: -0.02em;
+                ">${index}</div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13],
+                    popupAnchor: [0, -13],
+                });
+            }
 
-    function showLoading(show) {
-      document.getElementById('loading').classList.toggle('show', show);
-    }
+            // ==================== MARKER MANAGEMENT ====================
+            function updateStartMarker(lat, lng) {
+                if (startMarker) {
+                    startMarker.setLatLng([lat, lng]);
+                } else {
+                    startMarker = L.marker([lat, lng], {
+                        icon: createStartIcon(),
+                        draggable: true,
+                    }).addTo(map);
+                    startMarker.on('dragend', onStartMarkerDragEnd);
+                }
+                if (!map.getBounds().contains([lat, lng])) {
+                    map.panTo([lat, lng], { animate: true });
+                }
+            }
 
-    function clearAll() {
-      if (markers.start) map.removeLayer(markers.start);
-      if (markers.end) map.removeLayer(markers.end);
-      markers.vias.forEach(m => map.removeLayer(m));
-      if (routeLayer) map.removeLayer(routeLayer);
+            function updateEndMarker(lat, lng) {
+                if (endMarker) {
+                    endMarker.setLatLng([lat, lng]);
+                } else {
+                    endMarker = L.marker([lat, lng], {
+                        icon: createEndIcon(),
+                        draggable: true,
+                    }).addTo(map);
+                    endMarker.on('dragend', onEndMarkerDragEnd);
+                }
+                if (!map.getBounds().contains([lat, lng])) {
+                    map.panTo([lat, lng], { animate: true });
+                }
+            }
 
-      points = { start: null, end: null, vias: [] };
-      markers = { start: null, end: null, vias: [] };
-      routeLayer = null;
+            function addWaypointMarker(id, lat, lng, index) {
+                const marker = L.marker([lat, lng], {
+                    icon: createWaypointIcon(index),
+                    draggable: true,
+                }).addTo(map);
+                marker.on('dragend', function() {
+                    onWaypointMarkerDragEnd(id);
+                });
+                waypointMarkers[id] = marker;
+                if (!map.getBounds().contains([lat, lng])) {
+                    map.panTo([lat, lng], { animate: true });
+                }
+            }
 
-      document.getElementById('inputStart').value = '';
-      document.getElementById('inputEnd').value = '';
-      document.getElementById('distanceText').textContent = '– km';
-      document.getElementById('priceText').textContent = 'Rp –';
-      document.getElementById('waypointsContainer').innerHTML = '';
-    }
+            function removeWaypointMarker(id) {
+                if (waypointMarkers[id]) {
+                    map.removeLayer(waypointMarkers[id]);
+                    delete waypointMarkers[id];
+                }
+            }
 
-    // ========== EVENTS ==========
-    document.getElementById('btnMyLoc').onclick = () => getMyLocation(true);
-    document.getElementById('btnLocate').onclick = () => getMyLocation(false);
-    document.getElementById('btnCalc').onclick = calculateRoute;
-    document.getElementById('btnRecalc').onclick = calculateRoute;
-    document.getElementById('btnClear').onclick = clearAll;
+            function clearAllMarkers() {
+                if (startMarker) { map.removeLayer(startMarker);
+                    startMarker = null; }
+                if (endMarker) { map.removeLayer(endMarker);
+                    endMarker = null; }
+                Object.keys(waypointMarkers).forEach(id => {
+                    map.removeLayer(waypointMarkers[id]);
+                });
+                waypointMarkers = {};
+            }
 
-    document.getElementById('btnAddVia').onclick = () => {
-      if (!points.start || !points.end) {
-        toast('Isi titik awal & tujuan dulu');
-        return;
-      }
-      // place via in the middle of map
-      const center = map.getCenter();
-      addVia(center.lat, center.lng);
-      toast('Titik perantara ditambahkan – geser marker untuk atur');
-    };
+            function clearRoute() {
+                if (routeLayer) {
+                    map.removeLayer(routeLayer);
+                    routeLayer = null;
+                }
+            }
 
-    document.getElementById('pricePerKm').oninput = (e) => {
-      pricePerKm = parseFloat(e.target.value) || 0;
-      if (points.start && points.end) calculateRoute();
-    };
+            function fitMapToAllPoints() {
+                const allCoords = [];
+                if (startCoords) allCoords.push([startCoords.lat, startCoords.lng]);
+                waypoints.forEach(wp => allCoords.push([wp.lat, wp.lng]));
+                if (endCoords) allCoords.push([endCoords.lat, endCoords.lng]);
 
-    // Autocomplete
-    ['Start', 'End'].forEach(type => {
-      const input = document.getElementById('input' + type);
-      const key = type.toLowerCase();
-      input.addEventListener('input', () => {
-        clearTimeout(debounceTimers[key]);
-        debounceTimers[key] = setTimeout(async () => {
-          const items = await searchAddress(input.value, key);
-          showSuggestions(items, key);
-        }, 400);
-      });
-      input.addEventListener('focus', () => {
-        if (input.value.length >= 3) {
-          searchAddress(input.value, key).then(items => showSuggestions(items, key));
-        }
-      });
-    });
+                if (allCoords.length >= 2) {
+                    const bounds = L.latLngBounds(allCoords);
+                    map.fitBounds(bounds, { padding: [80, 50], maxZoom: 16, animate: true });
+                } else if (allCoords.length === 1) {
+                    map.setView(allCoords[0], 15, { animate: true });
+                }
+            }
 
-    // Close suggestions when click outside
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.point-row')) {
-        document.getElementById('sugStart').classList.remove('show');
-        document.getElementById('sugEnd').classList.remove('show');
-      }
-    });
+            // ==================== DRAG HANDLERS ====================
+            async function onStartMarkerDragEnd() {
+                const pos = startMarker.getLatLng();
+                startCoords.lat = pos.lat;
+                startCoords.lng = pos.lng;
+                const addr = await reverseGeocode(pos.lat, pos.lng);
+                startCoords.address = addr;
+                inputStart.value = addr;
+                recalculateRoute();
+            }
 
-    // ========== START ==========
-    initMap();
-    // Coba ambil lokasi otomatis saat buka
-    setTimeout(() => getMyLocation(true), 800);
-  </script>
+            async function onEndMarkerDragEnd() {
+                const pos = endMarker.getLatLng();
+                endCoords.lat = pos.lat;
+                endCoords.lng = pos.lng;
+                const addr = await reverseGeocode(pos.lat, pos.lng);
+                endCoords.address = addr;
+                inputEnd.value = addr;
+                recalculateRoute();
+            }
+
+            async function onWaypointMarkerDragEnd(id) {
+                const marker = waypointMarkers[id];
+                if (!marker) return;
+                const pos = marker.getLatLng();
+                const wp = waypoints.find(w => w.id === id);
+                if (wp) {
+                    wp.lat = pos.lat;
+                    wp.lng = pos.lng;
+                    const addr = await reverseGeocode(pos.lat, pos.lng);
+                    wp.address = addr;
+                    updateWaypointInputValue(id, addr);
+                    recalculateRoute();
+                }
+            }
+
+            // ==================== GEOCODING ====================
+            async function geocode(query) {
+                if (!query || query.trim().length < 2) return [];
+                const url =
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=id&countrycodes=id`;
+                try {
+                    const res = await fetch(url, {
+                        headers: { 'User-Agent': 'CekBiayaApp/1.0 (webapp)' }
+                    });
+                    if (!res.ok) return [];
+                    const data = await res.json();
+                    return data.map(item => ({
+                        lat: parseFloat(item.lat),
+                        lng: parseFloat(item.lon),
+                        displayName: item.display_name,
+                        shortName: item.name || item.display_name.split(',')[0].trim(),
+                    }));
+                } catch (e) {
+                    console.error('Geocode error:', e);
+                    return [];
+                }
+            }
+
+            async function reverseGeocode(lat, lng) {
+                const url =
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=id`;
+                try {
+                    const res = await fetch(url, {
+                        headers: { 'User-Agent': 'CekBiayaApp/1.0 (webapp)' }
+                    });
+                    if (!res.ok) return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    const data = await res.json();
+                    return data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                } catch (e) {
+                    return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                }
+            }
+
+            // ==================== AUTOCOMPLETE ====================
+            function renderAutocompleteDropdown(dropdownEl, results, rowEl) {
+                dropdownEl.innerHTML = '';
+                if (results.length === 0) {
+                    dropdownEl.classList.remove('active');
+                    return;
+                }
+                results.forEach((item) => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    div.innerHTML =
+                        `<strong>${escapeHTML(item.shortName)}</strong><div class="ac-sub">${escapeHTML(item.displayName)}</div>`;
+                    div.addEventListener('click', () => {
+                        selectAutocompleteItem(rowEl, item, dropdownEl);
+                    });
+                    div.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        selectAutocompleteItem(rowEl, item, dropdownEl);
+                    });
+                    dropdownEl.appendChild(div);
+                });
+                dropdownEl.classList.add('active');
+            }
+
+            function selectAutocompleteItem(rowEl, item, dropdownEl) {
+                dropdownEl.classList.remove('active');
+                if (rowEl.id === 'startRow') {
+                    startCoords = { lat: item.lat, lng: item.lng, address: item.displayName };
+                    inputStart.value = item.displayName;
+                    updateStartMarker(item.lat, item.lng);
+                } else if (rowEl.id === 'endRow') {
+                    endCoords = { lat: item.lat, lng: item.lng, address: item.displayName };
+                    inputEnd.value = item.displayName;
+                    updateEndMarker(item.lat, item.lng);
+                }
+                recalculateRoute();
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // Input event for autocomplete
+            inputStart.addEventListener('input', function() {
+                activeAutocomplete = 'start';
+                clearTimeout(autocompleteTimer);
+                autocompleteTimer = setTimeout(() => handleAutocomplete('start'), 400);
+            });
+            inputStart.addEventListener('focus', function() {
+                activeAutocomplete = 'start';
+                if (startCoords && inputStart.value === startCoords.address && acStart.children.length ===
+                    0) {
+                    // Don't re-trigger if same
+                }
+            });
+
+            inputEnd.addEventListener('input', function() {
+                activeAutocomplete = 'end';
+                clearTimeout(autocompleteTimer);
+                autocompleteTimer = setTimeout(() => handleAutocomplete('end'), 400);
+            });
+            inputEnd.addEventListener('focus', function() {
+                activeAutocomplete = 'end';
+            });
+
+            async function handleAutocomplete(type) {
+                const query = type === 'start' ? inputStart.value : inputEnd.value;
+                const dropdownEl = type === 'start' ? acStart : acEnd;
+                const rowEl = type === 'start' ?
+                    document.getElementById('startRow') :
+                    document.getElementById('endRow');
+
+                if (!query || query.trim().length < 2) {
+                    dropdownEl.classList.remove('active');
+                    return;
+                }
+                // Don't search if it's already the current address
+                if (type === 'start' && startCoords && query === startCoords.address) {
+                    dropdownEl.classList.remove('active');
+                    return;
+                }
+                if (type === 'end' && endCoords && query === endCoords.address) {
+                    dropdownEl.classList.remove('active');
+                    return;
+                }
+
+                const results = await geocode(query);
+                renderAutocompleteDropdown(dropdownEl, results, rowEl);
+            }
+
+            // Close autocomplete when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#startRow')) acStart.classList.remove('active');
+                if (!e.target.closest('#endRow')) acEnd.classList.remove('active');
+            });
+            document.addEventListener('touchend', function(e) {
+                if (!e.target.closest('#startRow')) acStart.classList.remove('active');
+                if (!e.target.closest('#endRow')) acEnd.classList.remove('active');
+            });
+
+            // ==================== WAYPOINT MANAGEMENT ====================
+            function renderWaypointRow(wp, index) {
+                const div = document.createElement('div');
+                div.className = 'loc-row waypoint-row';
+                div.id = `waypointRow-${wp.id}`;
+                div.innerHTML = `
+              <span class="dot waypoint-dot" style="background:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.2);"></span>
+              <input type="text" class="loc-input waypoint-input" value="${escapeHTML(wp.address || '')}" placeholder="Titik antar ${index + 1}..." autocomplete="off" data-wp-id="${wp.id}">
+              <div class="loc-actions">
+                <button class="btn-icon delete-btn" data-wp-id="${wp.id}" aria-label="Hapus titik antar">
+                  <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                </button>
+              </div>
+            `;
+                // Delete button
+                div.querySelector('.delete-btn').addEventListener('click', function() {
+                    removeWaypoint(wp.id);
+                });
+                div.querySelector('.delete-btn').addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    removeWaypoint(wp.id);
+                });
+                // Input change
+                const input = div.querySelector('.waypoint-input');
+                input.addEventListener('input', function() {
+                    debounceWaypointGeocode(wp.id, input.value);
+                });
+                return div;
+            }
+
+            let waypointGeocodeTimers = {};
+
+            function debounceWaypointGeocode(id, query) {
+                if (waypointGeocodeTimers[id]) clearTimeout(waypointGeocodeTimers[id]);
+                waypointGeocodeTimers[id] = setTimeout(async () => {
+                    if (!query || query.trim().length < 2) return;
+                    const results = await geocode(query);
+                    if (results.length > 0) {
+                        const wp = waypoints.find(w => w.id === id);
+                        if (wp) {
+                            wp.lat = results[0].lat;
+                            wp.lng = results[0].lng;
+                            wp.address = results[0].displayName;
+                            updateWaypointMarkerPosition(id, results[0].lat, results[0].lng);
+                            updateWaypointInputValue(id, results[0].displayName);
+                            recalculateRoute();
+                        }
+                    }
+                }, 600);
+            }
+
+            function updateWaypointInputValue(id, address) {
+                const input = document.querySelector(`.waypoint-input[data-wp-id="${id}"]`);
+                if (input) {
+                    input.value = address;
+                }
+            }
+
+            function updateWaypointMarkerPosition(id, lat, lng) {
+                if (waypointMarkers[id]) {
+                    waypointMarkers[id].setLatLng([lat, lng]);
+                }
+            }
+
+            function refreshAllWaypointRows() {
+                waypointsContainer.innerHTML = '';
+                waypoints.forEach((wp, i) => {
+                    const row = renderWaypointRow(wp, i);
+                    waypointsContainer.appendChild(row);
+                });
+                // Update marker indices
+                waypoints.forEach((wp, i) => {
+                    if (waypointMarkers[wp.id]) {
+                        waypointMarkers[wp.id].setIcon(createWaypointIcon(i + 1));
+                    }
+                });
+            }
+
+            function addWaypoint(lat = null, lng = null, address = '') {
+                const id = 'wp_' + (++waypointIdCounter);
+                const wp = { id, lat, lng, address };
+                waypoints.push(wp);
+                refreshAllWaypointRows();
+                if (lat && lng) {
+                    addWaypointMarker(id, lat, lng, waypoints.length);
+                }
+                recalculateRoute();
+                // Scroll to the new waypoint row
+                const lastRow = waypointsContainer.lastElementChild;
+                if (lastRow) {
+                    lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            function removeWaypoint(id) {
+                const idx = waypoints.findIndex(w => w.id === id);
+                if (idx >= 0) {
+                    waypoints.splice(idx, 1);
+                }
+                removeWaypointMarker(id);
+                refreshAllWaypointRows();
+                recalculateRoute();
+            }
+
+            btnAddWaypoint.addEventListener('click', () => {
+                // Add waypoint at a default location (midpoint or near center)
+                const center = map.getCenter();
+                addWaypoint(center.lat, center.lng, '');
+                showToast('Titik antar ditambahkan');
+            });
+            btnAddWaypoint.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const center = map.getCenter();
+                addWaypoint(center.lat, center.lng, '');
+                showToast('Titik antar ditambahkan');
+            });
+
+            // ==================== ROUTING (OSRM) ====================
+            async function recalculateRoute() {
+                clearRoute();
+                const allPoints = [];
+                if (startCoords && startCoords.lat) allPoints.push(startCoords);
+                waypoints.forEach(wp => { if (wp.lat && wp.lng) allPoints.push(wp); });
+                if (endCoords && endCoords.lat) allPoints.push(endCoords);
+
+                if (allPoints.length < 2) {
+                    updateResultUI(0);
+                    bottomCard.classList.remove('has-route');
+                    bottomCard.classList.add('no-route');
+                    resultHint.style.display = 'block';
+                    return;
+                }
+
+                // Build coordinates string for OSRM: lng,lat;lng,lat;...
+                const coordsStr = allPoints.map(p => `${p.lng},${p.lat}`).join(';');
+                const url =
+                    `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson&steps=false&alternatives=false`;
+
+                isCalculating = true;
+                btnRecalc.classList.add('loading-pulse');
+                resultHint.style.display = 'none';
+                resultDistance.textContent = 'Menghitung...';
+                resultPrice.textContent = '...';
+
+                try {
+                    const res = await fetch(url, {
+                        headers: { 'User-Agent': 'CekBiayaApp/1.0' }
+                    });
+                    if (!res.ok) throw new Error('OSRM error');
+                    const data = await res.json();
+                    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+                        throw new Error('Rute tidak ditemukan');
+                    }
+                    const route = data.routes[0];
+                    routeDistanceMeters = route.distance; // dalam meter
+
+                    // Draw route on map
+                    const geojson = route.geometry;
+                    if (routeLayer) map.removeLayer(routeLayer);
+                    routeLayer = L.geoJSON(geojson, {
+                        style: {
+                            color: '#2563EB',
+                            weight: 5,
+                            opacity: 0.85,
+                            lineCap: 'round',
+                            lineJoin: 'round',
+                        },
+                    }).addTo(map);
+
+                    // Add subtle glow
+                    const glowLayer = L.geoJSON(geojson, {
+                        style: {
+                            color: '#93C5FD',
+                            weight: 10,
+                            opacity: 0.35,
+                            lineCap: 'round',
+                            lineJoin: 'round',
+                        },
+                    }).addTo(map);
+                    // Bring main route to front
+                    routeLayer.bringToFront();
+
+                    // Store glow for cleanup
+                    routeLayer._glowLayer = glowLayer;
+
+                    updateResultUI(routeDistanceMeters);
+                    bottomCard.classList.add('has-route');
+                    bottomCard.classList.remove('no-route');
+                    resultHint.style.display = 'none';
+                    fitMapToAllPoints();
+
+                } catch (err) {
+                    console.error('Routing error:', err);
+                    updateResultUI(0);
+                    bottomCard.classList.remove('has-route');
+                    bottomCard.classList.add('no-route');
+                    resultHint.style.display = 'block';
+                    resultHint.textContent = 'Rute tidak ditemukan. Coba sesuaikan lokasi.';
+                    routeDistanceMeters = 0;
+                    showToast('Gagal menghitung rute');
+                } finally {
+                    isCalculating = false;
+                    btnRecalc.classList.remove('loading-pulse');
+                }
+            }
+
+            function updateResultUI(distanceMeters) {
+                const distanceKm = distanceMeters / 1000;
+                const totalPrice = Math.round(distanceKm * pricePerKm);
+
+                if (distanceMeters > 0) {
+                    resultDistance.textContent = distanceKm >= 1 ?
+                        `${distanceKm.toFixed(1)} km` :
+                        `${Math.round(distanceMeters)} m`;
+                    resultPrice.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+                    resultHint.style.display = 'none';
+                } else {
+                    resultDistance.textContent = '-- km';
+                    resultPrice.textContent = 'Rp 0';
+                }
+            }
+
+            // Clear route properly
+            function clearRouteFull() {
+                if (routeLayer) {
+                    if (routeLayer._glowLayer) {
+                        map.removeLayer(routeLayer._glowLayer);
+                    }
+                    map.removeLayer(routeLayer);
+                    routeLayer = null;
+                }
+                routeDistanceMeters = 0;
+            }
+
+            // Override clearRoute to include glow
+            const origClearRoute = clearRoute;
+            clearRoute = function() {
+                if (routeLayer && routeLayer._glowLayer) {
+                    map.removeLayer(routeLayer._glowLayer);
+                }
+                origClearRoute();
+            };
+
+            // ==================== GPS ====================
+            function getCurrentPosition() {
+                return new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject(new Error('Geolokasi tidak didukung'));
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        (err) => reject(err), { enableHighAccuracy: true, timeout: 15000,
+                            maximumAge: 60000 }
+                    );
+                });
+            }
+
+            async function useGpsFor(type) {
+                try {
+                    showToast('Mendapatkan lokasi...');
+                    const coords = await getCurrentPosition();
+                    const address = await reverseGeocode(coords.lat, coords.lng);
+                    if (type === 'start') {
+                        startCoords = { lat: coords.lat, lng: coords.lng, address };
+                        inputStart.value = address;
+                        updateStartMarker(coords.lat, coords.lng);
+                    } else {
+                        endCoords = { lat: coords.lat, lng: coords.lng, address };
+                        inputEnd.value = address;
+                        updateEndMarker(coords.lat, coords.lng);
+                    }
+                    recalculateRoute();
+                    showToast('Lokasi berhasil didapatkan');
+                } catch (err) {
+                    console.error('GPS error:', err);
+                    showToast('Gagal mendapatkan lokasi. Pastikan GPS aktif.');
+                }
+            }
+
+            btnGpsStart.addEventListener('click', () => useGpsFor('start'));
+            btnGpsStart.addEventListener('touchend', (e) => { e.preventDefault();
+                useGpsFor('start'); });
+            btnGpsEnd.addEventListener('click', () => useGpsFor('end'));
+            btnGpsEnd.addEventListener('touchend', (e) => { e.preventDefault();
+                useGpsFor('end'); });
+
+            // ==================== SWAP ====================
+            btnSwap.addEventListener('click', swapLocations);
+            btnSwap.addEventListener('touchend', (e) => { e.preventDefault();
+                swapLocations(); });
+
+            function swapLocations() {
+                const tempStart = startCoords;
+                const tempInputStart = inputStart.value;
+
+                startCoords = endCoords;
+                endCoords = tempStart;
+                inputStart.value = endCoords ? endCoords.address || '' : '';
+                inputEnd.value = startCoords ? startCoords.address || '' : '';
+
+                // Update markers
+                clearAllMarkers();
+                if (startCoords && startCoords.lat) updateStartMarker(startCoords.lat, startCoords.lng);
+                if (endCoords && endCoords.lat) updateEndMarker(endCoords.lat, endCoords.lng);
+                // Re-add waypoint markers
+                waypoints.forEach((wp, i) => {
+                    if (wp.lat && wp.lng) addWaypointMarker(wp.id, wp.lat, wp.lng, i + 1);
+                });
+
+                recalculateRoute();
+                showToast('Lokasi ditukar');
+            }
+
+            // ==================== SETTINGS MODAL ====================
+            btnOpenSettings.addEventListener('click', openSettings);
+            btnOpenSettings.addEventListener('touchend', (e) => { e.preventDefault();
+                openSettings(); });
+
+            function openSettings() {
+                inputPricePerKm.value = pricePerKm;
+                settingsModal.classList.add('active');
+            }
+
+            function closeSettings() {
+                settingsModal.classList.remove('active');
+            }
+
+            btnCancelSettings.addEventListener('click', closeSettings);
+            btnCancelSettings.addEventListener('touchend', (e) => { e.preventDefault();
+                closeSettings(); });
+            settingsModal.addEventListener('click', function(e) {
+                if (e.target === settingsModal) closeSettings();
+            });
+
+            btnSaveSettings.addEventListener('click', saveSettings);
+            btnSaveSettings.addEventListener('touchend', (e) => { e.preventDefault();
+                saveSettings(); });
+
+            function saveSettings() {
+                let newPrice = parseInt(inputPricePerKm.value);
+                if (isNaN(newPrice) || newPrice < 500) newPrice = 500;
+                if (newPrice > 100000) newPrice = 100000;
+                pricePerKm = newPrice;
+                pricePerKmDisplay.textContent = newPrice.toLocaleString('id-ID');
+                updateResultUI(routeDistanceMeters);
+                closeSettings();
+                showToast(`Harga: Rp ${newPrice.toLocaleString('id-ID')}/km`);
+            }
+
+            // ==================== RECALC BUTTON ====================
+            btnRecalc.addEventListener('click', () => {
+                if (!isCalculating) recalculateRoute();
+            });
+            btnRecalc.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (!isCalculating) recalculateRoute();
+            });
+
+            // ==================== MAP CLICK (set lokasi) ====================
+            // Long press on map to set start or end
+            let mapClickTimer = null;
+            map.on('mousedown', function(e) {
+                mapClickTimer = setTimeout(() => {
+                    handleMapLongPress(e.latlng);
+                }, 600);
+            });
+            map.on('mouseup', function() {
+                clearTimeout(mapClickTimer);
+            });
+            map.on('touchstart', function(e) {
+                if (e.originalEvent.touches.length === 1) {
+                    mapClickTimer = setTimeout(() => {
+                        const latlng = map.mouseEventToLatLng(e.originalEvent);
+                        handleMapLongPress(latlng);
+                    }, 600);
+                }
+            });
+            map.on('touchend', function() {
+                clearTimeout(mapClickTimer);
+            });
+            map.on('touchmove', function() {
+                clearTimeout(mapClickTimer);
+            });
+
+            async function handleMapLongPress(latlng) {
+                // Determine which point to set: if no start, set start. If start exists but no end, set end.
+                // Otherwise, ask? For simplicity, set as end if start exists, otherwise set as start.
+                const address = await reverseGeocode(latlng.lat, latlng.lng);
+                if (!startCoords || !startCoords.lat) {
+                    startCoords = { lat: latlng.lat, lng: latlng.lng, address };
+                    inputStart.value = address;
+                    updateStartMarker(latlng.lat, latlng.lng);
+                    showToast('Titik jemput ditetapkan');
+                } else if (!endCoords || !endCoords.lat) {
+                    endCoords = { lat: latlng.lat, lng: latlng.lng, address };
+                    inputEnd.value = address;
+                    updateEndMarker(latlng.lat, latlng.lng);
+                    showToast('Titik tujuan ditetapkan');
+                } else {
+                    // Both exist - update the closer one or set as new end
+                    endCoords = { lat: latlng.lat, lng: latlng.lng, address };
+                    inputEnd.value = address;
+                    updateEndMarker(latlng.lat, latlng.lng);
+                    showToast('Titik tujuan diperbarui');
+                }
+                recalculateRoute();
+            }
+
+            // ==================== TOAST ====================
+            let toastTimer = null;
+
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+
+            // ==================== INITIAL SETUP ====================
+            function init() {
+                // Try to get user's location for initial map center
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            map.setView([pos.coords.latitude, pos.coords.longitude], 14, { animate: true });
+                        },
+                        () => {
+                            // Default Jakarta
+                            map.setView([-6.2088, 106.8456], 13);
+                        }, { timeout: 8000, maximumAge: 300000 }
+                    );
+                }
+
+                // Update display
+                pricePerKmDisplay.textContent = pricePerKm.toLocaleString('id-ID');
+                updateResultUI(0);
+            }
+
+            // ==================== KEYBOARD SHORTCUTS ====================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    acStart.classList.remove('active');
+                    acEnd.classList.remove('active');
+                    closeSettings();
+                }
+                if (e.key === 'Enter' && document.activeElement === inputStart) {
+                    acStart.classList.remove('active');
+                    if (startCoords) recalculateRoute();
+                }
+                if (e.key === 'Enter' && document.activeElement === inputEnd) {
+                    acEnd.classList.remove('active');
+                    if (endCoords) recalculateRoute();
+                }
+            });
+
+            // ==================== START ====================
+            init();
+
+            console.log('🚀 Cek Biaya App siap digunakan!');
+            console.log('   - Ketik alamat di input atas');
+            console.log('   - Atau tekan lama pada peta');
+            console.log('   - Atau gunakan tombol GPS');
+            console.log('   - Drag marker untuk koreksi lokasi');
+            console.log('   - Tambah titik antar dengan tombol "+"');
+            console.log('   - Harga default: Rp 4.000/km');
+            console.log('   - Semua ikon menggunakan SVG (tanpa emoji)');
+        })();
+    </script>
 </body>
 </html>
