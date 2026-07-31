@@ -1,1226 +1,872 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#00aa13">
-    <title>Cek Biaya Perjalanan</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <!-- Leaflet Routing Machine CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    
-    <style>
-        :root {
-            --primary: #00aa13;
-            --primary-dark: #008f10;
-            --accent: #ff5722;
-            --bg: #f5f5f5;
-            --surface: #ffffff;
-            --text: #1c1c1e;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
-            --shadow: 0 4px 20px rgba(0,0,0,0.15);
-            --radius: 16px;
-            --radius-sm: 12px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            overflow: hidden;
-            touch-action: none;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* SVG Icons */
-        .icon {
-            width: 24px;
-            height: 24px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            flex-shrink: 0;
-        }
-
-        .icon-fill {
-            fill: currentColor;
-            stroke: none;
-        }
-
-        /* Map */
-        #map {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* Floating Header */
-        .app-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
-            backdrop-filter: blur(10px);
-            padding: 12px 16px 8px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .back-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 700;
-            flex: 1;
-        }
-
-        .settings-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        /* GPS Button */
-        .gps-btn {
-            position: fixed;
-            right: 16px;
-            bottom: 380px;
-            z-index: 500;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: var(--surface);
-            border: none;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--primary);
-            transition: transform 0.2s;
-        }
-
-        .gps-btn:active {
-            transform: scale(0.92);
-        }
-
-        /* Bottom Sheet */
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: var(--surface);
-            border-radius: var(--radius) var(--radius) 0 0;
-            box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
-            max-height: 55vh;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sheet-handle {
-            width: 100%;
-            padding: 12px 0 4px;
-            display: flex;
-            justify-content: center;
-            cursor: grab;
-        }
-
-        .sheet-handle::before {
-            content: '';
-            width: 40px;
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-        }
-
-        .sheet-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 16px 24px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Location Inputs */
-        .location-box {
-            background: var(--bg);
-            border-radius: var(--radius-sm);
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .input-row:last-child {
-            border-bottom: none;
-        }
-
-        .input-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .icon-start {
-            background: #e8f5e9;
-            color: var(--primary);
-        }
-
-        .icon-end {
-            background: #ffebee;
-            color: var(--accent);
-        }
-
-        .icon-waypoint {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .location-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 15px;
-            outline: none;
-            color: var(--text);
-            padding: 4px 0;
-        }
-
-        .location-input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .input-actions {
-            display: flex;
-            gap: 4px;
-        }
-
-        .icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .icon-btn:hover {
-            background: rgba(0,0,0,0.04);
-        }
-
-        .swap-btn {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        .waypoint-list {
-            position: relative;
-        }
-
-        .add-waypoint {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0 0 42px;
-            color: var(--primary);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            background: none;
-            border: none;
-            width: 100%;
-        }
-
-        /* Search Results */
-        .search-results {
-            position: fixed;
-            top: 70px;
-            left: 16px;
-            right: 16px;
-            z-index: 2000;
-            background: var(--surface);
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow);
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .search-result-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-        }
-
-        .search-result-item:active {
-            background: var(--bg);
-        }
-
-        .result-icon {
-            color: var(--text-secondary);
-        }
-
-        /* Price Settings */
-        .price-settings {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            margin-top: 4px;
-            border-top: 1px solid var(--border);
-        }
-
-        .price-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .price-input-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .price-input {
-            width: 80px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 6px 10px;
-            font-size: 14px;
-            text-align: right;
-            outline: none;
-        }
-
-        .price-unit {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* Result Card */
-        .result-card {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-top: 12px;
-            display: none;
-        }
-
-        .result-card.active {
-            display: block;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .result-item {
-            text-align: center;
-        }
-
-        .result-value {
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .result-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 2px;
-        }
-
-        .total-price {
-            text-align: center;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .total-value {
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        /* Loading */
-        .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255,255,255,0.8);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .loading-overlay.active {
-            display: flex;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 24px;
-            font-size: 14px;
-            z-index: 4000;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Leaflet Customization */
-        .leaflet-routing-container {
-            display: none !important;
-        }
-
-        .leaflet-control-zoom {
-            border: none !important;
-            box-shadow: var(--shadow) !important;
-            margin-top: 80px !important;
-            margin-right: 16px !important;
-        }
-
-        .leaflet-control-zoom a {
-            width: 36px !important;
-            height: 36px !important;
-            line-height: 36px !important;
-            font-size: 18px !important;
-            color: var(--text) !important;
-            border-color: var(--border) !important;
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2500;
-            display: none;
-            align-items: flex-end;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--surface);
-            width: 100%;
-            border-radius: var(--radius) var(--radius) 0 0;
-            padding: 20px 16px 32px;
-            animation: slideUp 0.3s ease;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-secondary);
-        }
-
-        .instruction-text {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 16px;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primary:active {
-            background: var(--primary-dark);
-        }
-
-        /* Pulse animation for GPS */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-
-        .gps-pulse {
-            position: relative;
-        }
-
-        .gps-pulse::after {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            border: 2px solid var(--primary);
-            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-
-        /* Responsive */
-        @media (min-width: 768px) {
-            .bottom-sheet {
-                max-width: 480px;
-                left: 50%;
-                transform: translateX(-50%);
-                border-radius: var(--radius);
-                bottom: 16px;
-                max-height: 400px;
-            }
-            
-            .gps-btn {
-                right: 50%;
-                margin-right: -240px;
-                bottom: 420px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Ongkir · Kalkulator Ongkos Jarak</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17223B;
+  --ink-soft:#4B5670;
+  --line:#E3E7EE;
+  --surface:#F3F5F8;
+  --card:#FFFFFF;
+  --accent:#D98C2B;
+  --accent-ink:#5A3A0E;
+  --teal:#159E86;
+  --danger:#D3483F;
+  --origin:#159E86;
+  --dest:#D3483F;
+  --wp:#3E6AE1;
+  --radius-lg:20px;
+  --radius-md:14px;
+  --radius-sm:10px;
+  --shadow-sheet:0 -8px 30px rgba(23,34,59,0.14);
+  --shadow-card:0 2px 10px rgba(23,34,59,0.08);
+  --shadow-fab:0 4px 14px rgba(23,34,59,0.22);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;overscroll-behavior:none;}
+body{
+  font-family:'Manrope',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--surface);
+  position:fixed;inset:0;
+  overflow:hidden;
+}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;}
+input{font-family:inherit;}
+
+/* ---------- MAP ---------- */
+#map{position:absolute;inset:0;z-index:1;background:#DCE3EA;}
+.leaflet-control-attribution{font-size:9px;opacity:.6;}
+
+.crosshair-pin{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-100%);
+  z-index:5;pointer-events:none;
+  display:none;flex-direction:column;align-items:center;
+  filter:drop-shadow(0 3px 4px rgba(23,34,59,.35));
+}
+.crosshair-pin.show{display:flex;}
+.crosshair-pin svg{width:38px;height:38px;}
+.crosshair-pin .dot{width:6px;height:6px;border-radius:50%;background:rgba(23,34,59,.45);margin-top:-4px;}
+
+/* ---------- TOP BAR ---------- */
+.topbar{
+  position:absolute;top:0;left:0;right:0;z-index:20;
+  padding:14px 14px 0;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  pointer-events:none;
+}
+.icon-btn{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--card);box-shadow:var(--shadow-card);
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:auto;color:var(--ink);flex:none;
+}
+.icon-btn svg{width:20px;height:20px;}
+.icon-btn:active{transform:scale(.94);}
+.icon-btn.ghost{background:rgba(255,255,255,.92);}
+
+/* ---------- BOTTOM SHEET ---------- */
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:20;
+  background:var(--card);
+  border-radius:22px 22px 0 0;
+  box-shadow:var(--shadow-sheet);
+  max-height:88vh;
+  display:flex;flex-direction:column;
+  transition:transform .28s cubic-bezier(.32,.72,0,1);
+}
+.sheet-handle{
+  width:100%;padding:10px 0 6px;display:flex;justify-content:center;flex:none;
+}
+.sheet-handle span{
+  width:38px;height:4px;border-radius:3px;background:var(--line);
+  position:relative;
+}
+.sheet-handle span::before,.sheet-handle span::after{
+  content:'';position:absolute;top:0;width:3px;height:4px;background:var(--line);
+}
+.sheet-body{padding:2px 18px 22px;overflow-y:auto;}
+
+.sheet-title{font-size:17px;font-weight:800;letter-spacing:-.2px;margin:2px 0 14px;display:flex;align-items:center;justify-content:space-between;}
+.sheet-title small{font-size:12px;font-weight:600;color:var(--ink-soft);}
+
+/* route stack: origin / waypoints / destination with connecting rail */
+.route-stack{position:relative;padding-left:26px;}
+.route-rail{
+  position:absolute;left:9px;top:14px;bottom:14px;width:2px;
+  background:repeating-linear-gradient(to bottom,var(--line) 0 4px,transparent 4px 8px);
+}
+.route-row{
+  position:relative;display:flex;align-items:center;gap:10px;
+  padding:9px 0;
+}
+.route-dot{
+  position:absolute;left:-26px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex:none;
+  background:var(--card);
+}
+.route-dot svg{width:14px;height:14px;}
+.route-dot.origin{color:var(--origin);}
+.route-dot.dest{color:var(--dest);}
+.route-dot.wp{color:var(--wp);}
+
+.route-field{
+  flex:1;min-width:0;
+  background:var(--surface);border-radius:var(--radius-sm);
+  padding:11px 12px;display:flex;align-items:center;gap:8px;
+  min-height:44px;
+}
+.route-field.empty .field-text{color:var(--ink-soft);font-weight:600;}
+.field-text{flex:1;min-width:0;font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.field-clear{width:22px;height:22px;flex:none;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;}
+.field-clear svg{width:14px;height:14px;}
+
+.add-stop-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 2px;font-size:13px;font-weight:700;color:var(--wp);
+}
+.add-stop-btn svg{width:17px;height:17px;}
+
+.swap-btn{
+  position:absolute;right:0;top:8px;
+  width:34px;height:34px;border-radius:50%;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;color:var(--ink-soft);
+}
+.swap-btn svg{width:16px;height:16px;}
+
+/* settings row */
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:16px;padding:12px 14px;background:var(--surface);border-radius:var(--radius-md);
+}
+.settings-row .label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft);}
+.settings-row .label svg{width:16px;height:16px;}
+.price-edit{display:flex;align-items:center;gap:6px;}
+.price-edit input{
+  width:84px;text-align:right;border:none;background:transparent;
+  font-size:14px;font-weight:700;color:var(--ink);
+}
+.price-edit input:focus{outline:none;}
+.price-edit .unit{font-size:12px;color:var(--ink-soft);font-weight:600;}
+
+/* CTA */
+.cta{
+  margin-top:16px;width:100%;padding:15px;border-radius:var(--radius-md);
+  background:var(--ink);color:#fff;font-weight:800;font-size:15px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:opacity .15s, transform .1s;
+}
+.cta[disabled]{opacity:.35;pointer-events:none;}
+.cta:active{transform:scale(.98);}
+.cta svg{width:18px;height:18px;}
+.cta.loading svg{animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- RESULT VIEW ---------- */
+.result{display:none;}
+.result.show{display:block;}
+.result-back{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:14px;}
+.result-back svg{width:16px;height:16px;}
+
+.meter-card{
+  background:linear-gradient(155deg,var(--ink) 0%, #223052 100%);
+  border-radius:var(--radius-lg);padding:20px 20px 18px;color:#fff;margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.meter-card::after{
+  content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;
+  background:radial-gradient(circle,rgba(217,140,43,.35),transparent 70%);
+}
+.meter-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);}
+.meter-value{font-size:34px;font-weight:700;margin-top:4px;letter-spacing:-.5px;position:relative;z-index:1;}
+.meter-value .curr{font-size:18px;vertical-align:2px;color:var(--accent);margin-right:2px;}
+.meter-sub{display:flex;gap:16px;margin-top:12px;position:relative;z-index:1;}
+.meter-sub div{font-size:12px;color:rgba(255,255,255,.65);}
+.meter-sub b{display:block;font-size:15px;color:#fff;font-weight:700;margin-top:1px;}
+
+/* ruler */
+.ruler{margin-top:16px;position:relative;z-index:1;}
+.ruler-track{height:6px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden;}
+.ruler-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:4px;transition:width .9s cubic-bezier(.16,1,.3,1);}
+.ruler-ticks{display:flex;justify-content:space-between;margin-top:5px;}
+.ruler-ticks span{font-size:9px;color:rgba(255,255,255,.4);font-weight:600;}
+
+.segment-list{margin-top:2px;}
+.segment-title{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 8px;}
+.segment{
+  display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);
+}
+.segment:last-child{border-bottom:none;}
+.segment-icon{width:26px;height:26px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink-soft);}
+.segment-icon svg{width:13px;height:13px;}
+.segment-text{flex:1;min-width:0;}
+.segment-route{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.segment-dist{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+.segment-fare{font-size:12.5px;font-weight:700;flex:none;}
+
+.note{
+  margin-top:14px;padding:10px 12px;background:#FBF1E1;border-radius:var(--radius-sm);
+  font-size:11.5px;color:var(--accent-ink);display:flex;gap:8px;align-items:flex-start;line-height:1.5;
+}
+.note svg{width:15px;height:15px;flex:none;margin-top:1px;}
+
+.recalc-btn{
+  margin-top:14px;width:100%;padding:13px;border-radius:var(--radius-md);
+  background:var(--surface);color:var(--ink);font-weight:800;font-size:14px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.recalc-btn svg{width:16px;height:16px;}
+
+/* ---------- SEARCH PANEL (fullscreen) ---------- */
+.search-panel{
+  position:fixed;inset:0;z-index:50;background:var(--card);
+  display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .26s cubic-bezier(.32,.72,0,1);
+}
+.search-panel.show{transform:translateY(0);}
+.search-head{
+  display:flex;align-items:center;gap:10px;padding:14px 14px 10px;flex:none;
+  border-bottom:1px solid var(--line);
+}
+.search-input-wrap{
+  flex:1;background:var(--surface);border-radius:var(--radius-sm);
+  display:flex;align-items:center;gap:8px;padding:0 12px;height:44px;
+}
+.search-input-wrap svg{width:16px;height:16px;color:var(--ink-soft);flex:none;}
+.search-input-wrap input{
+  flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--ink);height:100%;
+}
+.search-input-wrap input:focus{outline:none;}
+.search-input-wrap .clear-x{display:none;color:var(--ink-soft);}
+.search-input-wrap .clear-x svg{width:14px;height:14px;}
+
+.search-body{flex:1;overflow-y:auto;padding:6px 6px 20px;}
+.quick-actions{padding:6px 8px 4px;}
+.quick-action{
+  display:flex;align-items:center;gap:12px;padding:12px 8px;border-radius:var(--radius-sm);
+}
+.quick-action:active{background:var(--surface);}
+.quick-action .qa-icon{
+  width:36px;height:36px;border-radius:50%;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;flex:none;color:var(--teal);
+}
+.quick-action .qa-icon svg{width:18px;height:18px;}
+.quick-action .qa-text b{display:block;font-size:13.5px;font-weight:700;}
+.quick-action .qa-text span{font-size:11.5px;color:var(--ink-soft);}
+
+.result-list{padding:4px 8px;}
+.result-item{
+  display:flex;align-items:flex-start;gap:12px;padding:11px 8px;border-radius:var(--radius-sm);
+}
+.result-item:active{background:var(--surface);}
+.result-item .ri-icon{width:30px;height:30px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink-soft);margin-top:1px;}
+.result-item .ri-icon svg{width:14px;height:14px;}
+.result-item .ri-text b{display:block;font-size:13.5px;font-weight:700;line-height:1.35;}
+.result-item .ri-text span{font-size:11.5px;color:var(--ink-soft);line-height:1.4;display:block;margin-top:1px;}
+.search-empty{padding:30px 20px;text-align:center;color:var(--ink-soft);font-size:12.5px;}
+
+/* map-pick mode */
+.pick-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:var(--card);border-radius:22px 22px 0 0;box-shadow:var(--shadow-sheet);
+  padding:16px 18px 22px;display:none;
+}
+.pick-bar.show{display:block;}
+.pick-address{font-size:13.5px;font-weight:700;margin-bottom:2px;line-height:1.4;min-height:19px;}
+.pick-sub{font-size:11.5px;color:var(--ink-soft);margin-bottom:12px;}
+.pick-confirm{
+  width:100%;padding:14px;border-radius:var(--radius-md);background:var(--ink);color:#fff;
+  font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.pick-confirm svg{width:16px;height:16px;}
+.pick-cancel{
+  width:100%;padding:10px;margin-top:6px;text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;top:16px;transform:translate(-50%,-140%);z-index:80;
+  background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;
+  padding:10px 16px;border-radius:30px;box-shadow:var(--shadow-fab);
+  transition:transform .25s cubic-bezier(.32,.72,0,1);white-space:nowrap;
+}
+.toast.show{transform:translate(-50%,0);}
+
+/* leaflet marker label badges */
+.pt-badge{
+  width:26px;height:34px;position:relative;
+}
+.pt-badge svg{width:100%;height:100%;filter:drop-shadow(0 2px 3px rgba(23,34,59,.35));}
+.pt-badge .num{
+  position:absolute;top:5px;left:0;right:0;text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#fff;
+}
+</style>
 </head>
 <body>
 
-    <!-- SVG Sprite -->
-    <svg style="display: none;">
-        <defs>
-            <symbol id="icon-location" viewBox="0 0 24 24">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-            </symbol>
-            <symbol id="icon-flag" viewBox="0 0 24 24">
-                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-                <line x1="4" y1="22" x2="4" y2="15"/>
-            </symbol>
-            <symbol id="icon-navigation" viewBox="0 0 24 24">
-                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-            </symbol>
-            <symbol id="icon-settings" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </symbol>
-            <symbol id="icon-arrow-up" viewBox="0 0 24 24">
-                <line x1="12" y1="19" x2="12" y2="5"/>
-                <polyline points="5 12 12 5 19 12"/>
-            </symbol>
-            <symbol id="icon-arrow-down" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <polyline points="19 12 12 19 5 12"/>
-            </symbol>
-            <symbol id="icon-arrow-left" viewBox="0 0 24 24">
-                <line x1="19" y1="12" x2="5" y2="12"/>
-                <polyline points="12 19 5 12 12 5"/>
-            </symbol>
-            <symbol id="icon-plus" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </symbol>
-            <symbol id="icon-trash" viewBox="0 0 24 24">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </symbol>
-            <symbol id="icon-search" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </symbol>
-            <symbol id="icon-crosshair" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="22" y1="12" x2="18" y2="12"/>
-                <line x1="6" y1="12" x2="2" y2="12"/>
-                <line x1="12" y1="6" x2="12" y2="2"/>
-                <line x1="12" y1="22" x2="12" y2="18"/>
-            </symbol>
-            <symbol id="icon-map-pin" viewBox="0 0 24 24">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-            </symbol>
-            <symbol id="icon-x" viewBox="0 0 24 24">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </symbol>
-            <symbol id="icon-info" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </symbol>
-            <symbol id="icon-rotate" viewBox="0 0 24 24">
-                <polyline points="23 4 23 10 17 10"/>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-            </symbol>
-        </defs>
-    </svg>
+<div id="map"></div>
 
-    <!-- Header -->
-    <div class="app-header">
-        <div class="header-content">
-            <button class="back-btn" onclick="showToast('Kembali ke menu utama')">
-                <svg class="icon"><use href="#icon-arrow-left"/></svg>
-            </button>
-            <h1 class="header-title">Cek Biaya</h1>
-            <button class="settings-btn" onclick="openModal()">
-                <svg class="icon"><use href="#icon-info"/></svg>
-            </button>
+<div class="crosshair-pin" id="crosshairPin">
+  <svg viewBox="0 0 24 32" fill="none"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="#17223B"/><circle cx="12" cy="12" r="4.4" fill="#fff"/></svg>
+  <div class="dot"></div>
+</div>
+
+<div class="topbar">
+  <button class="icon-btn ghost" id="btnLocate" aria-label="Lokasi saya">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
+  </button>
+  <button class="icon-btn ghost" id="btnSettings" aria-label="Pengaturan harga">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M8 12h12M4 18h14M20 18h0"/><circle cx="16" cy="6" r="2.2" fill="currentColor" stroke="none"/><circle cx="6" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="18" cy="18" r="2.2" fill="currentColor" stroke="none"/></svg>
+  </button>
+</div>
+
+<!-- ============ BOTTOM SHEET : FORM ============ -->
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"><span></span></div>
+  <div class="sheet-body">
+
+    <!-- FORM VIEW -->
+    <div id="formView">
+      <div class="sheet-title">Hitung Ongkos<small id="ptCount"></small></div>
+
+      <div class="route-stack" id="routeStack">
+        <div class="route-rail"></div>
+        <!-- rows injected by JS -->
+      </div>
+
+      <button class="add-stop-btn" id="btnAddStop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Tambah titik singgah
+      </button>
+
+      <div class="settings-row">
+        <div class="label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Tarif per km
         </div>
+        <div class="price-edit">
+          <span class="unit">Rp</span>
+          <input type="number" id="pricePerKm" inputmode="numeric" value="4000">
+          <span class="unit">/km</span>
+        </div>
+      </div>
+
+      <button class="cta" id="btnCalc" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        Hitung Jarak &amp; Ongkos
+      </button>
     </div>
 
-    <!-- Map -->
-    <div id="map"></div>
+    <!-- RESULT VIEW -->
+    <div id="resultView" class="result">
+      <button class="result-back" id="btnBack">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Ubah rute
+      </button>
 
-    <!-- GPS Button -->
-    <button class="gps-btn" id="gpsBtn" onclick="getCurrentLocation()" title="Lokasi saya">
-        <svg class="icon" style="width: 22px; height: 22px;"><use href="#icon-crosshair"/></svg>
+      <div class="meter-card">
+        <div class="meter-label">Estimasi ongkos</div>
+        <div class="meter-value mono"><span class="curr">Rp</span><span id="fareValue">0</span></div>
+        <div class="meter-sub">
+          <div>Jarak tempuh<b class="mono" id="distValue">0 km</b></div>
+          <div>Tarif berlaku<b class="mono" id="rateValue">Rp 0/km</b></div>
+          <div>Titik singgah<b class="mono" id="wpValue">0</b></div>
+        </div>
+        <div class="ruler">
+          <div class="ruler-track"><div class="ruler-fill" id="rulerFill"></div></div>
+          <div class="ruler-ticks"><span>0</span><span id="rulerMid">·</span><span id="rulerMax">km</span></div>
+        </div>
+      </div>
+
+      <div class="segment-list" id="segmentList">
+        <div class="segment-title">Rincian segmen</div>
+        <!-- injected -->
+      </div>
+
+      <div class="note" id="routeNote" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>Rute jalan tidak tersedia, jarak dihitung garis lurus × faktor jalan (perkiraan).</span>
+      </div>
+
+      <button class="recalc-btn" id="btnRecalc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+        Hitung ulang
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ FULLSCREEN SEARCH PANEL ============ -->
+<div class="search-panel" id="searchPanel">
+  <div class="search-head">
+    <button class="icon-btn" id="btnCloseSearch" style="box-shadow:none;background:var(--surface);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
-
-    <!-- Search Results -->
-    <div class="search-results" id="searchResults"></div>
-
-    <!-- Bottom Sheet -->
-    <div class="bottom-sheet" id="bottomSheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-content">
-            
-            <!-- Location Inputs -->
-            <div class="location-box">
-                <div class="waypoint-list" id="waypointList">
-                    <!-- Start -->
-                    <div class="input-row" data-index="0">
-                        <div class="input-icon icon-start">
-                            <svg class="icon icon-fill" style="width: 18px; height: 18px;"><use href="#icon-navigation"/></svg>
-                        </div>
-                        <input type="text" class="location-input" id="input-0" 
-                               placeholder="Lokasi awal (GPS / ketik / peta)" 
-                               oninput="handleSearch(this, 0)" 
-                               onfocus="activeInputIndex=0"/>
-                        <div class="input-actions">
-                            <button class="icon-btn" onclick="setFromGPS(0)" title="Gunakan GPS">
-                                <svg class="icon" style="width: 18px; height: 18px;"><use href="#icon-crosshair"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Waypoints container -->
-                    <div id="waypointsContainer"></div>
-                    
-                    <!-- End -->
-                    <div class="input-row" data-index="-1">
-                        <div class="input-icon icon-end">
-                            <svg class="icon icon-fill" style="width: 18px; height: 18px;"><use href="#icon-flag"/></svg>
-                        </div>
-                        <input type="text" class="location-input" id="input-end" 
-                               placeholder="Lokasi tujuan" 
-                               oninput="handleSearch(this, -1)" 
-                               onfocus="activeInputIndex=-1"/>
-                        <div class="input-actions">
-                            <button class="icon-btn" onclick="setFromGPS(-1)" title="Gunakan GPS">
-                                <svg class="icon" style="width: 18px; height: 18px;"><use href="#icon-crosshair"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="add-waypoint" onclick="addWaypoint()" id="addWaypointBtn">
-                    <svg class="icon" style="width: 16px; height: 16px; stroke: currentColor;"><use href="#icon-plus"/></svg>
-                    Tambah Titik Antar
-                </button>
-            </div>
-
-            <!-- Swap Button -->
-            <button class="swap-btn" onclick="swapLocations()" title="Tukar lokasi">
-                <svg class="icon" style="width: 18px; height: 18px;"><use href="#icon-rotate"/></svg>
-            </button>
-
-            <!-- Price Settings -->
-            <div class="price-settings">
-                <div class="price-label">
-                    <svg class="icon" style="width: 18px; height: 18px; stroke: currentColor;"><use href="#icon-settings"/></svg>
-                    Harga per km
-                </div>
-                <div class="price-input-group">
-                    <input type="number" class="price-input" id="pricePerKm" value="4000" min="1000" step="500" onchange="calculatePrice()">
-                    <span class="price-unit">/ km</span>
-                </div>
-            </div>
-
-            <!-- Result -->
-            <div class="result-card" id="resultCard">
-                <div class="result-grid">
-                    <div class="result-item">
-                        <div class="result-value" id="distanceValue">0 km</div>
-                        <div class="result-label">Jarak Total</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="timeValue">0 menit</div>
-                        <div class="result-label">Estimasi Waktu</div>
-                    </div>
-                </div>
-                <div class="total-price">
-                    <div class="total-value" id="totalPrice">Rp 0</div>
-                    <div class="result-label">Estimasi Biaya</div>
-                </div>
-            </div>
-
-            <button class="btn-primary" style="margin-top: 16px;" onclick="recalculateRoute()">
-                Hitung Ulang Rute
-            </button>
-        </div>
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Ketik alamat atau nama tempat" autocomplete="off">
+      <button class="clear-x" id="btnClearSearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-
-    <!-- Loading -->
-    <div class="loading-overlay" id="loading">
-        <div class="spinner"></div>
-        <div style="color: var(--text-secondary); font-size: 14px;">Memuat peta...</div>
+  </div>
+  <div class="search-body">
+    <div class="quick-actions" id="quickActions">
+      <button class="quick-action" id="qaGps">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg></div>
+        <div class="qa-text"><b>Gunakan lokasi saat ini</b><span>Deteksi otomatis via GPS</span></div>
+      </button>
+      <button class="quick-action" id="qaMap">
+        <div class="qa-icon" style="color:var(--dest);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg></div>
+        <div class="qa-text"><b>Tandai di peta</b><span>Geser peta untuk memilih titik</span></div>
+      </button>
     </div>
+    <div class="result-list" id="resultList"></div>
+  </div>
+</div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+<!-- ============ MAP-PICK CONFIRM BAR ============ -->
+<div class="pick-bar" id="pickBar">
+  <div class="pick-address" id="pickAddress">Menentukan alamat…</div>
+  <div class="pick-sub">Geser peta hingga pin tepat di lokasi</div>
+  <button class="pick-confirm" id="pickConfirm">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    Pilih lokasi ini
+  </button>
+  <button class="pick-cancel" id="pickCancel">Batal</button>
+</div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">
-                Petunjuk Penggunaan
-                <button class="modal-close" onclick="closeModal()">
-                    <svg class="icon"><use href="#icon-x"/></svg>
-                </button>
-            </div>
-            <div class="instruction-text">
-                <strong>1. Atur Lokasi</strong><br>
-                Ketik alamat di kolom atau tekan ikon target untuk GPS. Anda juga bisa menekan langsung di peta untuk menandai lokasi.<br><br>
-                
-                <strong>2. Edit Lokasi</strong><br>
-                Tahan dan geser penanda (marker) di peta untuk mengubah posisi dengan lebih akurat.<br><br>
-                
-                <strong>3. Titik Antar (Opsional)</strong><br>
-                Tekan "Tambah Titik Antar" untuk menambah perhentian di antara lokasi awal dan tujuan.<br><br>
-                
-                <strong>4. Harga</strong><br>
-                Ubah harga per km sesuai kebutuhan. Default: Rp 4.000/km.<br><br>
-                
-                <strong>Catatan:</strong> Jarak dihitung berdasarkan rute jalan (bukan garis lurus) menggunakan OpenStreetMap.
-            </div>
-            <button class="btn-primary" onclick="closeModal()">Mengerti</button>
-        </div>
-    </div>
+<div class="toast" id="toast"></div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+'use strict';
 
-    <script>
-        // Global variables
-        let map;
-        let routingControl = null;
-        let markers = [];
-        let waypoints = [];
-        let activeInputIndex = 0;
-        let searchTimeout = null;
-        let currentSearchCallback = null;
-        const DEFAULT_PRICE = 4000;
-        const MAX_WAYPOINTS = 3;
+/* ================= STATE ================= */
+// points[0] = origin, points[last] = destination, middle = waypoints
+var points = [
+  {id:cryptoId(), role:'origin', label:'Titik awal', lat:null, lng:null, address:''},
+  {id:cryptoId(), role:'dest', label:'Titik tujuan', lat:null, lng:null, address:''}
+];
+var pricePerKm = 4000;
+var activePointId = null;   // point currently being set via search/gps/map-pick
+var pickMode = false;
+var pickCoords = null;
+var pickTimer = null;
+var searchTimer = null;
+var routeLayer = null;
+var markers = {}; // id -> leaflet marker
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            initMap();
-            document.getElementById('loading').classList.add('active');
-            
-            // Simulate loading
-            setTimeout(() => {
-                document.getElementById('loading').classList.remove('active');
-            }, 800);
+function cryptoId(){ return 'p'+Math.random().toString(36).slice(2,10); }
+
+/* ================= MAP INIT ================= */
+var map = L.map('map', {zoomControl:false, attributionControl:true}).setView([-6.2088,106.8456], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:19, attribution:'© OpenStreetMap'
+}).addTo(map);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+/* ================= ICON BUILDERS ================= */
+function pinSVG(color){
+  return '<svg viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="'+color+'"/><circle cx="12" cy="12" r="4.4" fill="#fff"/></svg>';
+}
+function badgeIcon(role, numLabel){
+  var color = role==='origin' ? '#159E86' : role==='dest' ? '#D3483F' : '#3E6AE1';
+  var html = '<div class="pt-badge">'+pinSVG(color)+'<div class="num">'+(numLabel||'')+'</div></div>';
+  return L.divIcon({html:html, className:'', iconSize:[26,34], iconAnchor:[13,34]});
+}
+
+/* ================= TOAST ================= */
+var toastEl = document.getElementById('toast');
+var toastTimer;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2400);
+}
+
+/* ================= NOMINATIM (geocode) ================= */
+function geocodeSearch(q){
+  var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=8&countrycodes=id&q=' + encodeURIComponent(q);
+  return fetch(url, {headers:{'Accept-Language':'id'}}).then(function(r){ return r.json(); });
+}
+function reverseGeocode(lat, lng){
+  var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+lat+'&lon='+lng;
+  return fetch(url, {headers:{'Accept-Language':'id'}}).then(function(r){ return r.json(); })
+    .then(function(d){ return d && d.display_name ? d.display_name : (lat.toFixed(5)+', '+lng.toFixed(5)); })
+    .catch(function(){ return lat.toFixed(5)+', '+lng.toFixed(5); });
+}
+
+/* ================= OSRM (routing) ================= */
+function haversine(a,b){
+  var R=6371, toRad=Math.PI/180;
+  var dLat=(b.lat-a.lat)*toRad, dLng=(b.lng-a.lng)*toRad;
+  var la1=a.lat*toRad, la2=b.lat*toRad;
+  var h = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function routeBetween(list){
+  // list: array of {lat,lng} in order. Returns promise -> {distanceKm, geojsonCoords, segments:[km], estimated:bool}
+  var coordsStr = list.map(function(p){ return p.lng+','+p.lat; }).join(';');
+  var url = 'https://router.project-osrm.org/route/v1/driving/'+coordsStr+'?overview=full&geometries=geojson&steps=false';
+  return fetch(url).then(function(r){
+    if(!r.ok) throw new Error('osrm-fail');
+    return r.json();
+  }).then(function(data){
+    if(!data.routes || !data.routes.length) throw new Error('no-route');
+    var route = data.routes[0];
+    var segKm = route.legs.map(function(leg){ return leg.distance/1000; });
+    return {
+      distanceKm: route.distance/1000,
+      coords: route.geometry.coordinates.map(function(c){ return [c[1],c[0]]; }),
+      segments: segKm,
+      estimated: false
+    };
+  }).catch(function(){
+    // fallback: straight-line * 1.35 road factor
+    var segKm = [];
+    for(var i=0;i<list.length-1;i++){ segKm.push(haversine(list[i], list[i+1]) * 1.35); }
+    var total = segKm.reduce(function(a,b){return a+b;},0);
+    return {
+      distanceKm: total,
+      coords: list.map(function(p){ return [p.lat,p.lng]; }),
+      segments: segKm,
+      estimated: true
+    };
+  });
+}
+
+/* ================= RENDER: ROUTE STACK (form) ================= */
+var routeStack = document.getElementById('routeStack');
+var ptCount = document.getElementById('ptCount');
+
+function iconFor(role){
+  if(role==='origin') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/></svg>';
+  if(role==='dest') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.2"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+}
+
+function renderStack(){
+  routeStack.querySelectorAll('.route-row').forEach(function(el){ el.remove(); });
+  points.forEach(function(pt, idx){
+    var row = document.createElement('div');
+    row.className = 'route-row';
+    row.innerHTML =
+      '<div class="route-dot '+pt.role+'">'+iconFor(pt.role)+'</div>' +
+      '<div class="route-field '+(pt.address?'':'empty')+'" data-id="'+pt.id+'">' +
+        '<div class="field-text">'+(pt.address || pt.label)+'</div>' +
+        (pt.address ? '<button class="field-clear" data-clear="'+pt.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>' : '') +
+        (pt.role==='waypoint' ? '<button class="field-clear" data-remove="'+pt.id+'" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg></button>' : '') +
+      '</div>';
+    routeStack.appendChild(row);
+  });
+  var wpCount = points.filter(function(p){return p.role==='waypoint';}).length;
+  ptCount.textContent = wpCount ? (wpCount+' titik singgah') : '';
+  updateCTA();
+  syncMarkers();
+}
+
+routeStack.addEventListener('click', function(e){
+  var clear = e.target.closest('[data-clear]');
+  var remove = e.target.closest('[data-remove]');
+  var field = e.target.closest('.route-field');
+  if(clear){
+    var pt = points.find(function(p){return p.id===clear.getAttribute('data-clear');});
+    if(pt){ pt.lat=null; pt.lng=null; pt.address=''; renderStack(); }
+    e.stopPropagation(); return;
+  }
+  if(remove){
+    points = points.filter(function(p){return p.id!==remove.getAttribute('data-remove');});
+    renderStack();
+    e.stopPropagation(); return;
+  }
+  if(field){
+    openSearchPanel(field.getAttribute('data-id'));
+  }
+});
+
+document.getElementById('btnAddStop').addEventListener('click', function(){
+  var wpCount = points.filter(function(p){return p.role==='waypoint';}).length;
+  if(wpCount>=5){ toast('Maksimal 5 titik singgah'); return; }
+  var dest = points.pop();
+  points.push({id:cryptoId(), role:'waypoint', label:'Titik singgah '+(wpCount+1), lat:null, lng:null, address:''});
+  points.push(dest);
+  renderStack();
+});
+
+function updateCTA(){
+  var ok = points.every(function(p){ return p.lat!=null && p.lng!=null; });
+  document.getElementById('btnCalc').disabled = !ok;
+}
+
+/* ================= MARKERS ON MAP ================= */
+function syncMarkers(){
+  var activeIds = points.map(function(p){return p.id;});
+  Object.keys(markers).forEach(function(id){
+    if(activeIds.indexOf(id)===-1){ map.removeLayer(markers[id]); delete markers[id]; }
+  });
+  var wpIdx = 0;
+  points.forEach(function(pt){
+    if(pt.lat==null) return;
+    var label = pt.role==='origin' ? 'A' : pt.role==='dest' ? 'B' : String(++wpIdx);
+    if(markers[pt.id]){
+      markers[pt.id].setLatLng([pt.lat,pt.lng]);
+      markers[pt.id].setIcon(badgeIcon(pt.role, label));
+    } else {
+      var m = L.marker([pt.lat,pt.lng], {icon:badgeIcon(pt.role,label), draggable:true});
+      m.addTo(map);
+      m.on('dragend', function(){
+        var ll = m.getLatLng();
+        pt.lat = ll.lat; pt.lng = ll.lng;
+        pt.address = 'Mencari alamat…';
+        renderStack();
+        reverseGeocode(ll.lat, ll.lng).then(function(addr){
+          pt.address = addr; renderStack();
         });
+      });
+      markers[pt.id] = m;
+    }
+  });
+  var latlngs = points.filter(function(p){return p.lat!=null;}).map(function(p){return [p.lat,p.lng];});
+  if(latlngs.length>=2){ map.fitBounds(latlngs, {padding:[70,70]}); }
+  else if(latlngs.length===1){ map.setView(latlngs[0], 15); }
+}
 
-        function initMap() {
-            // Default: Jakarta
-            map = L.map('map', {
-                zoomControl: true,
-                attributionControl: false
-            }).setView([-6.2088, 106.8456], 13);
+/* ================= SEARCH PANEL ================= */
+var searchPanel = document.getElementById('searchPanel');
+var searchInput = document.getElementById('searchInput');
+var resultList = document.getElementById('resultList');
+var quickActions = document.getElementById('quickActions');
+var btnClearSearch = document.getElementById('btnClearSearch');
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                subdomains: 'abc'
-            }).addTo(map);
+function openSearchPanel(pointId){
+  activePointId = pointId;
+  searchInput.value = '';
+  resultList.innerHTML = '';
+  quickActions.style.display = 'block';
+  btnClearSearch.style.display = 'none';
+  searchPanel.classList.add('show');
+  setTimeout(function(){ searchInput.focus(); }, 260);
+}
+document.getElementById('btnCloseSearch').addEventListener('click', function(){
+  searchPanel.classList.remove('show');
+});
+btnClearSearch.addEventListener('click', function(){
+  searchInput.value=''; resultList.innerHTML=''; quickActions.style.display='block'; btnClearSearch.style.display='none';
+});
 
-            // Map click to set location
-            map.on('click', function(e) {
-                if (activeInputIndex !== null) {
-                    setLocationByLatLng(e.latlng, activeInputIndex);
-                }
-            });
-
-            // Initialize with empty waypoints
-            waypoints = [
-                L.latLng(-6.2088, 106.8456), // start placeholder
-                L.latLng(-6.2000, 106.8166)  // end placeholder
-            ];
-            
-            // Don't show initial route until user sets real locations
-            updateMarkers();
-        }
-
-        function updateMarkers() {
-            // Clear existing markers
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-
-            waypoints.forEach((wp, idx) => {
-                if (!wp) return;
-                
-                let color = '#00aa13';
-                let iconHtml = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>';
-                
-                if (idx === waypoints.length - 1) {
-                    color = '#ff5722';
-                    iconHtml = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>';
-                } else if (idx > 0 && idx < waypoints.length - 1) {
-                    color = '#1976d2';
-                    iconHtml = `<div style="color:white;font-weight:800;font-size:14px;">${idx}</div>`;
-                }
-
-                const icon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="background:${color}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.3); border:2px solid white;">${iconHtml}</div>`,
-                    iconSize: [36, 36],
-                    iconAnchor: [18, 18]
-                });
-
-                const marker = L.marker(wp, {
-                    icon: icon,
-                    draggable: true
-                }).addTo(map);
-
-                marker.on('dragend', function(e) {
-                    const newPos = e.target.getLatLng();
-                    waypoints[idx] = newPos;
-                    reverseGeocode(newPos, idx);
-                    calculateRoute();
-                });
-
-                markers.push(marker);
-            });
-        }
-
-        function calculateRoute() {
-            // Filter out null waypoints
-            const validWaypoints = waypoints.filter(wp => wp !== null);
-            
-            if (validWaypoints.length < 2) {
-                document.getElementById('resultCard').classList.remove('active');
-                if (routingControl) {
-                    map.removeControl(routingControl);
-                    routingControl = null;
-                }
-                return;
-            }
-
-            // Show loading
-            document.getElementById('loading').classList.add('active');
-
-            if (routingControl) {
-                map.removeControl(routingControl);
-            }
-
-            routingControl = L.Routing.control({
-                waypoints: validWaypoints,
-                routeWhileDragging: true,
-                showAlternatives: false,
-                addWaypoints: false,
-                draggableWaypoints: false, // We handle dragging via markers
-                fitSelectedRoutes: true,
-                lineOptions: {
-                    styles: [{ color: '#00aa13', weight: 5, opacity: 0.8, lineCap: 'round', lineJoin: 'round' }]
-                },
-                createMarker: function() { return null; } // Hide default markers
-            }).addTo(map);
-
-            routingControl.on('routesfound', function(e) {
-                const route = e.routes[0];
-                const distanceKm = (route.summary.totalDistance / 1000).toFixed(1);
-                const timeMin = Math.round(route.summary.totalTime / 60);
-                const pricePerKm = parseInt(document.getElementById('pricePerKm').value) || DEFAULT_PRICE;
-                const totalPrice = Math.round(distanceKm * pricePerKm);
-
-                document.getElementById('distanceValue').textContent = distanceKm + ' km';
-                document.getElementById('timeValue').textContent = timeMin + ' menit';
-                document.getElementById('totalPrice').textContent = 'Rp ' + totalPrice.toLocaleString('id-ID');
-                document.getElementById('resultCard').classList.add('active');
-                document.getElementById('loading').classList.remove('active');
-            });
-
-            routingControl.on('routingerror', function() {
-                // Fallback: calculate straight line distance
-                calculateFallbackDistance(validWaypoints);
-                document.getElementById('loading').classList.remove('active');
-                showToast('Gagal mendapatkan rute jalan, menggunakan perkiraan garis lurus');
-            });
-        }
-
-        function calculateFallbackDistance(points) {
-            let totalDistance = 0;
-            for (let i = 0; i < points.length - 1; i++) {
-                totalDistance += points[i].distanceTo(points[i+1]);
-            }
-            const distanceKm = (totalDistance / 1000).toFixed(1);
-            const timeMin = Math.round(distanceKm * 2); // Estimate 30km/h avg
-            const pricePerKm = parseInt(document.getElementById('pricePerKm').value) || DEFAULT_PRICE;
-            const totalPrice = Math.round(distanceKm * pricePerKm * 1.3); // 1.3x factor for roads
-
-            document.getElementById('distanceValue').textContent = '~' + distanceKm + ' km';
-            document.getElementById('timeValue').textContent = '~' + timeMin + ' menit';
-            document.getElementById('totalPrice').textContent = 'Rp ' + totalPrice.toLocaleString('id-ID');
-            document.getElementById('resultCard').classList.add('active');
-        }
-
-        function recalculateRoute() {
-            calculateRoute();
-            showToast('Menghitung ulang rute...');
-        }
-
-        function calculatePrice() {
-            if (document.getElementById('resultCard').classList.contains('active')) {
-                calculateRoute();
-            }
-        }
-
-        // Search functionality
-        function handleSearch(input, index) {
-            activeInputIndex = index;
-            const query = input.value.trim();
-            
-            clearTimeout(searchTimeout);
-            document.getElementById('searchResults').style.display = 'none';
-            
-            if (query.length < 3) return;
-            
-            searchTimeout = setTimeout(() => {
-                searchLocation(query, index);
-            }, 500);
-        }
-
-        function searchLocation(query, index) {
-            currentSearchCallback = (latlng, displayName) => {
-                setLocationByLatLng(latlng, index, displayName);
-                document.getElementById('searchResults').style.display = 'none';
-            };
-
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=id`)
-                .then(res => res.json())
-                .then(data => {
-                    const resultsDiv = document.getElementById('searchResults');
-                    resultsDiv.innerHTML = '';
-                    
-                    if (data.length === 0) {
-                        showToast('Lokasi tidak ditemukan');
-                        return;
-                    }
-
-                    data.forEach(place => {
-                        const item = document.createElement('div');
-                        item.className = 'search-result-item';
-                        item.innerHTML = `
-                            <svg class="icon result-icon" style="width: 18px; height: 18px; stroke: currentColor;"><use href="#icon-map-pin"/></svg>
-                            <span>${place.display_name}</span>
-                        `;
-                        item.onclick = () => {
-                            const latlng = L.latLng(parseFloat(place.lat), parseFloat(place.lon));
-                            currentSearchCallback(latlng, place.display_name);
-                        };
-                        resultsDiv.appendChild(item);
-                    });
-
-                    resultsDiv.style.display = 'block';
-                })
-                .catch(() => showToast('Gagal mencari lokasi'));
-        }
-
-        function setLocationByLatLng(latlng, index, displayName) {
-            if (index === -1) {
-                waypoints[waypoints.length - 1] = latlng;
-                if (displayName) document.getElementById('input-end').value = displayName;
-            } else if (index === 0) {
-                waypoints[0] = latlng;
-                if (displayName) document.getElementById('input-0').value = displayName;
-            } else {
-                // Waypoint
-                waypoints[index] = latlng;
-                const wpInput = document.getElementById(`input-wp-${index}`);
-                if (wpInput && displayName) wpInput.value = displayName;
-            }
-            
-            map.setView(latlng, 16);
-            updateMarkers();
-            calculateRoute();
-        }
-
-        function reverseGeocode(latlng, index) {
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
-                .then(res => res.json())
-                .then(data => {
-                    const name = data.display_name || 'Lokasi tidak dikenal';
-                    if (index === -1) {
-                        document.getElementById('input-end').value = name;
-                    } else if (index === 0) {
-                        document.getElementById('input-0').value = name;
-                    } else {
-                        const wpInput = document.getElementById(`input-wp-${index}`);
-                        if (wpInput) wpInput.value = name;
-                    }
-                })
-                .catch(() => {});
-        }
-
-        function getCurrentLocation() {
-            const btn = document.getElementById('gpsBtn');
-            btn.classList.add('gps-pulse');
-            
-            if (!navigator.geolocation) {
-                showToast('GPS tidak didukung di perangkat ini');
-                btn.classList.remove('gps-pulse');
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const latlng = L.latLng(position.coords.latitude, position.coords.longitude);
-                    
-                    if (activeInputIndex === null) activeInputIndex = 0;
-                    
-                    setLocationByLatLng(latlng, activeInputIndex, 'Lokasi Saya (GPS)');
-                    showToast('Lokasi GPS berhasil dideteksi');
-                    btn.classList.remove('gps-pulse');
-                },
-                (error) => {
-                    showToast('Gagal mendapatkan lokasi: ' + error.message);
-                    btn.classList.remove('gps-pulse');
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        }
-
-        function setFromGPS(index) {
-            activeInputIndex = index;
-            getCurrentLocation();
-        }
-
-        // Waypoints
-        function addWaypoint() {
-            const container = document.getElementById('waypointsContainer');
-            const currentCount = container.children.length;
-            
-            if (currentCount >= MAX_WAYPOINTS) {
-                showToast('Maksimal ' + MAX_WAYPOINTS + ' titik antar');
-                return;
-            }
-
-            const idx = waypoints.length - 1; // Insert before last
-            waypoints.splice(idx, 0, null);
-
-            const div = document.createElement('div');
-            div.className = 'input-row';
-            div.setAttribute('data-index', idx);
-            div.innerHTML = `
-                <div class="input-icon icon-waypoint">
-                    <svg class="icon icon-fill" style="width: 18px; height: 18px;"><use href="#icon-map-pin"/></svg>
-                </div>
-                <input type="text" class="location-input" id="input-wp-${idx}" 
-                       placeholder="Titik antar ${currentCount + 1}" 
-                       oninput="handleSearch(this, ${idx})" 
-                       onfocus="activeInputIndex=${idx}"/>
-                <div class="input-actions">
-                    <button class="icon-btn" onclick="setFromGPS(${idx})" title="Gunakan GPS">
-                        <svg class="icon" style="width: 18px; height: 18px;"><use href="#icon-crosshair"/></svg>
-                    </button>
-                    <button class="icon-btn" onclick="removeWaypoint(this, ${idx})" title="Hapus">
-                        <svg class="icon" style="width: 18px; height: 18px; stroke: currentColor;"><use href="#icon-trash"/></svg>
-                    </button>
-                </div>
-            `;
-            
-            container.appendChild(div);
-            
-            // Hide add button if max reached
-            if (currentCount + 1 >= MAX_WAYPOINTS) {
-                document.getElementById('addWaypointBtn').style.display = 'none';
-            }
-        }
-
-        function removeWaypoint(btn, index) {
-            const row = btn.closest('.input-row');
-            row.remove();
-            waypoints[index] = null;
-            updateMarkers();
-            calculateRoute();
-            
-            document.getElementById('addWaypointBtn').style.display = 'flex';
-        }
-
-        function swapLocations() {
-            if (waypoints.length < 2) return;
-            
-            const temp = waypoints[0];
-            waypoints[0] = waypoints[waypoints.length - 1];
-            waypoints[waypoints.length - 1] = temp;
-            
-            const startVal = document.getElementById('input-0').value;
-            const endVal = document.getElementById('input-end').value;
-            document.getElementById('input-0').value = endVal;
-            document.getElementById('input-end').value = startVal;
-            
-            updateMarkers();
-            calculateRoute();
-            showToast('Lokasi ditukar');
-        }
-
-        // UI Helpers
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        function openModal() {
-            document.getElementById('modal').classList.add('active');
-        }
-
-        function closeModal(e) {
-            if (!e || e.target.id === 'modal' || e.target.closest('.modal-close') || e.target.closest('.btn-primary')) {
-                document.getElementById('modal').classList.remove('active');
-            }
-        }
-
-        // Close search results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-results') && !e.target.closest('.location-input')) {
-                document.getElementById('searchResults').style.display = 'none';
-            }
+searchInput.addEventListener('input', function(){
+  var q = searchInput.value.trim();
+  btnClearSearch.style.display = q ? 'flex' : 'none';
+  clearTimeout(searchTimer);
+  if(q.length<3){ resultList.innerHTML=''; quickActions.style.display='block'; return; }
+  quickActions.style.display='none';
+  resultList.innerHTML = '<div class="search-empty">Mencari…</div>';
+  searchTimer = setTimeout(function(){
+    geocodeSearch(q).then(function(list){
+      if(!list.length){ resultList.innerHTML = '<div class="search-empty">Alamat tidak ditemukan. Coba kata kunci lain atau tandai di peta.</div>'; return; }
+      resultList.innerHTML='';
+      list.forEach(function(item){
+        var row = document.createElement('div');
+        row.className='result-item';
+        var main = item.display_name.split(',')[0];
+        var sub = item.display_name.split(',').slice(1,4).join(',').trim();
+        row.innerHTML =
+          '<div class="ri-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.2"/></svg></div>' +
+          '<div class="ri-text"><b>'+escapeHtml(main)+'</b><span>'+escapeHtml(sub)+'</span></div>';
+        row.addEventListener('click', function(){
+          setActivePoint(parseFloat(item.lat), parseFloat(item.lon), item.display_name);
+          searchPanel.classList.remove('show');
         });
+        resultList.appendChild(row);
+      });
+    });
+  }, 420);
+});
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (map) map.invalidateSize();
-        });
-    </script>
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function setActivePoint(lat,lng,address){
+  var pt = points.find(function(p){return p.id===activePointId;});
+  if(!pt) return;
+  pt.lat=lat; pt.lng=lng; pt.address=address;
+  renderStack();
+}
+
+document.getElementById('qaGps').addEventListener('click', function(){
+  if(!navigator.geolocation){ toast('GPS tidak didukung perangkat ini'); return; }
+  toast('Mendeteksi lokasi…');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude, lng=pos.coords.longitude;
+    reverseGeocode(lat,lng).then(function(addr){
+      setActivePoint(lat,lng,addr);
+      searchPanel.classList.remove('show');
+    });
+  }, function(){
+    toast('Gagal mengambil lokasi GPS. Izinkan akses lokasi.');
+  }, {enableHighAccuracy:true, timeout:10000});
+});
+
+document.getElementById('qaMap').addEventListener('click', function(){
+  searchPanel.classList.remove('show');
+  enterPickMode();
+});
+
+/* ================= MAP-PICK MODE ================= */
+var crosshair = document.getElementById('crosshairPin');
+var pickBar = document.getElementById('pickBar');
+var pickAddress = document.getElementById('pickAddress');
+
+function enterPickMode(){
+  pickMode = true;
+  crosshair.classList.add('show');
+  pickBar.classList.add('show');
+  document.getElementById('sheet').style.transform = 'translateY(120%)';
+  pickAddress.textContent = 'Menentukan alamat…';
+  onMapMoveEnd();
+  map.on('moveend', onMapMoveEnd);
+}
+function exitPickMode(){
+  pickMode = false;
+  crosshair.classList.remove('show');
+  pickBar.classList.remove('show');
+  document.getElementById('sheet').style.transform = '';
+  map.off('moveend', onMapMoveEnd);
+}
+function onMapMoveEnd(){
+  if(!pickMode) return;
+  var c = map.getCenter();
+  pickCoords = {lat:c.lat, lng:c.lng};
+  pickAddress.textContent = 'Menentukan alamat…';
+  clearTimeout(pickTimer);
+  pickTimer = setTimeout(function(){
+    reverseGeocode(c.lat,c.lng).then(function(addr){ pickAddress.textContent = addr; });
+  }, 350);
+}
+document.getElementById('pickConfirm').addEventListener('click', function(){
+  if(!pickCoords) return;
+  setActivePoint(pickCoords.lat, pickCoords.lng, pickAddress.textContent);
+  exitPickMode();
+});
+document.getElementById('pickCancel').addEventListener('click', exitPickMode);
+
+/* ================= TOP BAR ACTIONS ================= */
+document.getElementById('btnLocate').addEventListener('click', function(){
+  if(!navigator.geolocation){ toast('GPS tidak didukung'); return; }
+  navigator.geolocation.getCurrentPosition(function(pos){
+    map.setView([pos.coords.latitude,pos.coords.longitude], 15);
+  }, function(){ toast('Gagal mengambil lokasi'); });
+});
+
+var settingsOpen = false;
+document.getElementById('btnSettings').addEventListener('click', function(){
+  var sheet = document.getElementById('sheet');
+  sheet.scrollIntoView && document.querySelector('.sheet-body').scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('pricePerKm').focus();
+  toast('Atur tarif per km di bawah');
+});
+
+/* ================= PRICE INPUT ================= */
+var priceInput = document.getElementById('pricePerKm');
+priceInput.addEventListener('input', function(){
+  var v = parseInt(priceInput.value,10);
+  pricePerKm = (isNaN(v) || v<=0) ? 0 : v;
+});
+
+/* ================= CALCULATE ================= */
+var formView = document.getElementById('formView');
+var resultView = document.getElementById('resultView');
+var btnCalc = document.getElementById('btnCalc');
+
+btnCalc.addEventListener('click', function(){
+  if(btnCalc.disabled) return;
+  btnCalc.classList.add('loading');
+  btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg> Menghitung…';
+  var list = points.map(function(p){ return {lat:p.lat,lng:p.lng}; });
+  routeBetween(list).then(function(res){
+    showResult(res);
+  }).finally(function(){
+    btnCalc.classList.remove('loading');
+    btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg> Hitung Jarak &amp; Ongkos';
+  });
+});
+
+function roundFare(n){ return Math.ceil(n/500)*500; }
+function fmtRp(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+function drawRoute(coords){
+  if(routeLayer){ map.removeLayer(routeLayer); }
+  routeLayer = L.polyline(coords, {color:'#D98C2B', weight:5, opacity:.92, lineCap:'round'}).addTo(map);
+  var casing = L.polyline(coords, {color:'#17223B', weight:8, opacity:.18, lineCap:'round'}).addTo(map);
+  routeLayer._casing = casing;
+  map.fitBounds(routeLayer.getBounds(), {padding:[60,60]});
+}
+
+function showResult(res){
+  var totalKm = res.distanceKm;
+  var fare = roundFare(totalKm * pricePerKm);
+
+  drawRoute(res.coords);
+
+  document.getElementById('fareValue').textContent = fmtRp(fare);
+  document.getElementById('distValue').textContent = totalKm.toFixed(1)+' km';
+  document.getElementById('rateValue').textContent = 'Rp '+fmtRp(pricePerKm)+'/km';
+  document.getElementById('wpValue').textContent = String(points.length-2);
+
+  var fillPct = Math.min(100, totalKm<=5?totalKm/5*35 : totalKm<=20?35+(totalKm-5)/15*40 : 75+Math.min(25,(totalKm-20)/30*25));
+  requestAnimationFrame(function(){
+    document.getElementById('rulerFill').style.width = fillPct+'%';
+  });
+  document.getElementById('rulerMid').textContent = (totalKm/2).toFixed(1)+' km';
+  document.getElementById('rulerMax').textContent = totalKm.toFixed(1)+' km';
+
+  var segList = document.getElementById('segmentList');
+  segList.innerHTML = '<div class="segment-title">Rincian segmen</div>';
+  for(var i=0;i<points.length-1;i++){
+    var a = points[i], b = points[i+1];
+    var segKm = res.segments[i] || 0;
+    var segFare = roundFare(segKm*pricePerKm);
+    var row = document.createElement('div');
+    row.className='segment';
+    row.innerHTML =
+      '<div class="segment-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>' +
+      '<div class="segment-text"><div class="segment-route">'+shortLabel(a)+' → '+shortLabel(b)+'</div><div class="segment-dist">'+segKm.toFixed(1)+' km</div></div>' +
+      '<div class="segment-fare mono">Rp '+fmtRp(segFare)+'</div>';
+    segList.appendChild(row);
+  }
+
+  document.getElementById('routeNote').style.display = res.estimated ? 'flex' : 'none';
+
+  formView.style.display = 'none';
+  resultView.classList.add('show');
+}
+
+function shortLabel(pt){
+  var t = pt.address || pt.label;
+  return t.length>18 ? t.slice(0,18)+'…' : t;
+}
+
+document.getElementById('btnBack').addEventListener('click', backToForm);
+document.getElementById('btnRecalc').addEventListener('click', backToForm);
+function backToForm(){
+  resultView.classList.remove('show');
+  formView.style.display = 'block';
+}
+
+/* ================= INIT ================= */
+renderStack();
+})();
+</script>
 </body>
 </html>
