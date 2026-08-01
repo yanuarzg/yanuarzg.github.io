@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Order Cireng & Frozen Food</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #17223B;
+  --ink-soft: #4B5670;
+  --line: #E3E7EE;
+  --surface: #F3F5F8;
+  --card: #FFFFFF;
+  --accent: #D98C2B;
+  --accent-ink: #5A3A0E;
+  --teal: #159E86;
+  --danger: #D3483F;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow-sheet: 0 -8px 30px rgba(23,34,59,0.14);
+  --shadow-card: 0 2px 10px rgba(23,34,59,0.08);
+  --shadow-fab: 0 4px 20px rgba(23,34,59,0.22);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100dvh; margin: 0; overscroll-behavior: none; background: var(--surface); color: var(--ink); font-family: 'Manrope', system-ui, sans-serif; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; }
+input { font-family: inherit; }
+
+/* ---------- HEADER ---------- */
+.header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--card); padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(23,34,59,0.05);
+}
+.header-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+.header-subtitle { font-size: 11.5px; color: var(--ink-soft); font-weight: 600; margin-top: 2px;}
+
+/* ---------- PRODUCT LIST ---------- */
+.main-content {
+  padding: 16px 16px 100px; height: calc(100dvh - 66px); overflow-y: auto;
+}
+.category-title {
+  font-size: 14px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase;
+  letter-spacing: 0.5px; margin: 24px 0 12px;
+}
+.category-title:first-child { margin-top: 4px; }
+
+.product-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.product-card {
+  background: var(--card); border-radius: var(--radius-md); padding: 12px;
+  box-shadow: var(--shadow-card); transition: transform 0.15s;
+  display: flex; flex-direction: column; cursor: pointer;
+}
+.product-card:active { transform: scale(0.96); }
+.p-icon {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--surface);
+  display: flex; align-items: center; justify-content: center; color: var(--accent);
+  margin-bottom: 12px;
+}
+.p-icon svg { width: 20px; height: 20px; }
+.p-title { font-size: 13.5px; font-weight: 700; line-height: 1.3; margin-bottom: 6px; flex: 1; }
+.p-price { font-size: 14px; font-weight: 800; color: var(--teal); }
+
+/* ---------- BOTTOM SHEETS ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(23,34,59,0.5); z-index: 40;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  background: var(--card); border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-sheet); max-height: 90vh;
+  display: flex; flex-direction: column;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.sheet.show { transform: translateY(0); }
+.sheet-handle { width: 100%; padding: 10px 0 6px; display: flex; justify-content: center; flex: none; }
+.sheet-handle span { width: 38px; height: 4px; border-radius: 3px; background: var(--line); position: relative; }
+.sheet-body { padding: 4px 20px 24px; overflow-y: auto; }
+.sheet-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px;}
+.btn-close { color: var(--ink-soft); padding: 4px; }
+
+/* ---------- ADD TO CART FORM ---------- */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 8px; display: block; }
+.form-input {
+  width: 100%; background: var(--surface); border: 2px solid transparent;
+  border-radius: var(--radius-sm); padding: 14px 16px;
+  font-size: 14.5px; font-weight: 700; color: var(--ink); transition: border 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--teal); background: #fff; }
+
+.qty-ctrl {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border-radius: var(--radius-sm); padding: 6px;
+}
+.btn-qty {
+  width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--card);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  font-weight: 800; color: var(--ink); box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.btn-qty:active { transform: scale(0.9); }
+.qty-val { font-size: 18px; font-weight: 800; flex: 1; text-align: center; }
+
+/* ---------- CART VIEW ---------- */
+.cart-group { margin-bottom: 20px; }
+.cg-header {
+  display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800;
+  padding: 8px 12px; background: var(--surface); border-radius: var(--radius-sm); margin-bottom: 10px;
+}
+.cg-header svg { width: 16px; height: 16px; color: var(--teal); }
+
+.cart-item {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px dashed var(--line);
+}
+.cart-item:last-child { border-bottom: none; }
+.ci-info { flex: 1; padding-right: 12px; }
+.ci-name { font-size: 13.5px; font-weight: 700; line-height: 1.3; }
+.ci-meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.ci-price { font-size: 13.5px; font-weight: 800; }
+.ci-remove { color: var(--danger); padding: 4px; display: flex; align-items: center; }
+
+.cart-summary {
+  background: linear-gradient(155deg, var(--ink) 0%, #223052 100%);
+  border-radius: var(--radius-lg); padding: 20px; color: #fff; margin-top: 10px;
+}
+.cs-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px; }
+.cs-total { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-top: 4px; }
+.cs-total span { font-size: 16px; color: var(--accent); vertical-align: 2px; margin-right: 4px; }
+
+/* ---------- CTA & FAB ---------- */
+.cta {
+  width: 100%; padding: 16px; border-radius: var(--radius-md);
+  background: var(--teal); color: #fff; font-weight: 800; font-size: 15px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 20px; box-shadow: 0 4px 15px rgba(21,158,134,0.3);
+}
+.cta:active { transform: scale(0.98); }
+.cta.secondary { background: var(--ink); box-shadow: 0 4px 15px rgba(23,34,59,0.2); }
+
+.fab {
+  position: fixed; right: 20px; bottom: 24px; z-index: 30;
+  background: var(--ink); color: #fff; border-radius: 30px;
+  padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-fab); font-weight: 800; font-size: 15px;
+  transform: translateY(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.fab.show { transform: translateY(0); }
+.fab-badge {
+  background: var(--danger); color: #fff; font-size: 12px; font-weight: 800;
+  padding: 2px 8px; border-radius: 12px;
+}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;top:20px;transform:translate(-50%,-140%);z-index:100;
+  background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;
+  padding:12px 20px;border-radius:30px;box-shadow:var(--shadow-fab);
+  transition:transform .3s cubic-bezier(.32,.72,0,1);white-space:nowrap;
+}
+.toast.show{transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Cireng & Frozen Food</div>
+    <div class="header-subtitle">Pemesanan Multi-Nota / Reseller</div>
+  </div>
+  <button class="icon-btn" onclick="openSettings()" aria-label="Pengaturan">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</div>
+
+<div class="main-content" id="productList">
+  <!-- Dirender via JS -->
+</div>
+
+<!-- Floating Action Button -->
+<button class="fab" id="fabCart" onclick="openCart()">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+  Lihat Keranjang
+  <span class="fab-badge mono" id="cartBadge">0</span>
+</button>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
+
+<!-- Product Detail Sheet -->
+<div class="sheet" id="productSheet">
+  <div class="sheet-handle"><span></span></div>
+  <div class="sheet-body">
+    <div class="sheet-title">
+      <div style="flex:1;">
+        <div id="psName" style="font-size:18px;">Nama Produk</div>
+        <div id="psPrice" class="mono" style="font-size:15px; color:var(--teal); margin-top:2px;">Rp 0</div>
+      </div>
+      <button class="btn-close" onclick="closeAllSheets()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Datalist untuk Autocomplete Nama Pemesan -->
+    <datalist id="customerNamesList"></datalist>
+
+    <div class="form-group">
+      <label class="form-label">Nama Pemesan / Reseller</label>
+      <input type="text" id="customerName" class="form-input" placeholder="Contoh: Shanum, Biyu, atau Pribadi" list="customerNamesList" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Jumlah</label>
+      <div class="qty-ctrl">
+        <button class="btn-qty" onclick="adjQty(-1)">-</button>
+        <div class="qty-val mono" id="psQty">1</div>
+        <button class="btn-qty" onclick="adjQty(1)">+</button>
+      </div>
+    </div>
+
+    <button class="cta" onclick="confirmAddToCart()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Tambah Produk
+    </button>
+  </div>
+</div>
+
+<!-- Cart Sheet -->
+<div class="sheet" id="cartSheet">
+  <div class="sheet-handle"><span></span></div>
+  <div class="sheet-body">
+    <div class="sheet-title">
+      Keranjang Belanja
+      <button class="btn-close" onclick="closeAllSheets()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div id="cartContent">
+      <!-- Di render via JS -->
+    </div>
+
+    <div class="cart-summary">
+      <div class="cs-label">Total Keseluruhan</div>
+      <div class="cs-total mono"><span>Rp</span><span id="grandTotal">0</span></div>
+    </div>
+
+    <button class="cta secondary" onclick="sendToWhatsApp()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Kirim Pesanan (WhatsApp)
+    </button>
+  </div>
+</div>
+
+<!-- Settings Sheet -->
+<div class="sheet" id="settingsSheet">
+  <div class="sheet-handle"><span></span></div>
+  <div class="sheet-body">
+    <div class="sheet-title">
+      Pengaturan
+      <button class="btn-close" onclick="closeAllSheets()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nomor WhatsApp Admin (Tujuan Pesanan)</label>
+      <input type="number" id="waNumber" class="form-input" placeholder="6281234567890">
+    </div>
+    <button class="cta secondary" onclick="saveSettings()">Simpan Pengaturan</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ================= DATABASE PRODUK ================= */
+// Berdasarkan gambar dan referensi prompt
+const catalog = [
+  { id: 'cj-keju', cat: 'Cireng Jumbo', name: 'Cireng Jumbo Keju', price: 15000 },
+  { id: 'cj-ati', cat: 'Cireng Jumbo', name: 'Cireng Jumbo Ati Ampela', price: 15000 },
+  { id: 'cj-pds', cat: 'Cireng Jumbo', name: 'Cireng Jumbo Ayam Pedas', price: 15000 },
+  { id: 'cj-ori', cat: 'Cireng Jumbo', name: 'Cireng Jumbo Ayam Ori', price: 15000 },
+  
+  { id: 'cm-keju', cat: 'Cireng Mini', name: 'Cireng Keju Mini', price: 11000 },
+  { id: 'cm-ati', cat: 'Cireng Mini', name: 'Cireng Ati Mini', price: 11000 },
+  { id: 'cm-pds', cat: 'Cireng Mini', name: 'Cireng Ayam Pedas Mini', price: 11000 },
+  { id: 'cm-ori', cat: 'Cireng Mini', name: 'Cireng Ayam Mini', price: 11000 },
+  { id: 'cm-mix', cat: 'Cireng Mini', name: 'Cireng Mix Mini', price: 11000 },
+
+  { id: 'ca-co', cat: 'Spesial', name: 'Cireng Ayam Chili Oil', price: 15000 },
+  { id: 'pc-grg', cat: 'Spesial', name: 'Pangsit Chili Oil Goreng', price: 15000 },
+  { id: 'pc-rbs', cat: 'Spesial', name: 'Pangsit Chili Oil Rebus', price: 15000 },
+  
+  { id: 'pmk', cat: 'Lainnya', name: 'Pempek (2 K.Selam, 1 Lenjer)', price: 20000 },
+  { id: 'co', cat: 'Lainnya', name: 'Sambal Chili Oil (Extra)', price: 5000 }
+];
+
+/* ================= STATE ================= */
+let cart = []; // Format: { id, productId, name, price, qty, customerName }
+let activeProduct = null;
+let currentQty = 1;
+
+// Nomor WA Default (Sesuai contoh prompt info pembayaran sebelumnya)
+let waAdmin = localStorage.getItem('cireng_wa_admin') || '6289507785333';
+
+const formatRp = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+/* ================= UI RENDERING ================= */
+const renderProducts = () => {
+  const container = document.getElementById('productList');
+  
+  // Kelompokkan berdasarkan kategori
+  const grouped = catalog.reduce((acc, p) => {
+    if (!acc[p.cat]) acc[p.cat] = [];
+    acc[p.cat].push(p);
+    return acc;
+  }, {});
+
+  let html = '';
+  for (const [cat, items] of Object.entries(grouped)) {
+    html += `<div class="category-title">${cat}</div><div class="product-grid">`;
+    items.forEach(p => {
+      html += `
+        <div class="product-card" onclick="openProduct('${p.id}')">
+          <div class="p-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="p-title">${p.name}</div>
+          <div class="p-price mono">Rp ${formatRp(p.price)}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+};
+
+const updateCartBadge = () => {
+  const badge = document.getElementById('cartBadge');
+  const fab = document.getElementById('fabCart');
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+  
+  badge.textContent = totalItems;
+  if (totalItems > 0) {
+    fab.classList.add('show');
+  } else {
+    fab.classList.remove('show');
+  }
+};
+
+/* ================= BOTTOM SHEETS LOGIC ================= */
+const overlay = document.getElementById('overlay');
+const sheets = ['productSheet', 'cartSheet', 'settingsSheet'];
+
+const closeAllSheets = () => {
+  overlay.classList.remove('show');
+  sheets.forEach(id => document.getElementById(id).classList.remove('show'));
+  // Sembunyikan keyboard di mobile saat sheet ditutup
+  document.activeElement.blur();
+};
+
+const openSheet = (id) => {
+  closeAllSheets();
+  overlay.classList.add('show');
+  document.getElementById(id).classList.add('show');
+};
+
+/* ================= PRODUCT FLOW ================= */
+window.openProduct = (productId) => {
+  activeProduct = catalog.find(p => p.id === productId);
+  currentQty = 1;
+  
+  document.getElementById('psName').textContent = activeProduct.name;
+  document.getElementById('psPrice').textContent = `Rp ${formatRp(activeProduct.price)}`;
+  document.getElementById('psQty').textContent = currentQty;
+  
+  // Perbarui datalist dari customer yang sudah ada di keranjang
+  const datalist = document.getElementById('customerNamesList');
+  const uniqueNames = [...new Set(cart.map(i => i.customerName))];
+  datalist.innerHTML = uniqueNames.map(n => `<option value="${n}">`).join('');
+
+  // Biarkan input nama yang terakhir dipakai agar cepat bagi reseller
+  if(uniqueNames.length === 0) document.getElementById('customerName').value = '';
+
+  openSheet('productSheet');
+  setTimeout(() => document.getElementById('customerName').focus(), 300);
+};
+
+window.adjQty = (delta) => {
+  currentQty += delta;
+  if (currentQty < 1) currentQty = 1;
+  document.getElementById('psQty').textContent = currentQty;
+};
+
+window.confirmAddToCart = () => {
+  let cName = document.getElementById('customerName').value.trim();
+  if (!cName) cName = 'Pesanan Saya';
+
+  // Cek apakah produk dan nama pemesan yang sama sudah ada
+  const existingIdx = cart.findIndex(i => i.productId === activeProduct.id && i.customerName === cName);
+  
+  if (existingIdx > -1) {
+    cart[existingIdx].qty += currentQty;
+  } else {
+    cart.push({
+      id: Math.random().toString(36).substring(7),
+      productId: activeProduct.id,
+      name: activeProduct.name,
+      price: activeProduct.price,
+      qty: currentQty,
+      customerName: cName
+    });
+  }
+
+  updateCartBadge();
+  closeAllSheets();
+  showToast(`${currentQty} ${activeProduct.name} ditambahkan untuk ${cName}`);
+};
+
+/* ================= CART FLOW ================= */
+window.openCart = () => {
+  renderCartView();
+  openSheet('cartSheet');
+};
+
+const renderCartView = () => {
+  const container = document.getElementById('cartContent');
+  
+  if (cart.length === 0) {
+    container.innerHTML = '<div style="text-align:center; color:var(--ink-soft); padding:30px 0;">Keranjang belanja kosong.</div>';
+    document.getElementById('grandTotal').textContent = '0';
+    return;
+  }
+
+  // Kelompokkan cart berdasarkan Nama Pemesan
+  const grouped = cart.reduce((acc, item) => {
+    if (!acc[item.customerName]) acc[item.customerName] = [];
+    acc[item.customerName].push(item);
+    return acc;
+  }, {});
+
+  let html = '';
+  let grandTotal = 0;
+
+  for (const [name, items] of Object.entries(grouped)) {
+    let subtotal = 0;
+    
+    html += `<div class="cart-group">
+      <div class="cg-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        ${name}
+      </div>`;
+      
+    items.forEach(item => {
+      const itemTotal = item.price * item.qty;
+      subtotal += itemTotal;
+      html += `
+        <div class="cart-item">
+          <div class="ci-info">
+            <div class="ci-name">${item.name}</div>
+            <div class="ci-meta">${item.qty} × Rp ${formatRp(item.price)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ci-price mono">Rp ${formatRp(itemTotal)}</div>
+            <button class="ci-remove" onclick="removeCartItem('${item.id}')">Hapus</button>
+          </div>
+        </div>`;
+    });
+    
+    html += `
+      <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:800; margin-top:8px; padding-top:8px; border-top:2px solid var(--surface);">
+        <span>Subtotal ${name}</span>
+        <span class="mono" style="color:var(--teal);">Rp ${formatRp(subtotal)}</span>
+      </div>
+    </div>`;
+    
+    grandTotal += subtotal;
+  }
+
+  container.innerHTML = html;
+  document.getElementById('grandTotal').textContent = formatRp(grandTotal);
+};
+
+window.removeCartItem = (id) => {
+  cart = cart.filter(i => i.id !== id);
+  updateCartBadge();
+  renderCartView();
+  if (cart.length === 0) closeAllSheets();
+};
+
+/* ================= WHATSAPP GENERATOR ================= */
+window.sendToWhatsApp = () => {
+  if (cart.length === 0) return;
+
+  const grouped = cart.reduce((acc, item) => {
+    if (!acc[item.customerName]) acc[item.customerName] = [];
+    acc[item.customerName].push(item);
+    return acc;
+  }, {});
+
+  let text = "✅ REKAP PESANAN + HARGA:\n";
+  let grandTotal = 0;
+
+  for (const [name, items] of Object.entries(grouped)) {
+    text += `• ${name} : \n`;
+    let subtotal = 0;
+    
+    items.forEach(item => {
+      const itemTotal = item.price * item.qty;
+      subtotal += itemTotal;
+      // Format 11k, 22k sesuai instruksi (dibagi 1000)
+      text += `${item.name} × ${item.qty} = ${itemTotal / 1000}k\n`;
+    });
+    
+    text += `Total: Rp ${formatRp(subtotal)}\n`;
+    grandTotal += subtotal;
+  }
+
+  text += `Total Keseluruhan: Rp ${formatRp(grandTotal)}\n`;
+  text += `Gratis ongkir max 3km dari https://maps.app.goo.gl/ynLUUUfYn8dFEWAKA\nTerima kasih 🙏`;
+
+  const waUrl = `https://wa.me/${waAdmin}?text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
+};
+
+/* ================= SETTINGS ================= */
+window.openSettings = () => {
+  document.getElementById('waNumber').value = waAdmin;
+  openSheet('settingsSheet');
+};
+
+window.saveSettings = () => {
+  const val = document.getElementById('waNumber').value.trim();
+  if(val) {
+    // Bersihkan karakter non-numerik dan pastikan format 62
+    let cleanVal = val.replace(/\D/g, '');
+    if (cleanVal.startsWith('0')) cleanVal = '62' + cleanVal.slice(1);
+    waAdmin = cleanVal;
+    localStorage.setItem('cireng_wa_admin', waAdmin);
+    showToast('Pengaturan disimpan');
+    closeAllSheets();
+  }
+};
+
+/* ================= TOAST ================= */
+const toastEl = document.getElementById('toast');
+let toastTimerModal;
+const showToast = (msg) => {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimerModal);
+  toastTimerModal = setTimeout(() => toastEl.classList.remove('show'), 2400);
+};
+
+/* INIT */
+renderProducts();
+
+</script>
+</body>
+</html>
