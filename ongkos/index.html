@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kalkulator Ongkos Jarak</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -441,6 +441,112 @@ input{font-family:inherit;}
   position:absolute;top:5px;left:0;right:0;text-align:center;
   font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#fff;
 }
+
+
+/* ---------- UX IMPROVEMENTS ---------- */
+:root{
+  --shadow-fab:0 8px 24px rgba(23,34,59,.2);
+  --focus-ring:0 0 0 3px rgba(62,106,225,.22);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --map-bottom-inset:300px;
+}
+html{height:100%;height:100dvh;}
+body{min-height:100%;min-height:100dvh;}
+button,input{font-size:16px;}
+button:focus-visible,input:focus-visible,[role="button"]:focus-visible{
+  outline:none;box-shadow:var(--focus-ring);
+}
+button[disabled]{cursor:not-allowed;}
+.icon-btn,.cb-btn,.field-clear,.btn-copy,.btn-minimize{min-width:44px;min-height:44px;}
+.icon-btn{width:44px;height:44px;}
+.topbar{padding-top:calc(14px + var(--safe-top));}
+.sheet-body{padding-bottom:calc(22px + var(--safe-bottom));scrollbar-gutter:stable;}
+.compact-bar{padding-bottom:calc(18px + var(--safe-bottom));}
+.pick-bar{padding-bottom:calc(18px + var(--safe-bottom));}
+.search-head{padding-top:calc(14px + var(--safe-top));}
+.top-menu{padding-top:calc(20px + var(--safe-top));}
+.leaflet-bottom.leaflet-right{bottom:var(--map-bottom-inset);transition:bottom .25s ease;}
+.leaflet-control-zoom a{width:40px!important;height:40px!important;line-height:40px!important;font-size:20px!important;}
+
+.panel-backdrop{
+  position:fixed;inset:0;z-index:24;background:rgba(23,34,59,.35);
+  opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease;
+}
+.panel-backdrop.show{opacity:1;visibility:visible;}
+
+.sheet-handle{border:0;background:transparent;cursor:grab;touch-action:none;}
+.sheet-handle:active{cursor:grabbing;}
+.sheet-handle span{transition:background .2s,width .2s;}
+.sheet-handle:hover span,.sheet-handle:focus-visible span{background:var(--ink-soft);width:48px;}
+
+.sheet-title-copy{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.sheet-kicker{font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.35px;text-transform:uppercase;}
+.form-progress{
+  display:flex;align-items:center;gap:11px;margin:-4px 0 8px;padding:11px 12px;
+  border:1px solid var(--line);border-radius:var(--radius-md);background:#fff;
+}
+.progress-icon{
+  width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex:none;background:var(--surface);color:var(--wp);font:700 12px 'IBM Plex Mono',monospace;
+}
+.form-progress.ready{background:#EAF7F3;border-color:#BFE6DB;}
+.form-progress.ready .progress-icon{background:var(--origin);color:#fff;}
+.form-progress b{display:block;font-size:12.5px;line-height:1.35;}
+.form-progress span{display:block;font-size:11.5px;line-height:1.4;color:var(--ink-soft);margin-top:1px;}
+
+.route-field{border:1px solid transparent;transition:border-color .15s,background .15s,transform .1s;cursor:pointer;}
+.route-field:hover{border-color:#CCD5E3;background:#F7F8FA;}
+.route-field:active{transform:scale(.992);}
+.route-field.empty{border-style:dashed;border-color:#D7DDE7;background:#FAFBFC;}
+.route-field .field-clear{border-radius:50%;}
+.route-field .field-clear:hover{background:#E8ECF2;}
+.route-row:first-of-type .route-field.empty{border-color:rgba(21,158,134,.35);}
+.route-row:nth-last-of-type(1) .route-field.empty{border-color:rgba(211,72,63,.28);}
+
+.settings-section-label{font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.45px;text-transform:uppercase;margin:18px 2px 4px;}
+.settings-helper{font-size:11.5px;color:var(--ink-soft);line-height:1.45;margin:0 2px 8px;}
+.price-edit input{border-radius:8px;padding:6px;min-height:36px;}
+.price-edit input:focus{background:#fff;box-shadow:var(--focus-ring);}
+
+.route-notice{
+  display:flex;gap:9px;align-items:flex-start;margin:-4px 0 14px;padding:10px 12px;
+  border-radius:var(--radius-sm);background:#FFF6E8;color:#704915;font-size:11.5px;line-height:1.45;
+}
+.route-notice svg{width:16px;height:16px;flex:none;margin-top:1px;}
+.route-notice[hidden]{display:none;}
+
+.search-context{padding:9px 16px 7px;font-size:11.5px;font-weight:700;color:var(--ink-soft);border-bottom:1px solid var(--line);}
+.result-item{width:100%;text-align:left;cursor:pointer;}
+.result-item:hover{background:var(--surface);}
+.search-empty{line-height:1.55;}
+.search-spinner{
+  width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--wp);
+  border-radius:50%;margin:0 auto 10px;animation:spin .8s linear infinite;
+}
+
+.cta,.nav-btn,.share-btn,.recalc-btn,.pick-confirm{min-height:48px;}
+.cta[disabled]{opacity:.48;pointer-events:auto;}
+.cta-hint{margin-top:8px;text-align:center;color:var(--ink-soft);font-size:11.5px;line-height:1.4;}
+
+.modal-card{max-height:calc(100dvh - 40px);overflow:auto;}
+.modal-overlay{backdrop-filter:blur(3px);}
+
+.toast{max-width:calc(100vw - 28px);white-space:normal;text-align:center;top:calc(16px + var(--safe-top));line-height:1.4;}
+
+@media (min-width:760px){
+  .sheet{left:18px;right:auto;bottom:18px;width:430px;max-height:calc(100dvh - 36px);border-radius:22px;}
+  .compact-bar{left:18px;right:auto;bottom:18px;width:430px;border-radius:22px;}
+  .top-menu{left:auto;right:18px;top:18px;width:430px;border-radius:22px;max-height:calc(100dvh - 36px);padding-top:20px;}
+  .search-panel{left:18px;right:auto;top:18px;bottom:18px;width:440px;border-radius:22px;box-shadow:var(--shadow-sheet);overflow:hidden;}
+  .pick-bar{left:50%;right:auto;bottom:18px;width:430px;transform:translateX(-50%);border-radius:22px;}
+  .topbar{padding:18px;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}
+
 </style>
 </head>
 <body>
@@ -472,39 +578,41 @@ input{font-family:inherit;}
 </div>
 
 <!-- ============ TOP SETTINGS PANEL ============ -->
-<div class="top-menu" id="topMenu">
-  <div class="top-menu-title">
+<div class="panel-backdrop" id="panelBackdrop" aria-hidden="true"></div>
+<div class="top-menu" id="topMenu" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="top-menu-title" id="settingsTitle">
     Pengaturan Kalkulator
-    <button id="btnCloseSettings" style="color:var(--ink-soft);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <button id="btnCloseSettings" aria-label="Tutup pengaturan" style="color:var(--ink-soft);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
   </div>
   
+  <div class="settings-section-label">Tarif perjalanan</div>
+  <div class="settings-helper">Perubahan tersimpan otomatis di perangkat ini.</div>
   <div class="settings-row">
-    <div class="label">Jarak Dasar Minimal</div>
+    <label class="label" for="minKm">Jarak Dasar Minimal</label>
     <div class="price-edit">
-      <input type="number" id="minKm" inputmode="numeric">
+      <input type="number" id="minKm" inputmode="decimal" min="0" step="0.1" aria-label="Jarak dasar minimal dalam kilometer">
       <span class="unit">km</span>
     </div>
   </div>
   <div class="settings-row">
-    <div class="label">Ongkos Dasar Minimal</div>
+    <label class="label" for="minFare">Ongkos Dasar Minimal</label>
     <div class="price-edit">
       <span class="unit">Rp</span>
-      <input type="number" id="minFare" inputmode="numeric">
+      <input type="number" id="minFare" inputmode="numeric" min="0" step="500" aria-label="Ongkos dasar minimal">
     </div>
   </div>
   <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:12px; padding-top:16px;">
-    <div class="label" style="color:var(--ink);">Tarif per Km (> Minimal)</div>
+    <label class="label" for="pricePerKm" style="color:var(--ink);">Tarif per Km (&gt; Minimal)</label>
     <div class="price-edit">
       <span class="unit">Rp</span>
-      <input type="number" id="pricePerKm" inputmode="numeric">
+      <input type="number" id="pricePerKm" inputmode="numeric" min="0" step="500" aria-label="Tarif per kilometer">
       <span class="unit">/km</span>
     </div>
   </div>
 
   <!-- Settings Pembayaran -->
-  <div class="settings-row" style="border-top:1px dashed var(--line); margin-top:16px; padding-top:16px; margin-bottom:8px;">
-    <div class="label" style="color:var(--ink); width:100%; font-size:14px;">Rekening & E-Wallet</div>
-  </div>
+  <div class="settings-section-label">Rekening &amp; e-wallet</div>
+  <div class="settings-helper">Hanya metode yang berisi nomor yang akan ditampilkan dan dibagikan.</div>
   <div class="settings-row"><div class="label">Atas Nama</div><div class="price-edit"><input type="text" id="payName" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">DANA</div><div class="price-edit"><input type="text" id="payDana" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">GOPAY</div><div class="price-edit"><input type="text" id="payGopay" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
@@ -516,14 +624,19 @@ input{font-family:inherit;}
 
 <!-- ============ BOTTOM SHEET ============ -->
 <div class="sheet" id="sheet">
-  <div class="sheet-handle"><span></span></div>
+  <button class="sheet-handle" id="sheetHandle" aria-label="Ciutkan panel" aria-expanded="true"><span></span></button>
   <div class="sheet-body">
     <div id="formView">
       <div class="sheet-title">
-        <span>Hitung Ongkos</span>
-        <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Minimize">
+        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Hitung Ongkos</span></div>
+        <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Ciutkan panel">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
+      </div>
+
+      <div class="form-progress" id="formProgress" role="status" aria-live="polite">
+        <div class="progress-icon" id="formProgressIcon">1/2</div>
+        <div><b id="formProgressTitle">Pilih titik awal</b><span id="formProgressText">Ketuk kolom titik awal untuk mencari alamat.</span></div>
       </div>
 
       <div class="route-stack" id="routeStack">
@@ -539,15 +652,16 @@ input{font-family:inherit;}
       <div class="settings-row" style="margin-top:14px; margin-bottom:16px; background:#FBF1E1;">
         <div class="label" style="color:var(--accent-ink);">Pulang - Pergi (Round-Trip)</div>
         <label class="toggle-switch">
-          <input type="checkbox" id="toggleRoundTrip">
+          <input type="checkbox" id="toggleRoundTrip" aria-label="Aktifkan perjalanan pulang pergi">
           <span class="toggle-slider"></span>
         </label>
       </div>
 
-      <button class="cta" id="btnCalc" disabled>
+      <button class="cta" id="btnCalc" disabled aria-describedby="calcHint">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
         Hitung Jarak &amp; Ongkos
       </button>
+      <div class="cta-hint" id="calcHint">Lengkapi titik awal dan tujuan.</div>
     </div>
 
     <!-- RESULT VIEW -->
@@ -560,6 +674,11 @@ input{font-family:inherit;}
         <button class="btn-minimize" id="btnMinimizeResult" aria-label="Minimize">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
+      </div>
+
+      <div class="route-notice" id="routeNotice" role="status" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 17h.01"/></svg>
+        <span>Server rute tidak tersedia. Jarak memakai estimasi garis lurus yang disesuaikan, sehingga hasil dapat berbeda dari rute jalan sebenarnya.</span>
       </div>
 
       <div class="meter-card">
@@ -592,7 +711,7 @@ input{font-family:inherit;}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
           Hitung ulang
         </button>
-        <button class="share-btn btn-full" onclick="handleShare(this, false)">
+        <button class="share-btn btn-full" id="btnShare">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Bagikan Tagihan
         </button>
@@ -608,7 +727,7 @@ input{font-family:inherit;}
     <div class="cb-dist" id="cbDist">0 km • 0 tujuan</div>
   </div>
   <div class="cb-actions">
-    <button class="cb-btn" aria-label="Bagikan" onclick="handleShare(this, true)">
+    <button class="cb-btn" id="btnCompactShare" aria-label="Bagikan" disabled>
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
     <button class="cb-btn" id="cbExpand" aria-label="Perbesar Layar">
@@ -634,7 +753,7 @@ input{font-family:inherit;}
 </div>
 
 <!-- ============ SEARCH PANEL ============ -->
-<div class="search-panel" id="searchPanel">
+<div class="search-panel" id="searchPanel" role="dialog" aria-modal="true" aria-labelledby="searchContext">
   <div class="search-head">
     <button class="icon-btn" id="btnCloseSearch" style="box-shadow:none;background:var(--surface);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -645,6 +764,7 @@ input{font-family:inherit;}
       <button class="clear-x" id="btnClearSearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
   </div>
+  <div class="search-context" id="searchContext">Memilih lokasi</div>
   <div class="search-body">
     <div class="quick-actions" id="quickActions">
       <button class="quick-action" id="qaGps">
@@ -671,7 +791,7 @@ input{font-family:inherit;}
   <button class="pick-cancel" id="pickCancel">Batal</button>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -688,24 +808,43 @@ const getEmptyPoints = () => [
 
 let points = getEmptyPoints();
 
-// Menarik dari config utama (APP_CONFIG)
-let minKm = APP_CONFIG.tarif.jarakMinimalKm;
-let minFare = APP_CONFIG.tarif.ongkosMinimalRp;
-let pricePerKm = APP_CONFIG.tarif.tarifPerKmSelanjutnya;
-let routePointsForNav = []; 
+const readStoredJSON = (key, fallback) => {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return value && typeof value === 'object' ? value : fallback;
+  } catch {
+    return fallback;
+  }
+};
 
-// Data Payment State (Mencoba Load LocalStorage dlu, jika kosong pakai APP_CONFIG)
-let payData = JSON.parse(localStorage.getItem('ongkir_payment_data')) || APP_CONFIG.rekening;
+const savedTariff = readStoredJSON('ongkir_tariff_data', {});
+let minKm = Number(savedTariff.minKm ?? APP_CONFIG.tarif.jarakMinimalKm);
+let minFare = Number(savedTariff.minFare ?? APP_CONFIG.tarif.ongkosMinimalRp);
+let pricePerKm = Number(savedTariff.pricePerKm ?? APP_CONFIG.tarif.tarifPerKmSelanjutnya);
+let routePointsForNav = [];
+let lastResult = null;
+
+let payData = { ...APP_CONFIG.rekening, ...readStoredJSON('ongkir_payment_data', {}) };
 
 let activePointId = null;
 let pickMode = false;
 let pickCoords = null;
 let pickTimer = null;
 let searchTimer = null;
+let pricingTimer = null;
+let searchRequestId = 0;
+let calculationRequestId = 0;
 let drawnRouteLayers = [];
 const markers = {};
 
 const getPtLabel = (pt) => pt.customName || pt.address || pt.label;
+const isRouteComplete = () => points.length >= 2 && points.every(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+const invalidateCalculatedResult = () => {
+  calculationRequestId += 1;
+  lastResult = null;
+  const compactShare = document.getElementById('btnCompactShare');
+  if (compactShare) compactShare.disabled = true;
+};
 
 /* ================= MAP INIT ================= */
 const map = L.map('map', { 
@@ -738,6 +877,32 @@ window.toast = (msg) => {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
 };
 
+const setButtonBusy = (button, busy, busyLabel = 'Memproses…') => {
+  if (!button) return;
+  if (busy) {
+    button.dataset.originalHtml = button.innerHTML;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="animation:spin .8s linear infinite"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>${busyLabel}`;
+  } else {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    if (button.dataset.originalHtml) button.innerHTML = button.dataset.originalHtml;
+    delete button.dataset.originalHtml;
+  }
+};
+
+const updateMapInsets = () => {
+  requestAnimationFrame(() => {
+    let inset = 90;
+    if (pickMode && pickBar.classList.contains('show')) inset = pickBar.offsetHeight + 18;
+    else if (sheetEl?.classList.contains('minimized')) inset = compactBar.offsetHeight + 18;
+    else if (sheetEl) inset = Math.min(sheetEl.offsetHeight + 18, window.innerHeight * .7);
+    document.documentElement.style.setProperty('--map-bottom-inset', `${Math.max(80, inset)}px`);
+    map.invalidateSize({ pan: false });
+  });
+};
+
 /* ================= CLEAR ROUTE HELPER ================= */
 const clearRouteLayers = () => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
@@ -750,17 +915,18 @@ const inputMinKm = document.getElementById('minKm');
 const inputMinFare = document.getElementById('minFare');
 
 const initAppValues = () => {
+  document.getElementById('appNameLabel').textContent = APP_CONFIG.namaAplikasi;
   inputPrice.value = pricePerKm;
   inputMinKm.value = minKm;
   inputMinFare.value = minFare;
   
-  document.getElementById('payName').value = payData.name;
-  document.getElementById('payDana').value = payData.dana;
-  document.getElementById('payGopay').value = payData.gopay;
-  document.getElementById('payShopee').value = payData.shopeepay;
-  document.getElementById('payBri').value = payData.bri;
-  document.getElementById('payJago').value = payData.jago;
-  document.getElementById('paySeabank').value = payData.seabank;
+  document.getElementById('payName').value = payData.name || '';
+  document.getElementById('payDana').value = payData.dana || '';
+  document.getElementById('payGopay').value = payData.gopay || '';
+  document.getElementById('payShopee').value = payData.shopeepay || '';
+  document.getElementById('payBri').value = payData.bri || '';
+  document.getElementById('payJago').value = payData.jago || '';
+  document.getElementById('paySeabank').value = payData.seabank || '';
 };
 
 const updatePaymentData = () => {
@@ -771,7 +937,7 @@ const updatePaymentData = () => {
   payData.bri = document.getElementById('payBri').value.trim();
   payData.jago = document.getElementById('payJago').value.trim();
   payData.seabank = document.getElementById('paySeabank').value.trim();
-  localStorage.setItem('ongkir_payment_data', JSON.stringify(payData));
+  try { localStorage.setItem('ongkir_payment_data', JSON.stringify(payData)); } catch {}
 };
 
 ['payName','payDana','payGopay','payShopee','payBri','payJago','paySeabank'].forEach(id => {
@@ -779,21 +945,43 @@ const updatePaymentData = () => {
 });
 
 
-window.copyToClipboard = (text, btnElement) => {
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(() => {
+window.copyToClipboard = async (text, btnElement) => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      if (!document.execCommand('copy')) throw new Error('copy-failed');
+      area.remove();
+    }
+    if (!btnElement.dataset.originalHtml) {
       const originalHTML = btnElement.innerHTML;
       btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      setTimeout(() => { btnElement.innerHTML = originalHTML; }, 2000);
+      setTimeout(() => { btnElement.innerHTML = originalHTML; }, 1600);
       toast('Nomor rekening disalin');
-    });
-  } else {
-    toast('Gagal menyalin (fitur tidak didukung browser ini)');
+    }
+  } catch {
+    toast('Nomor tidak dapat disalin. Tekan lama pada nomor untuk menyalin.');
   }
 };
 
 const renderPaymentModal = () => {
-  let html = `<div style="font-size:12.5px; color:var(--ink-soft); margin-bottom:12px;">Penerima: <b>${payData.name || '-'}</b></div>`;
+  const container = document.getElementById('paymentListContainer');
+  container.replaceChildren();
+
+  const recipient = document.createElement('div');
+  recipient.style.cssText = 'font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;';
+  recipient.append('Penerima: ');
+  const strong = document.createElement('b');
+  strong.textContent = payData.name || '-';
+  recipient.appendChild(strong);
+  container.appendChild(recipient);
+
   const banks = [
     { id: 'dana', label: 'DANA' },
     { id: 'gopay', label: 'GOPAY' },
@@ -802,36 +990,59 @@ const renderPaymentModal = () => {
     { id: 'jago', label: 'Bank Jago' },
     { id: 'seabank', label: 'Seabank' }
   ];
-  
-  let hasItem = false;
-  banks.forEach(b => {
-     const val = payData[b.id];
-     if(val) {
-        hasItem = true;
-        html += `
-        <div class="pay-item">
-          <div class="pay-item-info">
-            <div class="pay-bank">${b.label}</div>
-            <div class="pay-acc">${val}</div>
-          </div>
-          <button class="btn-copy" onclick="copyToClipboard('${val}', this)" aria-label="Salin">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
-        </div>`;
-     }
+
+  const available = banks.filter(bank => payData[bank.id]);
+  if (!available.length) {
+    const empty = document.createElement('div');
+    empty.className = 'search-empty';
+    empty.textContent = 'Belum ada info bayar. Tambahkan rekening melalui Pengaturan.';
+    container.appendChild(empty);
+    return;
+  }
+
+  available.forEach(bank => {
+    const item = document.createElement('div');
+    item.className = 'pay-item';
+
+    const info = document.createElement('div');
+    info.className = 'pay-item-info';
+    const label = document.createElement('div');
+    label.className = 'pay-bank';
+    label.textContent = bank.label;
+    const account = document.createElement('div');
+    account.className = 'pay-acc';
+    account.textContent = payData[bank.id];
+    info.append(label, account);
+
+    const copyButton = document.createElement('button');
+    copyButton.className = 'btn-copy';
+    copyButton.type = 'button';
+    copyButton.setAttribute('aria-label', `Salin nomor ${bank.label}`);
+    copyButton.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    copyButton.addEventListener('click', () => copyToClipboard(payData[bank.id], copyButton));
+
+    item.append(info, copyButton);
+    container.appendChild(item);
   });
-  
-  if(!hasItem) { html += `<div style="font-size:13px; color:var(--ink-soft); text-align:center; padding:10px;">Belum ada info bayar yang diatur. Buka Pengaturan untuk menambah.</div>`; }
-  document.getElementById('paymentListContainer').innerHTML = html;
 };
 
 const paymentModal = document.getElementById('paymentModal');
-document.getElementById('btnPayment').addEventListener('click', () => {
+let modalReturnFocus = null;
+const closePaymentModal = () => {
+  paymentModal.classList.remove('show');
+  modalReturnFocus?.focus?.();
+};
+document.getElementById('btnPayment').addEventListener('click', (event) => {
+  modalReturnFocus = event.currentTarget;
   renderPaymentModal();
   paymentModal.classList.add('show');
+  setTimeout(() => document.getElementById('btnClosePayment').focus(), 30);
 });
-document.getElementById('btnClosePayment').addEventListener('click', () => paymentModal.classList.remove('show'));
-document.getElementById('btnModalClose').addEventListener('click', () => paymentModal.classList.remove('show'));
+document.getElementById('btnClosePayment').addEventListener('click', closePaymentModal);
+document.getElementById('btnModalClose').addEventListener('click', closePaymentModal);
+paymentModal.addEventListener('click', (event) => {
+  if (event.target === paymentModal) closePaymentModal();
+});
 
 /* ================= FULLSCREEN API ================= */
 const btnFullscreen = document.getElementById('btnFullscreen');
@@ -859,10 +1070,10 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 /* ================= OSRM & NOMINATIM ================= */
-const geocodeSearch = async (q) => {
+const geocodeSearch = async (q, signal) => {
   const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=8&countrycodes=id&q=${encodeURIComponent(q)}`;
   try {
-    const res = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+    const res = await fetch(url, { headers: { 'Accept-Language': 'id' }, signal });
     if (!res.ok) throw new Error('Geocode failed');
     return await res.json();
   } catch (err) { return []; }
@@ -922,6 +1133,32 @@ const iconFor = (role) => {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
 };
 
+const updateFormProgress = () => {
+  const selected = points.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng)).length;
+  const complete = isRouteComplete();
+  const missing = points.find(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lng));
+  const progress = document.getElementById('formProgress');
+  const icon = document.getElementById('formProgressIcon');
+  const title = document.getElementById('formProgressTitle');
+  const detail = document.getElementById('formProgressText');
+  const hint = document.getElementById('calcHint');
+
+  icon.textContent = complete ? '✓' : `${selected}/${points.length}`;
+  progress.classList.toggle('ready', complete);
+  btnCalc.disabled = !complete;
+  btnCalc.setAttribute('aria-disabled', String(!complete));
+
+  if (complete) {
+    title.textContent = 'Rute siap dihitung';
+    detail.textContent = `${points.length - 1} tujuan telah dipilih. Periksa urutan lalu hitung ongkos.`;
+    hint.textContent = toggleRoundTrip.checked ? 'Mode pulang-pergi aktif.' : 'Jarak dihitung mengikuti rute jalan.';
+  } else {
+    title.textContent = missing?.role === 'origin' ? 'Pilih titik awal' : `Pilih ${missing?.label?.toLowerCase() || 'lokasi'}`;
+    detail.textContent = 'Cari alamat, gunakan GPS, atau tandai titik langsung pada peta.';
+    hint.textContent = `Lengkapi ${points.length - selected} lokasi lagi.`;
+  }
+};
+
 const renderStack = () => {
   routeStack.querySelectorAll('.route-row, .swap-btn').forEach(el => el.remove());
   
@@ -933,11 +1170,11 @@ const renderStack = () => {
 
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
-      <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}">
-        <div class="field-text">${getPtLabel(pt)}</div>
-        ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
-        ${hasLocation ? `<button class="field-clear" data-clear="${pt.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
-        ${canRemove ? `<button class="field-clear" data-remove="${pt.id}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+      <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}" role="button" tabindex="0" aria-label="${escapeHtml(hasLocation ? `Ubah ${pt.label}: ${getPtLabel(pt)}` : `Pilih ${pt.label}`)}">
+        <div class="field-text">${escapeHtml(getPtLabel(pt))}</div>
+        ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" aria-label="Ubah nama ${escapeHtml(pt.label)}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
+        ${hasLocation ? `<button class="field-clear" data-clear="${pt.id}" aria-label="Kosongkan ${escapeHtml(pt.label)}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+        ${canRemove ? `<button class="field-clear" data-remove="${pt.id}" aria-label="Hapus ${escapeHtml(pt.label)}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
       </div>`;
     routeStack.appendChild(row);
   });
@@ -956,15 +1193,16 @@ const renderStack = () => {
        
        points[lastIdx].lat = temp.lat; points[lastIdx].lng = temp.lng;
        points[lastIdx].address = temp.address; points[lastIdx].customName = temp.customName;
-       
+       invalidateCalculatedResult();
        renderStack();
        if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
     };
     routeStack.appendChild(swapBtn);
   }
   
-  document.getElementById('btnCalc').disabled = !points.every(p => p.lat != null && p.lng != null);
+  updateFormProgress();
   syncMarkers();
+  updateMapInsets();
 };
 
 routeStack.addEventListener('click', (e) => {
@@ -979,6 +1217,7 @@ routeStack.addEventListener('click', (e) => {
       const newName = prompt("Ubah nama/label tujuan ini (misal: Rumah Budi):", pt.customName || "");
       if (newName !== null) {
         pt.customName = newName.trim();
+        invalidateCalculatedResult();
         renderStack();
         if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
       }
@@ -990,6 +1229,7 @@ routeStack.addEventListener('click', (e) => {
     const pt = points.find(p => p.id === clear.getAttribute('data-clear'));
     if (pt) { 
       pt.lat = null; pt.lng = null; pt.address = ''; pt.customName = '';
+      invalidateCalculatedResult();
       clearRouteLayers();
       renderStack();
       if(document.getElementById('resultView').classList.contains('show')) backToForm();
@@ -999,6 +1239,7 @@ routeStack.addEventListener('click', (e) => {
   
   if (remove) {
     points = points.filter(p => p.id !== remove.getAttribute('data-remove'));
+    invalidateCalculatedResult();
     points.forEach((p, idx) => {
       if (idx === 0) { p.role = 'origin'; p.label = 'Titik awal'; }
       else if (idx === points.length - 1) { p.role = 'dest'; p.label = 'Tujuan akhir'; }
@@ -1018,12 +1259,20 @@ routeStack.addEventListener('click', (e) => {
   if (field) openSearchPanel(field.getAttribute('data-id'));
 });
 
+routeStack.addEventListener('keydown', (event) => {
+  const field = event.target.closest('.route-field');
+  if (!field || !['Enter', ' '].includes(event.key)) return;
+  event.preventDefault();
+  openSearchPanel(field.getAttribute('data-id'));
+});
+
 document.getElementById('btnAddStop').addEventListener('click', () => {
   if (points.length >= 7) { toast('Batas maksimal 7 lokasi dicapai'); return; }
   const oldDest = points[points.length - 1];
   oldDest.role = 'waypoint';
   oldDest.label = `Tujuan ${points.length - 1}`;
   points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '', customName: '' });
+  invalidateCalculatedResult();
   renderStack();
 });
 
@@ -1031,31 +1280,65 @@ document.getElementById('btnAddStop').addEventListener('click', () => {
 const sheetEl = document.getElementById('sheet');
 const compactBar = document.getElementById('compactBar');
 
-const toggleSheet = () => {
-  const isMinimized = sheetEl.classList.toggle('minimized');
-  if (isMinimized) {
-    compactBar.classList.add('show');
-  } else {
-    compactBar.classList.remove('show');
-  }
+const setSheetMinimized = (minimized) => {
+  sheetEl.classList.toggle('minimized', minimized);
+  compactBar.classList.toggle('show', minimized);
+  document.body.classList.toggle('is-sheet-minimized', minimized);
+  document.getElementById('sheetHandle').setAttribute('aria-expanded', String(!minimized));
+  document.getElementById('sheetHandle').setAttribute('aria-label', minimized ? 'Buka panel' : 'Ciutkan panel');
+  updateMapInsets();
 };
+const toggleSheet = () => setSheetMinimized(!sheetEl.classList.contains('minimized'));
 document.getElementById('btnMinimizeSheet').addEventListener('click', toggleSheet);
 document.getElementById('btnMinimizeResult').addEventListener('click', toggleSheet);
+let suppressHandleClick = false;
+document.getElementById('sheetHandle').addEventListener('click', () => {
+  if (suppressHandleClick) { suppressHandleClick = false; return; }
+  toggleSheet();
+});
 document.getElementById('cbInfo').addEventListener('click', toggleSheet);
 document.getElementById('cbExpand').addEventListener('click', toggleSheet);
 
+let handleStartY = null;
+const sheetHandle = document.getElementById('sheetHandle');
+sheetHandle.addEventListener('pointerdown', (event) => { handleStartY = event.clientY; });
+sheetHandle.addEventListener('pointerup', (event) => {
+  if (handleStartY != null && event.clientY - handleStartY > 36) {
+    suppressHandleClick = true;
+    setSheetMinimized(true);
+  }
+  handleStartY = null;
+});
+
 /* ================= SETTINGS (COLLAPSIBLE TOP) ================= */
 const topMenu = document.getElementById('topMenu');
-
-document.getElementById('btnSettings').addEventListener('click', () => topMenu.classList.add('show'));
-document.getElementById('btnCloseSettings').addEventListener('click', () => topMenu.classList.remove('show'));
+const panelBackdrop = document.getElementById('panelBackdrop');
+let settingsReturnFocus = null;
+const openSettings = (event) => {
+  settingsReturnFocus = event?.currentTarget || document.getElementById('btnSettings');
+  topMenu.classList.add('show');
+  panelBackdrop.classList.add('show');
+  setTimeout(() => inputMinKm.focus(), 30);
+};
+const closeSettings = () => {
+  topMenu.classList.remove('show');
+  panelBackdrop.classList.remove('show');
+  settingsReturnFocus?.focus?.();
+};
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
+panelBackdrop.addEventListener('click', closeSettings);
 
 const updatePricingInfo = () => {
-  pricePerKm = parseInt(inputPrice.value, 10) || 0;
-  minKm = parseFloat(inputMinKm.value) || 0;
-  minFare = parseInt(inputMinFare.value, 10) || 0;
-  
-  if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
+  pricePerKm = Math.max(0, parseInt(inputPrice.value, 10) || 0);
+  minKm = Math.max(0, parseFloat(inputMinKm.value) || 0);
+  minFare = Math.max(0, parseInt(inputMinFare.value, 10) || 0);
+  try { localStorage.setItem('ongkir_tariff_data', JSON.stringify({ pricePerKm, minKm, minFare })); } catch {}
+  invalidateCalculatedResult();
+  clearTimeout(pricingTimer);
+  pricingTimer = setTimeout(() => {
+    if (resultView.classList.contains('show') && isRouteComplete()) executeCalc(true);
+  }, 450);
 };
 inputPrice.addEventListener('input', updatePricingInfo);
 inputMinKm.addEventListener('input', updatePricingInfo);
@@ -1079,8 +1362,10 @@ document.getElementById('btnReset').addEventListener('click', () => {
   document.getElementById('resultView').classList.remove('show');
   document.getElementById('formView').style.display = 'block';
   
-  if (sheetEl.classList.contains('minimized')) toggleSheet(); 
+  if (sheetEl.classList.contains('minimized')) setSheetMinimized(false); 
+  invalidateCalculatedResult();
   renderStack();
+  updateMapInsets();
   
   const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
   window.history.pushState({path:newUrl}, '', newUrl);
@@ -1118,6 +1403,7 @@ const syncMarkers = () => {
           const { lat, lng } = m.getLatLng();
           pt.lat = lat; pt.lng = lng;
           pt.address = 'Mencari alamat…';
+          invalidateCalculatedResult();
           renderStack();
           
           if (document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
@@ -1144,9 +1430,21 @@ const resultList = document.getElementById('resultList');
 const quickActions = document.getElementById('quickActions');
 const btnClearSearch = document.getElementById('btnClearSearch');
 
+let activeSearchController = null;
+const closeSearchPanel = () => {
+  searchPanel.classList.remove('show');
+  activeSearchController?.abort();
+  searchTimer && clearTimeout(searchTimer);
+  const activeField = routeStack.querySelector(`[data-id="${activePointId}"]`);
+  setTimeout(() => activeField?.focus?.(), 30);
+};
+
 const openSearchPanel = (pointId) => {
   activePointId = pointId;
+  const point = points.find(p => p.id === pointId);
   searchInput.value = '';
+  searchInput.placeholder = point?.role === 'origin' ? 'Cari titik awal' : `Cari ${point?.label?.toLowerCase() || 'tujuan'}`;
+  document.getElementById('searchContext').textContent = point?.role === 'origin' ? 'Memilih titik awal' : `Memilih ${point?.label?.toLowerCase() || 'tujuan'}`;
   resultList.innerHTML = '';
   quickActions.style.display = 'block';
   btnClearSearch.style.display = 'none';
@@ -1154,68 +1452,97 @@ const openSearchPanel = (pointId) => {
   setTimeout(() => searchInput.focus(), 260);
 };
 
-document.getElementById('btnCloseSearch').addEventListener('click', () => searchPanel.classList.remove('show'));
+document.getElementById('btnCloseSearch').addEventListener('click', closeSearchPanel);
 btnClearSearch.addEventListener('click', () => {
-  searchInput.value = ''; resultList.innerHTML = ''; quickActions.style.display = 'block'; btnClearSearch.style.display = 'none';
+  activeSearchController?.abort();
+  searchInput.value = '';
+  resultList.innerHTML = '';
+  quickActions.style.display = 'block';
+  btnClearSearch.style.display = 'none';
+  searchInput.focus();
 });
 
-const escapeHtml = (s) => (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const escapeHtml = (s) => (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.trim();
   btnClearSearch.style.display = q ? 'flex' : 'none';
   clearTimeout(searchTimer);
-  
-  if (q.length < 3) { resultList.innerHTML = ''; quickActions.style.display = 'block'; return; }
+  activeSearchController?.abort();
+
+  if (q.length < 3) {
+    resultList.innerHTML = q ? '<div class="search-empty">Ketik minimal 3 karakter.</div>' : '';
+    quickActions.style.display = q ? 'none' : 'block';
+    return;
+  }
+
   quickActions.style.display = 'none';
-  resultList.innerHTML = '<div class="search-empty">Mencari…</div>';
-  
+  resultList.innerHTML = '<div class="search-empty"><div class="search-spinner"></div>Mencari lokasi…</div>';
+  const requestId = ++searchRequestId;
+
   searchTimer = setTimeout(async () => {
-    const list = await geocodeSearch(q);
-    if (!list.length) { 
-      resultList.innerHTML = '<div class="search-empty">Alamat tidak ditemukan. Coba kata kunci lain atau tandai di peta.</div>'; 
-      return; 
+    activeSearchController = new AbortController();
+    const list = await geocodeSearch(q, activeSearchController.signal);
+    if (requestId !== searchRequestId || searchInput.value.trim() !== q) return;
+    if (!list.length) {
+      resultList.innerHTML = '<div class="search-empty">Alamat tidak ditemukan.<br>Coba nama jalan, kelurahan, atau tandai titik langsung pada peta.</div>';
+      return;
     }
-    resultList.innerHTML = '';
+
+    resultList.replaceChildren();
     list.forEach(item => {
-      const row = document.createElement('div');
+      const row = document.createElement('button');
+      row.type = 'button';
       row.className = 'result-item';
       const parts = item.display_name.split(',');
       const main = parts[0];
-      const sub = parts.slice(1, 4).join(',').trim();
+      const sub = parts.slice(1, 5).join(',').trim();
       row.innerHTML = `
         <div class="ri-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="2.2"/><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/></svg></div>
         <div class="ri-text"><b>${escapeHtml(main)}</b><span>${escapeHtml(sub)}</span></div>`;
       row.addEventListener('click', () => {
         setActivePoint(parseFloat(item.lat), parseFloat(item.lon), item.display_name);
-        searchPanel.classList.remove('show');
+        closeSearchPanel();
       });
       resultList.appendChild(row);
     });
-  }, 1000); 
+  }, 450);
 });
 
 const setActivePoint = (lat, lng, address) => {
   const pt = points.find(p => p.id === activePointId);
   if (!pt) return;
   pt.lat = lat; pt.lng = lng; pt.address = address;
+  invalidateCalculatedResult();
   renderStack();
   if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
 };
 
 document.getElementById('qaGps').addEventListener('click', () => {
+  const button = document.getElementById('qaGps');
   if (!navigator.geolocation) { toast('GPS tidak didukung perangkat ini'); return; }
-  toast('Mendeteksi lokasi…');
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  button.querySelector('.qa-text span').textContent = 'Mendeteksi lokasi…';
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
     const addr = await reverseGeocode(lat, lng);
     setActivePoint(lat, lng, addr);
-    searchPanel.classList.remove('show');
-  }, () => toast('Gagal mengambil lokasi GPS.'), { enableHighAccuracy: true, timeout: 10000 });
+    closeSearchPanel();
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    button.querySelector('.qa-text span').textContent = 'Deteksi otomatis via GPS';
+  }, (error) => {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    button.querySelector('.qa-text span').textContent = 'Deteksi otomatis via GPS';
+    const message = error.code === 1 ? 'Izin lokasi ditolak. Gunakan pencarian atau tandai di peta.' : 'Lokasi GPS tidak dapat diperoleh.';
+    toast(message);
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
 });
 
 document.getElementById('qaMap').addEventListener('click', () => {
-  searchPanel.classList.remove('show');
+  closeSearchPanel();
   enterPickMode();
 });
 
@@ -1237,23 +1564,29 @@ const onMapMoveEnd = () => {
 
 const enterPickMode = () => {
   pickMode = true;
+  document.body.classList.add('is-pick-mode');
   crosshair.classList.add('show');
   pickBar.classList.add('show');
   sheetEl.style.transform = 'translateY(120%)';
   onMapMoveEnd();
+  updateMapInsets();
   map.on('moveend', onMapMoveEnd);
 };
 const exitPickMode = () => {
   pickMode = false;
+  document.body.classList.remove('is-pick-mode');
   crosshair.classList.remove('show');
   pickBar.classList.remove('show');
   if(!sheetEl.classList.contains('minimized')) sheetEl.style.transform = '';
   map.off('moveend', onMapMoveEnd);
+  updateMapInsets();
 };
 
-document.getElementById('pickConfirm').addEventListener('click', () => {
+document.getElementById('pickConfirm').addEventListener('click', async () => {
   if (!pickCoords) return;
-  setActivePoint(pickCoords.lat, pickCoords.lng, pickAddress.textContent);
+  let address = pickAddress.textContent;
+  if (address === 'Menentukan alamat…') address = await reverseGeocode(pickCoords.lat, pickCoords.lng);
+  setActivePoint(pickCoords.lat, pickCoords.lng, address);
   exitPickMode();
 });
 document.getElementById('pickCancel').addEventListener('click', exitPickMode);
@@ -1273,12 +1606,15 @@ const toggleRoundTrip = document.getElementById('toggleRoundTrip');
 
 const drawRoute = (coords) => {
   clearRouteLayers();
-  // Bayangan/garis tepi luar (Casing)
   const casing = L.polyline(coords, { color: '#1A45A3', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  // Garis rute utama (Route)
   const route = L.polyline(coords, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   drawnRouteLayers.push(casing, route);
-  map.fitBounds(route.getBounds(), { padding: [60, 60] });
+  const bottomPadding = sheetEl.classList.contains('minimized') ? compactBar.offsetHeight + 36 : Math.min(sheetEl.offsetHeight + 32, window.innerHeight * .65);
+  map.fitBounds(route.getBounds(), {
+    paddingTopLeft: [56, 80],
+    paddingBottomRight: [56, bottomPadding],
+    maxZoom: 16
+  });
 };
 
 // LOGIKA PERHITUNGAN BARU
@@ -1288,40 +1624,42 @@ const calculateFareLogic = (kmTotal) => {
 };
 
 window.executeCalc = async (silent = false) => {
-  if (!points.every(p => p.lat != null && p.lng != null)) return;
-  
-  if (!silent) {
-    btnCalc.classList.add('loading');
-    btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg> Menghitung…';
+  if (!isRouteComplete()) {
+    updateFormProgress();
+    return;
   }
-  
+
+  const requestId = ++calculationRequestId;
+  if (!silent) setButtonBusy(btnCalc, true, 'Menghitung…');
+
   try {
     const isRoundTrip = toggleRoundTrip.checked;
-    routePointsForNav = [...points];
-    
+    routePointsForNav = points.map(point => ({ ...point }));
+
     if (isRoundTrip && points.length >= 2) {
-       routePointsForNav.push({
-         ...points[0], 
-         id: points[0].id + '_return', 
-         role: 'return', 
-         label: 'Kembali ke Titik Awal',
-         customName: ''
-       });
+      routePointsForNav.push({
+        ...points[0],
+        id: `${points[0].id}_return`,
+        role: 'return',
+        label: 'Kembali ke Titik Awal',
+        customName: ''
+      });
     }
 
     const list = routePointsForNav.map(p => ({ lat: p.lat, lng: p.lng }));
     const res = await routeBetween(list);
+    if (requestId !== calculationRequestId) return;
+    lastResult = res;
     showResult(res, silent);
+  } catch (error) {
+    if (requestId === calculationRequestId) toast('Rute tidak dapat dihitung. Periksa koneksi lalu coba lagi.');
   } finally {
-    if (!silent) {
-      btnCalc.classList.remove('loading');
-      btnCalc.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg> Hitung Jarak &amp; Ongkos';
-    }
+    if (!silent && requestId === calculationRequestId) setButtonBusy(btnCalc, false);
   }
 };
 
 btnCalc.addEventListener('click', () => executeCalc(false));
-toggleRoundTrip.addEventListener('change', () => { if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); });
+toggleRoundTrip.addEventListener('change', () => { invalidateCalculatedResult(); updateFormProgress(); if(resultView.classList.contains('show')) executeCalc(true); });
 
 const roundFare = (n) => Math.round(n / 10) * 10;
 const fmtRp = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -1330,19 +1668,19 @@ const showResult = (res, silent) => {
   const totalKm = res.distanceKm;
   const rawFare = calculateFareLogic(totalKm);
   const fare = roundFare(rawFare);
-  
   const isRoundTrip = toggleRoundTrip.checked;
   const destCount = isRoundTrip ? routePointsForNav.length - 2 : routePointsForNav.length - 1;
 
   drawRoute(res.coords);
-  syncMarkers(); 
+  syncMarkers();
 
+  document.getElementById('routeNotice').hidden = !res.estimated;
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
   document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
-
   document.getElementById('cbPrice').textContent = `Rp ${fmtRp(fare)}`;
-  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan ${isRoundTrip ? '(PP)' : ''}`;
+  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan${isRoundTrip ? ' • PP' : ''}`;
+  document.getElementById('btnCompactShare').disabled = false;
 
   const fillPct = Math.min(100, totalKm <= 5 ? totalKm / 5 * 35 : totalKm <= 20 ? 35 + (totalKm - 5) / 15 * 40 : 75 + Math.min(25, (totalKm - 20) / 30 * 25));
   requestAnimationFrame(() => { document.getElementById('rulerFill').style.width = `${fillPct}%`; });
@@ -1351,38 +1689,40 @@ const showResult = (res, silent) => {
 
   const segList = document.getElementById('segmentList');
   segList.innerHTML = '<div class="segment-title">Rincian segmen</div>';
-  
+  const proportionalFares = res.segments.map(segKm => totalKm > 0 ? roundFare((segKm / totalKm) * fare) : 0);
+  const difference = fare - proportionalFares.reduce((sum, value) => sum + value, 0);
+  if (proportionalFares.length) proportionalFares[proportionalFares.length - 1] += difference;
+
   for (let i = 0; i < routePointsForNav.length - 1; i++) {
     const a = routePointsForNav[i], b = routePointsForNav[i + 1];
     const segKm = res.segments[i] || 0;
-    const segFare = roundFare( (segKm / totalKm) * rawFare );
-    
-    const titleA = getPtLabel(a);
-    const titleB = getPtLabel(b);
-    
     const row = document.createElement('div');
     row.className = 'segment';
     row.innerHTML = `
       <div class="segment-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       <div class="segment-text">
-        <div class="segment-route">${titleA} → ${titleB}</div>
+        <div class="segment-route">${escapeHtml(getPtLabel(a))} → ${escapeHtml(getPtLabel(b))}</div>
         <div class="segment-dist">${segKm.toFixed(1)} km</div>
       </div>
-      <div class="segment-fare mono">Rp ${fmtRp(segFare)}</div>`;
+      <div class="segment-fare mono">Rp ${fmtRp(proportionalFares[i] || 0)}</div>`;
     segList.appendChild(row);
   }
-  
+
   if (!silent) {
     formView.style.display = 'none';
     resultView.classList.add('show');
+    sheetEl.querySelector('.sheet-body').scrollTop = 0;
   }
+  updateMapInsets();
 };
 
 const backToForm = () => {
   resultView.classList.remove('show');
   formView.style.display = 'block';
-  routePointsForNav = [...points]; 
+  routePointsForNav = points.map(point => ({ ...point }));
   syncMarkers();
+  updateFormProgress();
+  updateMapInsets();
 };
 document.getElementById('btnBack').addEventListener('click', backToForm);
 document.getElementById('btnRecalc').addEventListener('click', backToForm);
@@ -1402,90 +1742,109 @@ document.getElementById('btnNavMaps').addEventListener('click', () => {
   }
   
   const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints}&travelmode=driving`;
-  window.open(url, '_blank');
+  const navWindow = window.open(url, '_blank', 'noopener,noreferrer');
+  if (navWindow) navWindow.opener = null;
 });
 
 /* ================= SHARE & URL PARSER ================= */
-window.handleShare = async (btnElement, isCompact = false) => {
-  if (isCompact && event) event.stopPropagation();
+const canvasToBlob = (canvas) => new Promise((resolve, reject) => {
+  canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('blob-failed')), 'image/png');
+});
 
-  const originalHtml = btnElement.innerHTML;
-  btnElement.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="animation:spin 1s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>';
-  
+const buildSharePayload = () => {
+  const shareUrl = new URL(window.location.href);
+  shareUrl.search = '';
+  const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)},${encodeURIComponent(p.customName || '')}`).join(';');
+  shareUrl.searchParams.set('pts', ptsParam);
+  shareUrl.searchParams.set('p', pricePerKm);
+  shareUrl.searchParams.set('mk', minKm);
+  shareUrl.searchParams.set('mf', minFare);
+  shareUrl.searchParams.set('rt', toggleRoundTrip.checked ? '1' : '0');
+
+  const methods = [
+    ['DANA', payData.dana], ['GOPAY', payData.gopay], ['ShopeePay', payData.shopeepay],
+    ['BRI', payData.bri], ['Jago', payData.jago], ['Seabank', payData.seabank]
+  ].filter(([, value]) => value).map(([label, value]) => `${label}: ${value}`);
+  if (payData.name) methods.push(`a.n. ${payData.name}`);
+  const paymentText = methods.length ? `\n\n💳 Info pembayaran:\n${methods.join('\n')}` : '';
+  return {
+    link: shareUrl.toString(),
+    text: APP_CONFIG.teksBagikan(shareUrl.toString(), paymentText)
+  };
+};
+
+window.handleShare = async (btnElement) => {
+  if (!lastResult || !isRouteComplete()) {
+    toast('Hitung rute terlebih dahulu sebelum membagikan.');
+    return;
+  }
+
+  setButtonBusy(btnElement, true, 'Menyiapkan…');
+  const topbar = document.querySelector('.topbar');
+  const wasTopbarDisplay = topbar.style.display;
+  const sheetWasMinimized = sheetEl.classList.contains('minimized');
+  let blob = null;
+
   try {
-    const shareUrl = new URL(window.location.href);
-    shareUrl.search = ''; 
-    
-    const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)},${encodeURIComponent(p.customName || '')}`).join(';');
-    shareUrl.searchParams.set('pts', ptsParam);
-    shareUrl.searchParams.set('p', pricePerKm);
-    shareUrl.searchParams.set('mk', minKm);
-    shareUrl.searchParams.set('mf', minFare);
-    shareUrl.searchParams.set('rt', toggleRoundTrip.checked ? '1' : '0');
-    const link = shareUrl.toString();
+    const payload = buildSharePayload();
+    topbar.style.display = 'none';
+    if (sheetWasMinimized) sheetEl.style.display = 'none';
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    document.querySelector('.topbar').style.display = 'none';
-    const isSheetMinimized = sheetEl.classList.contains('minimized');
-    if (isSheetMinimized) {
-       sheetEl.style.display = 'none'; 
+    try {
+      const width = document.documentElement.clientWidth;
+      const height = document.documentElement.clientHeight;
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#DCE3EA',
+        width, height, windowWidth: width, windowHeight: height,
+        scale: Math.min(2, window.devicePixelRatio || 1)
+      });
+      blob = await canvasToBlob(canvas);
+    } catch (imageError) {
+      console.warn('Screenshot tidak tersedia, membagikan teks saja.', imageError);
     }
 
-    await new Promise(res => setTimeout(res, 150));
-    const w = document.documentElement.clientWidth;
-    const h = document.documentElement.clientHeight;
+    const files = blob ? [new File([blob], 'ongkos-jarak.png', { type: 'image/png' })] : [];
+    const shareData = { title: APP_CONFIG.namaAplikasi, text: payload.text, url: payload.link };
+    if (files.length && navigator.canShare?.({ files })) shareData.files = files;
 
-    const canvas = await html2canvas(document.body, { 
-      useCORS: true, 
-      allowTaint: false,
-      backgroundColor: '#DCE3EA', 
-      width: w, height: h, windowWidth: w, windowHeight: h,
-      scale: window.devicePixelRatio || 2 
-    });
-    
-    document.querySelector('.topbar').style.display = 'flex';
-    if (isSheetMinimized) sheetEl.style.display = 'flex';
-
-    canvas.toBlob(async (blob) => {
-      if(!blob) throw new Error("Blob failed");
-      const file = new File([blob], 'ongkos-jarak.png', { type: 'image/png' });
-      
-      let payTexts = [];
-      if(payData.dana) payTexts.push(`DANA : ${payData.dana}`);
-      if(payData.gopay) payTexts.push(`GOPAY : ${payData.gopay}`);
-      if(payData.shopeepay) payTexts.push(`ShopeePay : ${payData.shopeepay}`);
-      if(payData.bri) payTexts.push(`BRI : ${payData.bri}`);
-      if(payData.jago) payTexts.push(`Jago : ${payData.jago}`);
-      if(payData.seabank) payTexts.push(`Seabank : ${payData.seabank}`);
-      if(payData.name) payTexts.push(`a.n ${payData.name}`);
-      const payStr = payTexts.length ? `\n\n💳 *Info Pembayaran:*\n${payTexts.join('\n')}` : '';
-
-      const shareData = {
-        title: APP_CONFIG.namaAplikasi,
-        text: APP_CONFIG.teksBagikan(link, payStr),
-        files: [file]
-      };
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share(shareData);
+    if (navigator.share) {
+      await navigator.share(shareData);
+      toast('Rincian berhasil dibagikan.');
+    } else {
+      await copyToClipboard(payload.text, btnElement);
+      if (blob) {
+        const downloadUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = downloadUrl;
+        anchor.download = 'ongkos-jarak.png';
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+        toast('Teks disalin dan gambar diunduh.');
       } else {
-        toast('Perangkat tidak mendukung Share otomatis. Gambar akan diunduh.');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'ongkos-jarak.png';
-        a.click();
-        URL.revokeObjectURL(url);
+        toast('Rincian dan tautan telah disalin.');
       }
-      btnElement.innerHTML = originalHtml;
-    });
+    }
   } catch (error) {
-    console.error(error);
-    document.querySelector('.topbar').style.display = 'flex';
-    if(sheetEl.classList.contains('minimized')) sheetEl.style.display = 'flex';
-    toast('Gagal memproses gambar/tautan.');
-    btnElement.innerHTML = originalHtml;
+    if (error?.name !== 'AbortError') {
+      console.error(error);
+      toast('Rincian tidak dapat dibagikan. Coba salin tautan dari browser.');
+    }
+  } finally {
+    topbar.style.display = wasTopbarDisplay;
+    if (sheetWasMinimized) sheetEl.style.display = 'flex';
+    setButtonBusy(btnElement, false);
+    updateMapInsets();
   }
 };
+
+document.getElementById('btnShare').addEventListener('click', event => handleShare(event.currentTarget));
+document.getElementById('btnCompactShare').addEventListener('click', event => {
+  event.stopPropagation();
+  handleShare(event.currentTarget);
+});
 
 /* ================= INIT & LOAD URL PARAMS ================= */
 const initApp = async () => {
@@ -1502,33 +1861,55 @@ const initApp = async () => {
     
     const ptArr = ptsStr.split(';');
     if (ptArr.length >= 2) {
-      points = ptArr.map((str, idx) => {
-        const parts = str.split(',');
-        const lat = Number(parts[0]);
-        const lng = Number(parts[1]);
-        const customName = parts[2] ? decodeURIComponent(parts[2]) : '';
-        
-        const role = idx === 0 ? 'origin' : (idx === ptArr.length - 1 ? 'dest' : 'waypoint');
-        let label = role === 'origin' ? 'Titik awal' : (role === 'dest' ? 'Tujuan akhir' : `Tujuan ${idx}`);
-        return { id: cryptoId(), role, label, customName, lat, lng, address: 'Mencari alamat...' };
-      });
-      
-      renderStack();
-      executeCalc(false); 
-
-      Promise.all(points.map(async p => {
-        p.address = await reverseGeocode(p.lat, p.lng);
-      })).then(() => {
-        renderStack(); 
-        if (document.getElementById('resultView').classList.contains('show')) {
-          executeCalc(true); 
+      const parsedPoints = ptArr.map((str, idx) => {
+        try {
+          const parts = str.split(',');
+          const lat = Number(parts[0]);
+          const lng = Number(parts[1]);
+          const customName = parts[2] ? decodeURIComponent(parts[2]) : '';
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+          const role = idx === 0 ? 'origin' : (idx === ptArr.length - 1 ? 'dest' : 'waypoint');
+          const label = role === 'origin' ? 'Titik awal' : (role === 'dest' ? 'Tujuan akhir' : `Tujuan ${idx}`);
+          return { id: cryptoId(), role, label, customName, lat, lng, address: 'Mencari alamat…' };
+        } catch {
+          return null;
         }
       });
+      points = parsedPoints.every(Boolean) && parsedPoints.length >= 2 ? parsedPoints : getEmptyPoints();
+
+      renderStack();
+      if (isRouteComplete()) {
+        executeCalc(false);
+        Promise.all(points.map(async p => {
+          p.address = await reverseGeocode(p.lat, p.lng);
+        })).then(() => {
+          renderStack();
+          if (resultView.classList.contains('show')) executeCalc(true);
+        });
+      } else {
+        toast('Tautan rute tidak valid. Silakan pilih lokasi kembali.');
+      }
     } else { renderStack(); }
   } else { renderStack(); }
 };
 
-initApp();
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (paymentModal.classList.contains('show')) closePaymentModal();
+  else if (searchPanel.classList.contains('show')) closeSearchPanel();
+  else if (topMenu.classList.contains('show')) closeSettings();
+  else if (pickMode) exitPickMode();
+});
+
+window.addEventListener('resize', updateMapInsets);
+window.addEventListener('online', () => toast('Koneksi internet kembali tersedia.'));
+window.addEventListener('offline', () => toast('Anda sedang offline. Pencarian dan rute mungkin tidak tersedia.'));
+if ('ResizeObserver' in window) {
+  new ResizeObserver(updateMapInsets).observe(sheetEl);
+  new ResizeObserver(updateMapInsets).observe(compactBar);
+}
+
+initApp().catch(error => { console.error(error); toast('Aplikasi gagal dimuat sepenuhnya. Muat ulang halaman.'); }).finally(updateMapInsets);
 })();
 </script>
 </body>
