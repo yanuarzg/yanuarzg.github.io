@@ -547,6 +547,139 @@ button[disabled]{cursor:not-allowed;}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
 
+/* ========== UI/UX POLISH 2026 ========== */
+:root{
+  --surface-2:#F8FAFC;
+  --surface-warm:#FFF8EE;
+  --success-bg:#EAF7F3;
+  --success-line:#BFE6DB;
+  --control-border:#D9E0EA;
+  --shadow-soft:0 14px 40px rgba(23,34,59,.10);
+}
+body{background:#E8EDF3;}
+#map::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:linear-gradient(to bottom,rgba(23,34,59,.06),transparent 18%,transparent 75%,rgba(23,34,59,.08));
+}
+.topbar{gap:10px;}
+.topbar-right{
+  padding:4px;border-radius:999px;background:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.72);box-shadow:var(--shadow-card);backdrop-filter:blur(14px);
+}
+.topbar-right .icon-btn{box-shadow:none;background:transparent;}
+.topbar-right .icon-btn:hover{background:var(--surface);}
+#btnLocate{backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.72);}
+
+.sheet{border:1px solid rgba(255,255,255,.8);}
+.sheet-body{padding-top:0;}
+.sheet-title{margin-bottom:12px;}
+.sheet-title-copy>span:last-child{font-size:20px;line-height:1.2;letter-spacing:-.45px;}
+.sheet-kicker{color:var(--accent);font-size:10.5px;}
+.sheet-subtitle{font-size:12px;color:var(--ink-soft);font-weight:600;margin-top:3px;line-height:1.45;}
+
+.form-progress{
+  background:linear-gradient(180deg,#fff,var(--surface-2));
+  box-shadow:0 1px 0 rgba(23,34,59,.03);cursor:pointer;
+}
+.form-progress:hover{border-color:#CBD5E1;}
+.form-progress.ready{background:linear-gradient(180deg,#F3FBF8,var(--success-bg));}
+.progress-icon{box-shadow:inset 0 0 0 1px rgba(62,106,225,.08);}
+
+.route-stack{padding-left:28px;margin-top:4px;}
+.route-rail{left:10px;top:20px;bottom:20px;background:linear-gradient(var(--line),var(--line));width:2px;}
+.route-row{padding:6px 0;}
+.route-dot{left:-28px;width:22px;height:22px;box-shadow:0 0 0 4px #fff;}
+.route-field{
+  min-height:58px;padding:9px 10px 9px 12px;border:1px solid var(--control-border);
+  background:#fff;box-shadow:0 1px 2px rgba(23,34,59,.03);gap:5px;
+}
+.route-field:hover{background:#fff;border-color:#BCC7D6;box-shadow:0 5px 18px rgba(23,34,59,.07);}
+.route-field.empty{background:var(--surface-2);box-shadow:none;}
+.field-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.field-overline{font-size:10px;font-weight:800;letter-spacing:.45px;text-transform:uppercase;color:var(--ink-soft);}
+.field-text{font-size:13.5px;line-height:1.35;}
+.route-field.empty .field-text{color:#64748B;}
+.field-clear{min-width:38px;min-height:38px;width:38px;height:38px;}
+.swap-btn{right:-2px;top:47px;width:36px;height:36px;border-color:var(--control-border);}
+
+.add-stop-btn{
+  margin:4px 0 0 26px;padding:10px 12px;border-radius:12px;background:#EEF3FF;
+  width:calc(100% - 26px);justify-content:center;transition:background .15s,transform .1s;
+}
+.add-stop-btn:hover{background:#E4EBFF;}
+.add-stop-btn:active{transform:scale(.99);}
+
+.trip-option{
+  display:flex;align-items:center;gap:12px;margin:14px 0 14px;padding:12px 13px;
+  border:1px solid #F0DFC0;border-radius:var(--radius-md);background:var(--surface-warm);
+}
+.trip-option-icon{
+  width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  color:var(--accent-ink);background:#F9E7C7;flex:none;
+}
+.trip-option-icon svg{width:18px;height:18px;}
+.trip-option-copy{flex:1;min-width:0;}
+.trip-option-copy b{display:block;font-size:13px;}
+.trip-option-copy span{display:block;margin-top:2px;color:#7A5A2C;font-size:11px;line-height:1.4;}
+
+.cta{margin-top:12px;box-shadow:0 9px 20px rgba(23,34,59,.17);}
+.cta:not([disabled]):hover{transform:translateY(-1px);}
+.cta-hint{margin-bottom:2px;}
+
+.result-actions-top{margin-bottom:10px;}
+.result-back{padding:7px 9px;border-radius:10px;}
+.result-back:hover{background:var(--surface);}
+.result-heading{margin-bottom:12px;}
+.result-heading b{display:block;font-size:18px;letter-spacing:-.3px;}
+.result-heading span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+.meter-card{padding:21px;border:1px solid rgba(255,255,255,.05);box-shadow:0 12px 28px rgba(23,34,59,.18);}
+.meter-value{font-size:36px;}
+.segment{padding:11px 0;}
+.segment-fare{font-size:12px;}
+.nav-btn{box-shadow:0 7px 18px rgba(66,133,244,.22);}
+.share-btn{box-shadow:0 7px 18px rgba(217,140,43,.22);}
+.recalc-btn,.share-btn,.nav-btn{transition:transform .1s,filter .15s;}
+.recalc-btn:hover,.share-btn:hover,.nav-btn:hover{filter:brightness(.98);}
+.recalc-btn:active,.share-btn:active,.nav-btn:active{transform:scale(.985);}
+
+.settings-row{border:1px solid transparent;}
+.settings-row:focus-within{border-color:#B9C6D8;background:#fff;}
+.top-menu-title{position:sticky;top:calc(-20px - var(--safe-top));z-index:2;background:#fff;padding:3px 0 10px;}
+
+.search-panel{background:#fff;}
+.search-head{background:rgba(255,255,255,.96);backdrop-filter:blur(12px);}
+.search-context{background:var(--surface-2);}
+.quick-action{border:1px solid transparent;}
+.quick-action:hover{border-color:var(--line);background:var(--surface-2);}
+.result-item{border:1px solid transparent;}
+.result-item:hover{border-color:var(--line);}
+.ri-text{min-width:0;}
+
+.rename-field{margin-top:8px;}
+.rename-field label{display:block;font-size:11px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;}
+.rename-field input{width:100%;height:48px;border:1px solid var(--control-border);border-radius:12px;padding:0 13px;color:var(--ink);font-weight:700;background:#fff;}
+.rename-field input:focus{outline:none;box-shadow:var(--focus-ring);border-color:var(--wp);}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+.modal-primary{background:var(--ink);color:#fff;}
+
+.network-pill{
+  position:fixed;left:50%;top:calc(70px + var(--safe-top));transform:translate(-50%,-12px);z-index:19;
+  background:#7A2E29;color:#fff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800;
+  box-shadow:var(--shadow-card);opacity:0;visibility:hidden;transition:.2s;pointer-events:none;
+}
+.network-pill.show{opacity:1;visibility:visible;transform:translate(-50%,0);}
+
+@media (max-width:420px){
+  .sheet-body{padding-left:15px;padding-right:15px;}
+  .settings-row{padding:11px 12px;}
+  .trip-option{padding:11px;}
+  .action-grid{gap:8px;}
+}
+@media (min-width:760px){
+  .sheet{box-shadow:0 20px 60px rgba(23,34,59,.18);}
+  .sheet-title-copy>span:last-child{font-size:22px;}
+}
+
 </style>
 </head>
 <body>
@@ -628,13 +761,13 @@ button[disabled]{cursor:not-allowed;}
   <div class="sheet-body">
     <div id="formView">
       <div class="sheet-title">
-        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Hitung Ongkos</span></div>
+        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Hitung Ongkos</span><span class="sheet-subtitle">Pilih rute, cek estimasi, lalu bagikan tagihan.</span></div>
         <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Ciutkan panel">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </div>
 
-      <div class="form-progress" id="formProgress" role="status" aria-live="polite">
+      <div class="form-progress" id="formProgress" role="button" tabindex="0" aria-live="polite" aria-label="Buka lokasi berikutnya yang belum diisi">
         <div class="progress-icon" id="formProgressIcon">1/2</div>
         <div><b id="formProgressTitle">Pilih titik awal</b><span id="formProgressText">Ketuk kolom titik awal untuk mencari alamat.</span></div>
       </div>
@@ -649,8 +782,11 @@ button[disabled]{cursor:not-allowed;}
       </button>
 
       <!-- Toggle Pulang Pergi -->
-      <div class="settings-row" style="margin-top:14px; margin-bottom:16px; background:#FBF1E1;">
-        <div class="label" style="color:var(--accent-ink);">Pulang - Pergi (Round-Trip)</div>
+      <div class="trip-option">
+        <div class="trip-option-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3M17 17H7l3 3"/><path d="M17 7l3 3-3 3M7 17l-3-3 3-3"/></svg>
+        </div>
+        <div class="trip-option-copy"><b>Pulang-pergi</b><span>Tambahkan perjalanan kembali ke titik awal.</span></div>
         <label class="toggle-switch">
           <input type="checkbox" id="toggleRoundTrip" aria-label="Aktifkan perjalanan pulang pergi">
           <span class="toggle-slider"></span>
@@ -675,6 +811,8 @@ button[disabled]{cursor:not-allowed;}
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </div>
+
+      <div class="result-heading"><b>Ringkasan perjalanan</b><span>Estimasi berdasarkan rute kendaraan yang tersedia.</span></div>
 
       <div class="route-notice" id="routeNotice" role="status" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 17h.01"/></svg>
@@ -751,6 +889,26 @@ button[disabled]{cursor:not-allowed;}
     </div>
   </div>
 </div>
+
+<!-- ============ MODAL RENAME LOCATION ============ -->
+<div class="modal-overlay" id="renameModal" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
+  <div class="modal-card">
+    <div class="modal-title" id="renameTitle">Nama lokasi
+      <button id="btnCloseRename" aria-label="Tutup" style="color:var(--ink-soft);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div style="font-size:12px;color:var(--ink-soft);line-height:1.5;">Beri nama singkat agar rute lebih mudah dikenali saat dibagikan.</div>
+    <div class="rename-field">
+      <label for="renameInput">Label lokasi</label>
+      <input id="renameInput" type="text" maxlength="48" placeholder="Contoh: Rumah Budi" autocomplete="off">
+    </div>
+    <div class="modal-actions">
+      <button class="recalc-btn" id="btnCancelRename">Batal</button>
+      <button class="recalc-btn modal-primary" id="btnSaveRename">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="network-pill" id="networkPill" role="status">Offline • pencarian &amp; rute mungkin terbatas</div>
 
 <!-- ============ SEARCH PANEL ============ -->
 <div class="search-panel" id="searchPanel" role="dialog" aria-modal="true" aria-labelledby="searchContext">
@@ -1044,6 +1202,41 @@ paymentModal.addEventListener('click', (event) => {
   if (event.target === paymentModal) closePaymentModal();
 });
 
+/* ================= RENAME LOCATION MODAL ================= */
+const renameModal = document.getElementById('renameModal');
+const renameInput = document.getElementById('renameInput');
+let renamePointId = null;
+let renameReturnFocus = null;
+
+const openRenameModal = (pointId, returnFocus) => {
+  const pt = points.find(p => p.id === pointId);
+  if (!pt) return;
+  renamePointId = pointId;
+  renameReturnFocus = returnFocus || null;
+  renameInput.value = pt.customName || '';
+  renameModal.classList.add('show');
+  setTimeout(() => { renameInput.focus(); renameInput.select(); }, 30);
+};
+const closeRenameModal = () => {
+  renameModal.classList.remove('show');
+  renamePointId = null;
+  renameReturnFocus?.focus?.();
+};
+const saveRename = () => {
+  const pt = points.find(p => p.id === renamePointId);
+  if (!pt) return closeRenameModal();
+  pt.customName = renameInput.value.trim();
+  invalidateCalculatedResult();
+  closeRenameModal();
+  renderStack();
+  if (document.getElementById('resultView').classList.contains('show')) executeCalc(true);
+};
+document.getElementById('btnCloseRename').addEventListener('click', closeRenameModal);
+document.getElementById('btnCancelRename').addEventListener('click', closeRenameModal);
+document.getElementById('btnSaveRename').addEventListener('click', saveRename);
+renameInput.addEventListener('keydown', event => { if (event.key === 'Enter') saveRename(); });
+renameModal.addEventListener('click', event => { if (event.target === renameModal) closeRenameModal(); });
+
 /* ================= FULLSCREEN API ================= */
 const btnFullscreen = document.getElementById('btnFullscreen');
 const iconExpand = document.getElementById('iconExpandFS');
@@ -1159,6 +1352,17 @@ const updateFormProgress = () => {
   }
 };
 
+const openNextMissingPoint = () => {
+  const missing = points.find(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lng));
+  if (missing) openSearchPanel(missing.id);
+};
+document.getElementById('formProgress').addEventListener('click', openNextMissingPoint);
+document.getElementById('formProgress').addEventListener('keydown', event => {
+  if (!['Enter', ' '].includes(event.key)) return;
+  event.preventDefault();
+  openNextMissingPoint();
+});
+
 const renderStack = () => {
   routeStack.querySelectorAll('.route-row, .swap-btn').forEach(el => el.remove());
   
@@ -1171,7 +1375,10 @@ const renderStack = () => {
     row.innerHTML = `
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
       <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}" role="button" tabindex="0" aria-label="${escapeHtml(hasLocation ? `Ubah ${pt.label}: ${getPtLabel(pt)}` : `Pilih ${pt.label}`)}">
-        <div class="field-text">${escapeHtml(getPtLabel(pt))}</div>
+        <div class="field-copy">
+          <div class="field-overline">${pt.role === 'origin' ? 'Asal' : (pt.role === 'dest' ? 'Tujuan akhir' : pt.label)}</div>
+          <div class="field-text">${escapeHtml(getPtLabel(pt))}</div>
+        </div>
         ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" aria-label="Ubah nama ${escapeHtml(pt.label)}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
         ${hasLocation ? `<button class="field-clear" data-clear="${pt.id}" aria-label="Kosongkan ${escapeHtml(pt.label)}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
         ${canRemove ? `<button class="field-clear" data-remove="${pt.id}" aria-label="Hapus ${escapeHtml(pt.label)}" style="color:var(--danger);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
@@ -1212,16 +1419,7 @@ routeStack.addEventListener('click', (e) => {
   const field = e.target.closest('.route-field');
   
   if (edit) {
-    const pt = points.find(p => p.id === edit.getAttribute('data-edit'));
-    if (pt) {
-      const newName = prompt("Ubah nama/label tujuan ini (misal: Rumah Budi):", pt.customName || "");
-      if (newName !== null) {
-        pt.customName = newName.trim();
-        invalidateCalculatedResult();
-        renderStack();
-        if(document.getElementById('resultView').classList.contains('show')) executeCalc(true); 
-      }
-    }
+    openRenameModal(edit.getAttribute('data-edit'), edit);
     e.stopPropagation(); return;
   }
 
@@ -1895,15 +2093,19 @@ const initApp = async () => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
-  if (paymentModal.classList.contains('show')) closePaymentModal();
+  if (renameModal.classList.contains('show')) closeRenameModal();
+  else if (paymentModal.classList.contains('show')) closePaymentModal();
   else if (searchPanel.classList.contains('show')) closeSearchPanel();
   else if (topMenu.classList.contains('show')) closeSettings();
   else if (pickMode) exitPickMode();
 });
 
 window.addEventListener('resize', updateMapInsets);
-window.addEventListener('online', () => toast('Koneksi internet kembali tersedia.'));
-window.addEventListener('offline', () => toast('Anda sedang offline. Pencarian dan rute mungkin tidak tersedia.'));
+const networkPill = document.getElementById('networkPill');
+const syncNetworkState = () => networkPill.classList.toggle('show', !navigator.onLine);
+window.addEventListener('online', () => { syncNetworkState(); toast('Koneksi internet kembali tersedia.'); });
+window.addEventListener('offline', () => { syncNetworkState(); toast('Anda sedang offline. Pencarian dan rute mungkin tidak tersedia.'); });
+syncNetworkState();
 if ('ResizeObserver' in window) {
   new ResizeObserver(updateMapInsets).observe(sheetEl);
   new ResizeObserver(updateMapInsets).observe(compactBar);
