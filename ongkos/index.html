@@ -898,6 +898,46 @@ body{background:#E8EDF3;}
   .service-option .service-desc{display:none;}
 }
 
+/* ========== UX FLOW REFINEMENTS ========== */
+.route-field.attention{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(10,159,114,.12);
+  animation:fieldPulse .55s ease;
+}
+@keyframes fieldPulse{
+  0%{transform:scale(.992);}
+  100%{transform:scale(1);}
+}
+.cta[data-step="location"]{
+  background:var(--ink);
+  box-shadow:0 9px 22px rgba(23,34,59,.18);
+}
+.cta[data-step="location"]:hover{background:#223052;}
+.cta-label{display:inline-flex;align-items:center;}
+.fare-formula{
+  margin-top:12px;padding-top:11px;border-top:1px solid rgba(8,123,90,.13);
+  font-size:10.8px;line-height:1.5;color:#557068;position:relative;z-index:1;
+}
+.fare-formula b{color:var(--primary-strong);}
+.meter-sub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.meter-sub div{min-width:0;}
+.meter-sub b{overflow-wrap:anywhere;}
+.result-confidence{
+  display:flex;align-items:flex-start;gap:7px;margin:-5px 0 12px;
+  font-size:10.8px;line-height:1.45;color:var(--ink-soft);
+}
+.result-confidence svg{width:14px;height:14px;flex:none;margin-top:1px;color:var(--primary);}
+.search-panel.show .search-input-wrap{box-shadow:0 0 0 1px rgba(10,159,114,.07);}
+@media (max-width:430px){
+  .service-option .service-desc{display:none;}
+  .service-option{min-height:72px;}
+  .sheet-subtitle{font-size:11.5px;}
+}
+@media (max-width:350px){
+  .meter-sub{grid-template-columns:1fr 1fr;}
+  .meter-sub div:last-child{grid-column:1 / -1;}
+}
+
 </style>
 </head>
 <body>
@@ -1084,9 +1124,9 @@ body{background:#E8EDF3;}
       </div>
 
       <div class="form-actions-sticky">
-        <button class="cta" id="btnCalc" disabled aria-describedby="calcHint">
+        <button class="cta" id="btnCalc" data-step="location" aria-describedby="calcHint">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          Lihat Estimasi Ongkos
+          <span class="cta-label" id="calcButtonLabel">Pilih Titik Awal</span>
         </button>
         <div class="cta-hint" id="calcHint">Lengkapi titik awal dan tujuan.</div>
       </div>
@@ -1106,6 +1146,7 @@ body{background:#E8EDF3;}
 
       <div class="result-heading"><b>Ringkasan perjalanan</b><span>Estimasi berdasarkan rute kendaraan yang tersedia.</span></div>
       <div class="result-trip-chips"><span class="result-trip-chip primary" id="resultServiceChip">Antar Jemput</span><span class="result-trip-chip" id="resultTripChip">Sekali jalan</span><span class="result-trip-chip" id="resultStopsChip">1 tujuan</span></div>
+      <div class="result-confidence"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span>Harga yang tampil adalah estimasi sebelum pesanan dikonfirmasi melalui WhatsApp.</span></div>
 
       <div class="route-notice" id="routeNotice" role="status" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 17h.01"/></svg>
@@ -1124,6 +1165,7 @@ body{background:#E8EDF3;}
           <div class="ruler-track"><div class="ruler-fill" id="rulerFill"></div></div>
           <div class="ruler-ticks"><span>0</span><span id="rulerMid">·</span><span id="rulerMax">km</span></div>
         </div>
+        <div class="fare-formula" id="fareFormula" aria-live="polite"></div>
       </div>
 
       <div class="segment-list" id="segmentList"></div>
@@ -1134,7 +1176,7 @@ body{background:#E8EDF3;}
       </button>
 
       <button class="nav-btn btn-full" id="btnNavMaps">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4 18-7z"/></svg>
         Buka Navigasi Google Maps
       </button>
 
@@ -1173,9 +1215,9 @@ body{background:#E8EDF3;}
 </div>
 
 <!-- ============ MODAL PAYMENT INFO ============ -->
-<div class="modal-overlay" id="paymentModal">
+<div class="modal-overlay" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
   <div class="modal-card">
-    <div class="modal-title">
+    <div class="modal-title" id="paymentTitle">
       Pilihan Pembayaran
       <button id="btnClosePayment" style="color:var(--ink-soft);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
@@ -1211,7 +1253,7 @@ body{background:#E8EDF3;}
 <!-- ============ SEARCH PANEL ============ -->
 <div class="search-panel" id="searchPanel" role="dialog" aria-modal="true" aria-labelledby="searchContext" inert>
   <div class="search-head">
-    <button class="icon-btn" id="btnCloseSearch" style="box-shadow:none;background:var(--surface);">
+    <button class="icon-btn" id="btnCloseSearch" aria-label="Tutup pencarian" style="box-shadow:none;background:var(--surface);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
     <div class="search-input-wrap">
@@ -1755,23 +1797,33 @@ const updateFormProgress = () => {
 
   icon.textContent = complete ? '✓' : `${selected}/${points.length}`;
   progress.classList.toggle('ready', complete);
-  btnCalc.disabled = !complete;
-  btnCalc.setAttribute('aria-disabled', String(!complete));
+  btnCalc.disabled = false;
+  btnCalc.removeAttribute('aria-disabled');
+  const calcButtonLabel = document.getElementById('calcButtonLabel');
 
   if (complete) {
+    btnCalc.dataset.step = 'calculate';
+    calcButtonLabel.textContent = 'Lihat Estimasi Ongkos';
     title.textContent = 'Rute siap dihitung';
     detail.textContent = `${points.length - 1} tujuan telah dipilih. Periksa urutan lalu hitung ongkos.`;
     hint.textContent = toggleRoundTrip.checked ? 'Mode pulang-pergi aktif.' : 'Jarak dihitung mengikuti rute jalan.';
   } else {
-    title.textContent = missing?.role === 'origin' ? 'Pilih titik awal' : `Pilih ${missing?.label?.toLowerCase() || 'lokasi'}`;
+    btnCalc.dataset.step = 'location';
+    const isOriginMissing = missing?.role === 'origin';
+    calcButtonLabel.textContent = isOriginMissing ? 'Pilih Titik Awal' : `Pilih ${missing?.label || 'Lokasi'}`;
+    title.textContent = isOriginMissing ? 'Pilih titik awal' : `Pilih ${missing?.label?.toLowerCase() || 'lokasi'}`;
     detail.textContent = 'Cari alamat, gunakan GPS, atau tandai titik langsung pada peta.';
-    hint.textContent = `Lengkapi ${points.length - selected} lokasi lagi.`;
+    hint.textContent = selected === 0 ? 'Mulai dari lokasi penjemputan atau titik asal.' : `Tinggal ${points.length - selected} lokasi lagi.`;
   }
 };
 
 const openNextMissingPoint = () => {
   const missing = points.find(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lng));
-  if (missing) openSearchPanel(missing.id);
+  if (!missing) return;
+  const field = routeStack.querySelector(`[data-id="${missing.id}"]`);
+  field?.classList.add('attention');
+  setTimeout(() => field?.classList.remove('attention'), 650);
+  openSearchPanel(missing.id);
 };
 document.getElementById('formProgress').addEventListener('click', openNextMissingPoint);
 document.getElementById('formProgress').addEventListener('keydown', event => {
@@ -1807,17 +1859,14 @@ const renderStack = () => {
   if (points.length >= 2) {
     const swapBtn = document.createElement('button');
     swapBtn.className = 'swap-btn';
-    swapBtn.setAttribute('aria-label', 'Tukar posisi');
+    swapBtn.setAttribute('aria-label', points.length > 2 ? 'Balik urutan seluruh rute' : 'Tukar titik awal dan tujuan');
+    swapBtn.title = points.length > 2 ? 'Balik urutan seluruh rute' : 'Tukar titik awal dan tujuan';
     swapBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M7 10l-4 4M7 10l4 4M17 14V2M17 2l-4 4M17 2l4 4"/></svg>`;
     swapBtn.onclick = () => {
-       const lastIdx = points.length - 1;
-       const temp = { lat: points[0].lat, lng: points[0].lng, address: points[0].address, customName: points[0].customName };
-       
-       points[0].lat = points[lastIdx].lat; points[0].lng = points[lastIdx].lng;
-       points[0].address = points[lastIdx].address; points[0].customName = points[lastIdx].customName;
-       
-       points[lastIdx].lat = temp.lat; points[lastIdx].lng = temp.lng;
-       points[lastIdx].address = temp.address; points[lastIdx].customName = temp.customName;
+       const reversedLocationData = points.map(point => ({
+         lat: point.lat, lng: point.lng, address: point.address, customName: point.customName
+       })).reverse();
+       points.forEach((point, index) => Object.assign(point, reversedLocationData[index]));
        invalidateCalculatedResult();
        renderStack();
        if(document.getElementById('resultView').classList.contains('show')) executeCalc(true);
@@ -2335,7 +2384,7 @@ window.executeCalc = async (silent = false) => {
   }
 };
 
-btnCalc.addEventListener('click', () => executeCalc(false));
+btnCalc.addEventListener('click', () => isRouteComplete() ? executeCalc(false) : openNextMissingPoint());
 toggleRoundTrip.addEventListener('change', () => { invalidateCalculatedResult(); updateFormProgress(); if(resultView.classList.contains('show')) executeCalc(true); });
 
 const roundFare = (n) => Math.round(n / 10) * 10;
@@ -2355,6 +2404,12 @@ const showResult = (res, silent) => {
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
   document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
+  const fareFormula = document.getElementById('fareFormula');
+  if (totalKm <= minKm) {
+    fareFormula.innerHTML = `<b>Tarif minimum berlaku.</b> Hingga ${minKm} km, ongkos minimum Rp ${fmtRp(minFare)}.`;
+  } else {
+    fareFormula.innerHTML = `<b>Dasar hitung:</b> ${totalKm.toFixed(1)} km × Rp ${fmtRp(pricePerKm)}/km, dengan minimum Rp ${fmtRp(minFare)}.`;
+  }
   document.getElementById('serviceValue').textContent = selectedService;
   document.getElementById('resultServiceChip').textContent = selectedService;
   document.getElementById('resultTripChip').textContent = isRoundTrip ? 'Pulang-pergi' : 'Sekali jalan';
