@@ -13,6 +13,9 @@
   const APP_CONFIG = {
     // 1. Identitas Web
     namaAplikasi: "Cek Ongkos Om Yanu",
+
+    // Tampilkan tombol pengaturan untuk operator/admin.
+    tampilkanTombolSettings: true,
     
     // 2. Tema Warna Merek (Gunakan kode HEX)
     warna: {
@@ -33,21 +36,41 @@
       tarifPerKmSelanjutnya: 4000 // Harga per-km jika jarak lebih dari jarak minimal
     },
 
-    // 5. Data Rekening Default (Otomatis muncul di info bayar)
+    // 5. Jadwal layanan. Ubah sesuai jam operasional Anda.
+    jadwalLayanan: {
+      zonaWaktu: "Asia/Jakarta",
+      hari: [
+        { nama: "Minggu", buka: "", tutup: "", libur: true },
+        { nama: "Senin", buka: "07:00", tutup: "22:00", libur: false },
+        { nama: "Selasa", buka: "07:00", tutup: "22:00", libur: false },
+        { nama: "Rabu", buka: "07:00", tutup: "22:00", libur: false },
+        { nama: "Kamis", buka: "07:00", tutup: "22:00", libur: false },
+        { nama: "Jumat", buka: "07:00", tutup: "22:00", libur: false },
+        { nama: "Sabtu", buka: "07:00", tutup: "22:00", libur: false }
+      ]
+    },
+
+    // Nomor WhatsApp untuk tombol Pesan via WhatsApp.
+    // Bisa diawali 0, 62, atau +62.
+    whatsappAdmin: "089507785333",
+
+    // 6. Data Rekening Default (Otomatis muncul di info bayar)
     rekening: {
       name: "Yanuar Zhaldy G",
       dana: "089507785333",
+      ovo: "",
       gopay: "089507785333",
       shopeepay: "089507785333",
+      bsi: "",
       bri: "012001067003502",
       jago: "108281218767",
       seabank: "901030071975"
     },
 
-    // 6. Template Teks untuk di-Share (WhatsApp / Pesan)
-    // Gunakan parameter urlLink untuk tautan dan infoBayar untuk list rekening
-    teksBagikan: function(urlLink, infoBayar) {
-      return `Halo kak, berikut rincian jarak dan estimasi ongkos.\n\n📍 Cek rute dan rincian langsung di web:\n${urlLink}${infoBayar}`;
+    // 7. Template teks untuk Share / WhatsApp.
+    teksBagikan: function(urlLink, infoBayar, rincian) {
+      const perjalanan = rincian.pulangPergi ? "Pulang-pergi" : "Sekali jalan";
+      return `Halo kak, berikut rincian perjalanan.\n\n🛵 Layanan: ${rincian.layanan}\n💰 Estimasi ongkos: ${rincian.totalOngkos}\n🛣 Jarak: ${rincian.jarak}\n🔄 Perjalanan: ${perjalanan}\n\n📍 Cek rute dan rincian langsung di web:\n${urlLink}${infoBayar}`;
     }
   };
 
@@ -669,6 +692,62 @@ body{background:#E8EDF3;}
 }
 .network-pill.show{opacity:1;visibility:visible;transform:translate(-50%,0);}
 
+/* ---------- SERVICE STATUS & SELECTOR ---------- */
+.availability-card{
+  margin:0 0 10px;border:1px solid var(--line);border-radius:var(--radius-md);
+  background:#fff;overflow:hidden;box-shadow:0 1px 2px rgba(23,34,59,.03);
+}
+.availability-summary{
+  width:100%;display:flex;align-items:center;gap:11px;padding:11px 12px;text-align:left;
+}
+.availability-summary:hover{background:var(--surface-2);}
+.availability-icon{
+  width:34px;height:34px;border-radius:11px;background:var(--success-bg);color:var(--origin);
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.availability-icon svg{width:17px;height:17px;}
+.availability-copy{flex:1;min-width:0;}
+.availability-copy small{display:block;font-size:9.5px;font-weight:800;letter-spacing:.45px;text-transform:uppercase;color:var(--ink-soft);}
+.availability-copy b{display:block;margin-top:2px;font-size:12.5px;line-height:1.35;}
+.availability-badge{
+  flex:none;padding:5px 8px;border-radius:999px;background:var(--success-bg);color:#117864;
+  font-size:10px;font-weight:800;
+}
+.availability-badge.closed{background:#FCEBE9;color:var(--danger);}
+.availability-chevron{width:16px;height:16px;color:var(--ink-soft);transition:transform .2s;flex:none;}
+.availability-summary[aria-expanded="true"] .availability-chevron{transform:rotate(180deg);}
+.schedule-list{padding:0 12px 9px;}
+.schedule-list[hidden]{display:none;}
+.schedule-row{display:flex;justify-content:space-between;gap:14px;padding:7px 1px;border-top:1px solid var(--line);font-size:11.5px;}
+.schedule-row span{color:var(--ink-soft);font-weight:700;}
+.schedule-row b{font-weight:800;text-align:right;}
+.schedule-row.today span,.schedule-row.today b{color:var(--origin);}
+.schedule-row .holiday{color:var(--danger);}
+
+.service-selector{margin:13px 0 0;}
+.service-selector-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:7px;}
+.service-selector-head b{font-size:11px;text-transform:uppercase;letter-spacing:.45px;color:var(--ink-soft);}
+.service-selector-head span{font-size:10.5px;color:var(--ink-soft);}
+.service-options{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.service-option{
+  min-width:0;min-height:68px;padding:9px 6px;border:1px solid var(--control-border);border-radius:12px;
+  background:#fff;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;font-size:10.5px;font-weight:800;line-height:1.2;transition:.15s;
+}
+.service-option svg{width:19px;height:19px;}
+.service-option:hover{border-color:#B9C6D8;background:var(--surface-2);}
+.service-option.active{border-color:rgba(21,158,134,.5);background:var(--success-bg);color:#117864;box-shadow:0 4px 14px rgba(21,158,134,.09);}
+.service-option:active{transform:scale(.98);}
+
+.whatsapp-btn{
+  width:100%;min-height:48px;padding:13px;border-radius:var(--radius-md);background:#168C69;color:#fff;
+  font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 7px 18px rgba(22,140,105,.20);grid-column:span 2;
+}
+.whatsapp-btn svg{width:17px;height:17px;}
+.whatsapp-btn:hover{filter:brightness(.98);}
+.whatsapp-btn:active{transform:scale(.985);}
+
 @media (max-width:420px){
   .sheet-body{padding-left:15px;padding-right:15px;}
   .settings-row{padding:11px 12px;}
@@ -748,8 +827,10 @@ body{background:#E8EDF3;}
   <div class="settings-helper">Hanya metode yang berisi nomor yang akan ditampilkan dan dibagikan.</div>
   <div class="settings-row"><div class="label">Atas Nama</div><div class="price-edit"><input type="text" id="payName" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">DANA</div><div class="price-edit"><input type="text" id="payDana" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">OVO</div><div class="price-edit"><input type="text" id="payOvo" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">GOPAY</div><div class="price-edit"><input type="text" id="payGopay" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">ShopeePay</div><div class="price-edit"><input type="text" id="payShopee" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
+  <div class="settings-row"><div class="label">BSI</div><div class="price-edit"><input type="text" id="payBsi" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">BRI</div><div class="price-edit"><input type="text" id="payBri" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">Jago</div><div class="price-edit"><input type="text" id="payJago" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
   <div class="settings-row"><div class="label">Seabank</div><div class="price-edit"><input type="text" id="paySeabank" inputmode="numeric" style="width:140px; text-align:right;"></div></div>
@@ -767,6 +848,16 @@ body{background:#E8EDF3;}
         </button>
       </div>
 
+      <div class="availability-card" id="serviceScheduleCard">
+        <button class="availability-summary" id="btnToggleSchedule" type="button" aria-expanded="false" aria-controls="scheduleList">
+          <span class="availability-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <span class="availability-copy"><small>Status layanan</small><b id="scheduleTodayText">Memuat jadwal…</b></span>
+          <span class="availability-badge" id="scheduleStatusBadge">…</span>
+          <svg class="availability-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="schedule-list" id="scheduleList" hidden></div>
+      </div>
+
       <div class="form-progress" id="formProgress" role="button" tabindex="0" aria-live="polite" aria-label="Buka lokasi berikutnya yang belum diisi">
         <div class="progress-icon" id="formProgressIcon">1/2</div>
         <div><b id="formProgressTitle">Pilih titik awal</b><span id="formProgressText">Ketuk kolom titik awal untuk mencari alamat.</span></div>
@@ -780,6 +871,21 @@ body{background:#E8EDF3;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Tambah tujuan baru
       </button>
+
+      <div class="service-selector">
+        <div class="service-selector-head"><b>Pilihan layanan</b><span>Tidak mengubah tarif dasar</span></div>
+        <div class="service-options" id="serviceOptions">
+          <button class="service-option active" type="button" data-service="Antar Jemput" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5h-11z"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/><path d="M8 12l2-4h4l2 4"/></svg><span>Antar Jemput</span>
+          </button>
+          <button class="service-option" type="button" data-service="Delivery" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v10H3z"/><path d="M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Delivery</span>
+          </button>
+          <button class="service-option" type="button" data-service="Belanja" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Belanja</span>
+          </button>
+        </div>
+      </div>
 
       <!-- Toggle Pulang Pergi -->
       <div class="trip-option">
@@ -825,6 +931,7 @@ body{background:#E8EDF3;}
         <div class="meter-sub">
           <div>Jarak tempuh<b class="mono" id="distValue">0 km</b></div>
           <div>Tarif/km<b class="mono" id="rateValue">Rp 0</b></div>
+          <div>Layanan<b id="serviceValue">Antar Jemput</b></div>
         </div>
         <div class="ruler">
           <div class="ruler-track"><div class="ruler-fill" id="rulerFill"></div></div>
@@ -848,6 +955,10 @@ body{background:#E8EDF3;}
         <button class="recalc-btn" id="btnRecalc">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
           Hitung ulang
+        </button>
+        <button class="whatsapp-btn" id="btnWhatsapp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9 8.4 8.4 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8z"/></svg>
+          Pesan via WhatsApp
         </button>
         <button class="share-btn btn-full" id="btnShare">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -981,6 +1092,8 @@ let minFare = Number(savedTariff.minFare ?? APP_CONFIG.tarif.ongkosMinimalRp);
 let pricePerKm = Number(savedTariff.pricePerKm ?? APP_CONFIG.tarif.tarifPerKmSelanjutnya);
 let routePointsForNav = [];
 let lastResult = null;
+let selectedService = 'Antar Jemput';
+const allowedServices = ['Antar Jemput', 'Delivery', 'Belanja'];
 
 let payData = { ...APP_CONFIG.rekening, ...readStoredJSON('ongkir_payment_data', {}) };
 
@@ -1061,6 +1174,87 @@ const updateMapInsets = () => {
   });
 };
 
+/* ================= SERVICE SCHEDULE ================= */
+const serviceScheduleCard = document.getElementById('serviceScheduleCard');
+const scheduleTodayText = document.getElementById('scheduleTodayText');
+const scheduleStatusBadge = document.getElementById('scheduleStatusBadge');
+const scheduleList = document.getElementById('scheduleList');
+const btnToggleSchedule = document.getElementById('btnToggleSchedule');
+
+const timeToMinutes = (value) => {
+  const parts = String(value || '').split(':').map(Number);
+  if (parts.length !== 2 || parts.some(Number.isNaN)) return null;
+  return (parts[0] * 60) + parts[1];
+};
+
+const getZonedDateInfo = () => {
+  const zone = APP_CONFIG.jadwalLayanan?.zonaWaktu || 'Asia/Jakarta';
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: zone, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    const dayMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+    return { dayIndex: dayMap[values.weekday] ?? new Date().getDay(), minutes: Number(values.hour) * 60 + Number(values.minute) };
+  } catch {
+    const now = new Date();
+    return { dayIndex: now.getDay(), minutes: now.getHours() * 60 + now.getMinutes() };
+  }
+};
+
+const isInServiceWindow = (nowMinutes, openMinutes, closeMinutes) => {
+  if (openMinutes == null || closeMinutes == null) return false;
+  if (closeMinutes > openMinutes) return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+  return nowMinutes >= openMinutes || nowMinutes < closeMinutes;
+};
+
+const renderServiceSchedule = () => {
+  const days = APP_CONFIG.jadwalLayanan?.hari;
+  if (!Array.isArray(days) || days.length !== 7) { serviceScheduleCard.hidden = true; return; }
+  serviceScheduleCard.hidden = false;
+  const { dayIndex, minutes } = getZonedDateInfo();
+  const today = days[dayIndex];
+  const holiday = today.libur === true || !today.buka || !today.tutup;
+  const openMinutes = timeToMinutes(today.buka);
+  const closeMinutes = timeToMinutes(today.tutup);
+  const open = !holiday && isInServiceWindow(minutes, openMinutes, closeMinutes);
+
+  scheduleTodayText.textContent = holiday ? `${today.nama} • Libur` : `${today.nama} • ${today.buka}–${today.tutup}`;
+  scheduleStatusBadge.textContent = holiday ? 'Libur' : (open ? 'Buka' : 'Tutup');
+  scheduleStatusBadge.classList.toggle('closed', !open);
+
+  scheduleList.innerHTML = days.map((day, index) => {
+    const isHoliday = day.libur === true || !day.buka || !day.tutup;
+    const value = isHoliday ? 'Libur' : `${day.buka}–${day.tutup}`;
+    return `<div class="schedule-row ${index === dayIndex ? 'today' : ''}"><span>${escapeHtml(day.nama)}</span><b class="${isHoliday ? 'holiday' : ''}">${escapeHtml(value)}</b></div>`;
+  }).join('');
+};
+
+btnToggleSchedule.addEventListener('click', () => {
+  const expanded = btnToggleSchedule.getAttribute('aria-expanded') === 'true';
+  btnToggleSchedule.setAttribute('aria-expanded', String(!expanded));
+  scheduleList.hidden = expanded;
+  updateMapInsets();
+});
+
+/* ================= SERVICE CHOICE ================= */
+const serviceOptions = document.getElementById('serviceOptions');
+const setSelectedService = (service, refresh = true) => {
+  selectedService = allowedServices.includes(service) ? service : allowedServices[0];
+  serviceOptions.querySelectorAll('.service-option').forEach(button => {
+    const active = button.dataset.service === selectedService;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  const serviceValue = document.getElementById('serviceValue');
+  if (serviceValue) serviceValue.textContent = selectedService;
+  if (refresh && lastResult && resultView.classList.contains('show')) showResult(lastResult, true);
+};
+serviceOptions.addEventListener('click', event => {
+  const button = event.target.closest('.service-option');
+  if (button) setSelectedService(button.dataset.service);
+});
+
 /* ================= CLEAR ROUTE HELPER ================= */
 const clearRouteLayers = () => {
   drawnRouteLayers.forEach(layer => map.removeLayer(layer));
@@ -1080,8 +1274,10 @@ const initAppValues = () => {
   
   document.getElementById('payName').value = payData.name || '';
   document.getElementById('payDana').value = payData.dana || '';
+  document.getElementById('payOvo').value = payData.ovo || '';
   document.getElementById('payGopay').value = payData.gopay || '';
   document.getElementById('payShopee').value = payData.shopeepay || '';
+  document.getElementById('payBsi').value = payData.bsi || '';
   document.getElementById('payBri').value = payData.bri || '';
   document.getElementById('payJago').value = payData.jago || '';
   document.getElementById('paySeabank').value = payData.seabank || '';
@@ -1090,15 +1286,17 @@ const initAppValues = () => {
 const updatePaymentData = () => {
   payData.name = document.getElementById('payName').value.trim();
   payData.dana = document.getElementById('payDana').value.trim();
+  payData.ovo = document.getElementById('payOvo').value.trim();
   payData.gopay = document.getElementById('payGopay').value.trim();
   payData.shopeepay = document.getElementById('payShopee').value.trim();
+  payData.bsi = document.getElementById('payBsi').value.trim();
   payData.bri = document.getElementById('payBri').value.trim();
   payData.jago = document.getElementById('payJago').value.trim();
   payData.seabank = document.getElementById('paySeabank').value.trim();
   try { localStorage.setItem('ongkir_payment_data', JSON.stringify(payData)); } catch {}
 };
 
-['payName','payDana','payGopay','payShopee','payBri','payJago','paySeabank'].forEach(id => {
+['payName','payDana','payOvo','payGopay','payShopee','payBsi','payBri','payJago','paySeabank'].forEach(id => {
   document.getElementById(id).addEventListener('input', updatePaymentData);
 });
 
@@ -1142,8 +1340,10 @@ const renderPaymentModal = () => {
 
   const banks = [
     { id: 'dana', label: 'DANA' },
+    { id: 'ovo', label: 'OVO' },
     { id: 'gopay', label: 'GOPAY' },
     { id: 'shopeepay', label: 'ShopeePay' },
+    { id: 'bsi', label: 'Bank Syariah Indonesia (BSI)' },
     { id: 'bri', label: 'Bank BRI' },
     { id: 'jago', label: 'Bank Jago' },
     { id: 'seabank', label: 'Seabank' }
@@ -1511,6 +1711,8 @@ sheetHandle.addEventListener('pointerup', (event) => {
 /* ================= SETTINGS (COLLAPSIBLE TOP) ================= */
 const topMenu = document.getElementById('topMenu');
 const panelBackdrop = document.getElementById('panelBackdrop');
+const btnSettings = document.getElementById('btnSettings');
+btnSettings.style.display = APP_CONFIG.tampilkanTombolSettings === false ? 'none' : 'flex';
 let settingsReturnFocus = null;
 const openSettings = (event) => {
   settingsReturnFocus = event?.currentTarget || document.getElementById('btnSettings');
@@ -1523,7 +1725,7 @@ const closeSettings = () => {
   panelBackdrop.classList.remove('show');
   settingsReturnFocus?.focus?.();
 };
-document.getElementById('btnSettings').addEventListener('click', openSettings);
+btnSettings.addEventListener('click', openSettings);
 document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
 panelBackdrop.addEventListener('click', closeSettings);
 
@@ -1552,7 +1754,8 @@ document.getElementById('btnReset').addEventListener('click', () => {
   for (let k in markers) delete markers[k];
   
   map.setView(APP_CONFIG.titikPusatPeta, APP_CONFIG.zoomPeta);
-  document.getElementById('toggleRoundTrip').checked = false; 
+  document.getElementById('toggleRoundTrip').checked = false;
+  setSelectedService('Antar Jemput', false);
   
   document.getElementById('cbPrice').textContent = 'Rp 0';
   document.getElementById('cbDist').textContent = '0 km • 0 tujuan';
@@ -1876,8 +2079,9 @@ const showResult = (res, silent) => {
   document.getElementById('fareValue').textContent = fmtRp(fare);
   document.getElementById('distValue').textContent = `${totalKm.toFixed(1)} km`;
   document.getElementById('rateValue').textContent = `Rp ${fmtRp(pricePerKm)}`;
+  document.getElementById('serviceValue').textContent = selectedService;
   document.getElementById('cbPrice').textContent = `Rp ${fmtRp(fare)}`;
-  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan${isRoundTrip ? ' • PP' : ''}`;
+  document.getElementById('cbDist').textContent = `${totalKm.toFixed(1)} km • ${destCount} tujuan${isRoundTrip ? ' • PP' : ''} • ${selectedService}`;
   document.getElementById('btnCompactShare').disabled = false;
 
   const fillPct = Math.min(100, totalKm <= 5 ? totalKm / 5 * 35 : totalKm <= 20 ? 35 + (totalKm - 5) / 15 * 40 : 75 + Math.min(25, (totalKm - 20) / 30 * 25));
@@ -1958,17 +2162,40 @@ const buildSharePayload = () => {
   shareUrl.searchParams.set('mk', minKm);
   shareUrl.searchParams.set('mf', minFare);
   shareUrl.searchParams.set('rt', toggleRoundTrip.checked ? '1' : '0');
+  shareUrl.searchParams.set('layanan', selectedService);
 
   const methods = [
-    ['DANA', payData.dana], ['GOPAY', payData.gopay], ['ShopeePay', payData.shopeepay],
-    ['BRI', payData.bri], ['Jago', payData.jago], ['Seabank', payData.seabank]
+    ['DANA', payData.dana], ['OVO', payData.ovo], ['GOPAY', payData.gopay], ['ShopeePay', payData.shopeepay],
+    ['BSI', payData.bsi], ['BRI', payData.bri], ['Jago', payData.jago], ['Seabank', payData.seabank]
   ].filter(([, value]) => value).map(([label, value]) => `${label}: ${value}`);
   if (payData.name) methods.push(`a.n. ${payData.name}`);
   const paymentText = methods.length ? `\n\n💳 Info pembayaran:\n${methods.join('\n')}` : '';
+  const rincian = {
+    layanan: selectedService,
+    totalOngkos: `Rp ${document.getElementById('fareValue').textContent.trim()}`,
+    jarak: document.getElementById('distValue').textContent.trim(),
+    pulangPergi: toggleRoundTrip.checked
+  };
   return {
     link: shareUrl.toString(),
-    text: APP_CONFIG.teksBagikan(shareUrl.toString(), paymentText)
+    text: APP_CONFIG.teksBagikan(shareUrl.toString(), paymentText, rincian)
   };
+};
+
+const normalizeWhatsAppNumber = (number) => {
+  const digits = String(number || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('0')) return `62${digits.slice(1)}`;
+  return digits;
+};
+
+const handleWhatsAppOrder = () => {
+  if (!lastResult || !isRouteComplete()) { toast('Hitung rute terlebih dahulu sebelum memesan.'); return; }
+  const number = normalizeWhatsAppNumber(APP_CONFIG.whatsappAdmin);
+  if (!number) { toast('Nomor WhatsApp admin belum diatur.'); return; }
+  const payload = buildSharePayload();
+  const url = `https://wa.me/${number}?text=${encodeURIComponent(payload.text)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
 };
 
 window.handleShare = async (btnElement) => {
@@ -2038,6 +2265,7 @@ window.handleShare = async (btnElement) => {
   }
 };
 
+document.getElementById('btnWhatsapp').addEventListener('click', handleWhatsAppOrder);
 document.getElementById('btnShare').addEventListener('click', event => handleShare(event.currentTarget));
 document.getElementById('btnCompactShare').addEventListener('click', event => {
   event.stopPropagation();
@@ -2047,8 +2275,11 @@ document.getElementById('btnCompactShare').addEventListener('click', event => {
 /* ================= INIT & LOAD URL PARAMS ================= */
 const initApp = async () => {
   initAppValues(); // Memuat data UI dari CONFIG awal
+  renderServiceSchedule();
+  setInterval(renderServiceSchedule, 60000);
 
   const params = new URLSearchParams(window.location.search);
+  setSelectedService(params.get('layanan') || 'Antar Jemput', false);
   const ptsStr = params.get('pts');
   
   if (ptsStr) {
