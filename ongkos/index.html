@@ -115,9 +115,13 @@
     },
 
     // 7. Template teks untuk Share / WhatsApp.
-    teksBagikan: function(urlLink, infoBayar, rincian) {
+    // Argumen default mencegah aplikasi crash jika data rincian belum tersedia.
+    teksBagikan: function(urlLink, infoBayar = '', rincian = {}) {
+      const layanan = rincian.layanan || '-';
+      const totalOngkos = rincian.totalOngkos || '-';
+      const jarak = rincian.jarak || '-';
       const perjalanan = rincian.pulangPergi ? "Pulang-pergi" : "Sekali jalan";
-      return `*Rincian perjalanan*\nLayanan: ${rincian.layanan}\nEstimasi ongkos: ${rincian.totalOngkos}\nJarak: ${rincian.jarak}\nPerjalanan: ${perjalanan}\n\nLink rute dan rincian:\n${urlLink}${infoBayar}`;
+      return `*Rincian perjalanan*\nLayanan: ${layanan}\nEstimasi ongkos: ${totalOngkos}\nJarak: ${jarak}\nPerjalanan: ${perjalanan}\n\nLink rute dan rincian:\n${urlLink}${infoBayar}`;
     }
   };
 
@@ -3649,31 +3653,72 @@ const canvasToBlob = (canvas) => new Promise((resolve, reject) => {
 });
 
 const buildSharePayload = () => {
+  if (!isRouteComplete()) {
+    throw new Error('Rute belum lengkap.');
+  }
+
   const shareUrl = new URL(window.location.href);
   shareUrl.search = '';
-  const ptsParam = points.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)},${encodeURIComponent(p.customName || '')}`).join(';');
+
+  const ptsParam = points
+    .map(point => {
+      const lat = Number(point.lat);
+      const lng = Number(point.lng);
+      const customName = point.customName || '';
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        throw new Error('Koordinat rute tidak valid.');
+      }
+
+      return `${lat.toFixed(5)},${lng.toFixed(5)},${encodeURIComponent(customName)}`;
+    })
+    .join(';');
+
   shareUrl.searchParams.set('pts', ptsParam);
-  shareUrl.searchParams.set('p', pricePerKm);
-  shareUrl.searchParams.set('mk', minKm);
-  shareUrl.searchParams.set('mf', minFare);
+  shareUrl.searchParams.set('p', String(pricePerKm));
+  shareUrl.searchParams.set('mk', String(minKm));
+  shareUrl.searchParams.set('mf', String(minFare));
   shareUrl.searchParams.set('rt', toggleRoundTrip.checked ? '1' : '0');
-  shareUrl.searchParams.set('layanan', selectedService);
+  shareUrl.searchParams.set('layanan', selectedService || 'Antar Jemput');
 
   const methods = [
-    ['DANA', payData.dana], ['OVO', payData.ovo], ['GOPAY', payData.gopay], ['ShopeePay', payData.shopeepay],
-    ['BSI', payData.bsi], ['BRI', payData.bri], ['Jago', payData.jago], ['Seabank', payData.seabank]
-  ].filter(([, value]) => value).map(([label, value]) => `${label}: ${value}`);
-  if (payData.name) methods.push(`a.n. ${payData.name}`);
-  const paymentText = methods.length ? `\n\n*Info pembayaran*\n${methods.join('\n')}` : '';
+    ['DANA', payData.dana],
+    ['OVO', payData.ovo],
+    ['GOPAY', payData.gopay],
+    ['ShopeePay', payData.shopeepay],
+    ['BSI', payData.bsi],
+    ['BRI', payData.bri],
+    ['Jago', payData.jago],
+    ['Seabank', payData.seabank]
+  ]
+    .filter(([, value]) => String(value || '').trim())
+    .map(([label, value]) => `${label}: ${String(value).trim()}`);
+
+  if (String(payData.name || '').trim()) {
+    methods.push(`a.n. ${String(payData.name).trim()}`);
+  }
+
+  const paymentText = methods.length
+    ? `\n\n*Info pembayaran*\n${methods.join('\n')}`
+    : '';
+
+  const fareText = document.getElementById('fareValue')?.textContent?.trim() || '0';
+  const distanceText = document.getElementById('distValue')?.textContent?.trim() || '-';
+
   const rincian = {
-    layanan: selectedService,
-    totalOngkos: `Rp ${document.getElementById('fareValue').textContent.trim()}`,
-    jarak: document.getElementById('distValue').textContent.trim(),
-    pulangPergi: toggleRoundTrip.checked
+    layanan: selectedService || 'Antar Jemput',
+    totalOngkos: `Rp ${fareText}`,
+    jarak: distanceText,
+    pulangPergi: Boolean(toggleRoundTrip.checked)
   };
+
+  const link = shareUrl.toString();
+  const text = APP_CONFIG.teksBagikan(link, paymentText, rincian);
+
   return {
-    link: shareUrl.toString(),
-    text: APP_CONFIG.teksBagikan(shareUrl.toString(), paymentText)
+    link,
+    text,
+    rincian
   };
 };
 
@@ -3692,15 +3737,31 @@ const normalizeWhatsAppNumber = (number) => {
 };
 
 const handleWhatsAppOrder = () => {
-  if (!lastResult || !isRouteComplete()) { toast('Hitung rute terlebih dahulu sebelum memesan.'); return; }
+  if (!lastResult || !isRouteComplete()) {
+    toast('Hitung rute terlebih dahulu sebelum memesan.');
+    return;
+  }
+
   const number = normalizeWhatsAppNumber(APP_CONFIG.whatsappAdmin);
-  if (!number) { toast('Nomor WhatsApp admin belum diatur.'); return; }
-  const payload = buildSharePayload();
-  const waUrl = new URL(`https://wa.me/${number}`);
-  // URLSearchParams menangani encoding UTF-8 dan baris baru tanpa double-encoding.
-  waUrl.searchParams.set('text', sanitizeShareText(payload.text));
-  const waWindow = window.open(waUrl.toString(), '_blank', 'noopener,noreferrer');
-  if (waWindow) waWindow.opener = null;
+  if (!number) {
+    toast('Nomor WhatsApp admin belum diatur.');
+    return;
+  }
+
+  try {
+    const payload = buildSharePayload();
+    if (!payload?.text) throw new Error('Pesan WhatsApp kosong.');
+
+    const waUrl = new URL(`https://wa.me/${number}`);
+    // URLSearchParams menangani encoding UTF-8 dan baris baru tanpa double-encoding.
+    waUrl.searchParams.set('text', sanitizeShareText(payload.text));
+
+    const waWindow = window.open(waUrl.toString(), '_blank', 'noopener,noreferrer');
+    if (waWindow) waWindow.opener = null;
+  } catch (error) {
+    console.error('Gagal membuat pesan WhatsApp:', error);
+    toast('Pesan WhatsApp tidak dapat dibuat. Silakan coba lagi.');
+  }
 };
 
 const captureCleanMapScreenshot = async () => {
