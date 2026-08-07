@@ -1283,6 +1283,509 @@ body.is-sharing-map #map::after{display:none!important;}
   .route-details{margin-bottom:9px;}
   .whatsapp-btn,.nav-btn,.share-btn,.recalc-btn{min-height:45px;padding-top:11px;padding-bottom:11px;}
 }
+
+/* ========== MINIMAL COMPACT UI — FINAL OVERRIDES ========== */
+/*
+  Prinsip:
+  1) satu aksi utama per layar,
+  2) sedikit elevation/shadow,
+  3) warna hanya untuk state/aksi penting,
+  4) komponen lebih pendek tanpa mengorbankan target sentuh.
+*/
+:root{
+  --minimal-bg:#F2F4F7;
+  --minimal-surface:#F7F8FA;
+  --minimal-line:#E5E8ED;
+  --minimal-muted:#687386;
+  --minimal-shadow:0 -3px 16px rgba(23,34,59,.08);
+  --minimal-radius:16px;
+}
+
+body{background:var(--minimal-bg);}
+button{transition:background-color .15s ease,border-color .15s ease,opacity .15s ease,transform .08s ease;}
+button:active{transform:scale(.985);}
+
+/* Map controls: only the essentials should visually float above the map. */
+.topbar{
+  padding:calc(10px + var(--safe-top)) 10px 0;
+}
+.topbar-right{
+  padding:0;
+  gap:6px;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+.topbar .icon-btn,
+#btnLocate{
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  border:1px solid var(--minimal-line)!important;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 2px 8px rgba(23,34,59,.10)!important;
+}
+#btnLocate{
+  right:12px;
+  width:46px;height:46px;min-width:46px;min-height:46px;
+}
+
+/* Bottom sheet: shorter, flatter, quieter. */
+.sheet{
+  border:0;
+  border-radius:18px 18px 0 0;
+  box-shadow:var(--minimal-shadow);
+  background:#fff;
+}
+.sheet-handle{padding:7px 0 5px;}
+.sheet-handle span{width:34px;height:4px;background:#D6DAE0;}
+.sheet-title{display:none!important;}
+.sheet-body{
+  padding-left:14px;
+  padding-right:14px;
+}
+
+/* Compact segmented progress instead of decorative stepper. */
+.journey-stepper{
+  gap:3px;
+  margin:0 0 10px;
+  padding:3px;
+  border-radius:12px;
+  background:var(--minimal-surface);
+}
+.journey-step{
+  min-height:30px;
+  padding:5px 6px;
+  border-radius:9px;
+  gap:0;
+  color:#8A93A3;
+}
+.journey-step::before{display:none;}
+.journey-step-dot{display:none;}
+.journey-step-label{
+  font-size:10px;
+  line-height:1;
+  font-weight:750;
+}
+.journey-step.active{
+  color:var(--ink);
+  background:#fff;
+  box-shadow:0 1px 3px rgba(23,34,59,.08);
+}
+.journey-step.done{color:var(--primary-strong);}
+.journey-step.done .journey-step-label::before{
+  content:'✓ ';
+}
+
+/* Service step: one compact segmented choice. */
+.service-selector{margin:0!important;}
+.service-selector-head{
+  margin:0 1px 7px;
+  align-items:center;
+  justify-content:space-between!important;
+}
+.service-selector-head b{
+  display:block;
+  color:var(--minimal-muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.25px;
+  text-transform:none;
+}
+.service-selector-head .service-start-price{
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--primary-strong);
+  font-size:10px;
+}
+.service-options{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+  overflow:visible!important;
+  padding:0!important;
+}
+.service-option{
+  min-width:0!important;
+  min-height:46px!important;
+  padding:7px 6px!important;
+  border:1px solid var(--minimal-line);
+  border-radius:11px;
+  background:#fff;
+  box-shadow:none!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  scroll-snap-align:none!important;
+}
+.service-option .service-icon-wrap{
+  width:22px!important;height:22px!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.service-option svg{width:16px!important;height:16px!important;}
+.service-option .service-name{
+  font-size:10.5px!important;
+  white-space:normal!important;
+  line-height:1.15!important;
+}
+.service-option.active{
+  color:var(--primary-strong);
+  border-color:#B9E2D2;
+  background:var(--primary-soft);
+  box-shadow:none!important;
+}
+.service-option.active .service-icon-wrap{background:transparent!important;}
+
+/* Secondary options should read like settings, not cards. */
+.trip-option{
+  min-height:40px;
+  margin:7px 0 5px;
+  padding:6px 9px;
+  gap:7px;
+  border:1px solid var(--minimal-line);
+  border-radius:11px;
+  background:#fff;
+}
+.trip-option-icon{
+  width:24px;height:24px;
+  border-radius:0;
+  background:transparent;
+  color:var(--minimal-muted);
+}
+.trip-option-icon svg{width:15px;height:15px;}
+.trip-option-copy b{font-size:11.5px;font-weight:750;}
+.toggle-switch{width:38px;height:22px;}
+.toggle-slider{background:#DDE1E7;}
+.toggle-slider:before{width:16px;height:16px;left:3px;bottom:3px;}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(16px);}
+
+.availability-card{
+  margin:0;
+  border:0;
+  border-radius:10px;
+  background:var(--minimal-surface);
+  box-shadow:none;
+}
+.availability-summary{
+  min-height:36px;
+  padding:5px 8px;
+  gap:6px;
+}
+.availability-summary:hover{background:#F2F4F7;}
+.availability-icon{display:none;}
+.availability-copy b{
+  margin:0;
+  font-size:10.5px;
+  font-weight:700;
+  color:var(--minimal-muted);
+}
+.availability-badge{
+  padding:3px 6px;
+  font-size:9px;
+  border-radius:999px;
+}
+.availability-chevron{width:14px;height:14px;}
+.schedule-list{padding:0 8px 5px;}
+.schedule-row{padding:5px 1px;font-size:10px;}
+
+/* Location step: input fields dominate, everything else recedes. */
+.step-back-row{margin:0 0 4px;}
+.step-back-btn{
+  min-height:30px;
+  padding:3px 5px;
+  font-size:10.5px;
+  color:var(--minimal-muted);
+}
+.route-stack{padding-left:22px;margin-top:0;}
+.route-rail{
+  left:7px;top:16px;bottom:16px;
+  background:var(--minimal-line);
+}
+.route-row{padding:3px 0;}
+.route-dot{
+  left:-22px;
+  width:16px;height:16px;
+  box-shadow:0 0 0 3px #fff;
+}
+.route-dot svg{width:11px;height:11px;}
+.route-field,
+.route-field.empty{
+  min-height:48px;
+  padding:6px 5px 6px 10px;
+  border:1px solid transparent;
+  border-radius:11px;
+  background:var(--minimal-surface);
+  box-shadow:none;
+}
+.route-field:hover{
+  border-color:#D8DDE5;
+  background:#fff;
+  box-shadow:none;
+}
+.route-field.attention{
+  border-color:#9FD6C1;
+  box-shadow:0 0 0 2px rgba(10,159,114,.08);
+}
+.field-text{font-size:12.5px;line-height:1.3;font-weight:700;}
+.field-clear{
+  width:36px;height:36px;min-width:36px;min-height:36px;
+}
+.swap-btn{
+  width:30px;height:30px;
+  top:36px;right:-1px;
+  border-color:var(--minimal-line);
+  box-shadow:0 1px 4px rgba(23,34,59,.08);
+}
+.add-stop-btn{
+  width:auto;
+  min-height:34px;
+  margin:2px 0 0 20px;
+  padding:5px 7px;
+  border-radius:8px;
+  justify-content:flex-start;
+  background:transparent;
+  color:var(--minimal-muted);
+  font-size:11px;
+}
+.add-stop-btn:hover{background:var(--minimal-surface);}
+
+/* One strong CTA. */
+.form-actions-sticky{
+  margin:0 -1px;
+  padding:7px 1px 1px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),#fff 34%,#fff 100%);
+}
+.form-actions-sticky .cta,
+.cta[data-step="location"]{
+  min-height:46px;
+  margin:0;
+  border-radius:11px;
+  background:var(--ink);
+  box-shadow:none;
+  font-size:13px;
+}
+.form-actions-sticky .cta:hover,
+.cta[data-step="location"]:hover{background:#263149;}
+
+/* Result: price first, no decorative gradients. */
+.result-actions-top{margin-bottom:6px;}
+.result-back{
+  min-height:34px;
+  padding:4px 6px;
+  font-size:11px;
+}
+.result-trip-chips{
+  gap:5px;
+  margin:0 0 7px;
+}
+.result-trip-chip{
+  padding:4px 6px;
+  border-radius:7px;
+  background:var(--minimal-surface);
+  color:var(--minimal-muted);
+  font-size:9px;
+}
+.result-trip-chip.primary{
+  background:var(--minimal-surface);
+  color:var(--ink);
+}
+.meter-card{
+  margin-bottom:8px;
+  padding:14px 14px 12px;
+  border:1px solid var(--minimal-line);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:none;
+  color:var(--ink);
+}
+.meter-card::after{display:none;}
+.meter-label{
+  color:var(--minimal-muted);
+  font-size:9.5px;
+  letter-spacing:.45px;
+}
+.meter-value{
+  margin-top:2px;
+  font-size:31px;
+  letter-spacing:-.7px;
+}
+.meter-value .curr{
+  font-size:15px;
+  color:var(--minimal-muted);
+}
+.meter-sub{margin-top:7px!important;}
+.meter-sub div{font-size:9.5px!important;color:var(--minimal-muted)!important;}
+.meter-sub b{font-size:12.5px!important;color:var(--ink)!important;}
+
+.route-notice{
+  margin:0 0 8px;
+  padding:8px 9px;
+  border:1px solid #F2DFC0;
+  background:#FFF9EF;
+  font-size:10px;
+}
+.route-details{
+  margin:0 0 8px;
+  border-top:1px solid var(--minimal-line);
+  border-bottom:1px solid var(--minimal-line);
+}
+.route-details summary{
+  padding:8px 1px;
+  font-size:10.5px;
+}
+.segment{padding:7px 0;}
+.segment-icon{width:22px;height:22px;}
+.segment-route,.segment-fare{font-size:10.5px;}
+.segment-dist{font-size:9.5px;}
+
+/* Primary conversion action + quiet utilities. */
+.whatsapp-btn{
+  min-height:46px;
+  padding:11px;
+  border-radius:11px;
+  background:var(--primary);
+  box-shadow:none;
+  font-size:13px;
+}
+.nav-btn{
+  min-height:44px;
+  margin-top:6px;
+  padding:10px;
+  border-radius:11px;
+  background:#fff;
+  border:1px solid var(--minimal-line);
+  color:var(--ink);
+  box-shadow:none;
+  font-size:12px;
+}
+.action-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin-top:6px;
+}
+.action-grid .btn-full{grid-column:auto!important;}
+.action-grid .recalc-btn,
+.action-grid .share-btn{
+  min-height:42px;
+  padding:8px 5px;
+  border:1px solid var(--minimal-line);
+  border-radius:10px;
+  background:var(--minimal-surface);
+  color:var(--minimal-muted);
+  box-shadow:none;
+  font-size:10.5px;
+}
+.action-grid .share-btn{background:var(--minimal-surface);color:var(--minimal-muted);}
+
+/* Compact state when the sheet is minimized. */
+.compact-bar{
+  padding:11px 14px calc(12px + var(--safe-bottom));
+  border-radius:16px 16px 0 0;
+  background:var(--ink);
+  box-shadow:var(--minimal-shadow);
+}
+.cb-price{font-size:18px;}
+.cb-dist{font-size:10.5px;}
+.cb-btn{width:38px;height:38px;}
+
+/* Search should feel like a utility, not a second app. */
+.search-head{
+  gap:7px;
+  padding:calc(10px + var(--safe-top)) 10px 8px;
+  border-bottom:0;
+}
+.search-head .icon-btn{
+  width:40px;height:40px;min-width:40px;min-height:40px;
+}
+.search-input-wrap{
+  height:44px;
+  border-radius:11px;
+  background:var(--minimal-surface);
+}
+.search-submit{
+  width:40px;height:40px;
+  border-radius:10px;
+  background:var(--ink);
+}
+.search-context{
+  padding:4px 14px 7px;
+  border-bottom:1px solid var(--minimal-line);
+  background:#fff;
+  font-size:9.5px;
+  color:var(--minimal-muted);
+}
+.search-body{padding-top:2px;}
+.quick-actions{padding-top:3px;}
+.quick-action{
+  min-height:52px;
+  padding:8px 7px;
+}
+.quick-action .qa-icon{
+  width:32px;height:32px;
+  background:var(--minimal-surface);
+}
+.quick-action .qa-text b{font-size:12px;}
+.quick-action .qa-text span{font-size:10px;}
+.result-item{
+  min-height:52px;
+  padding:8px 7px;
+}
+.result-item .ri-text b{font-size:12px;}
+.result-item .ri-text span{font-size:10px;}
+
+/* Modals and secondary panels use the same flat visual language. */
+.modal-card{
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -8px 28px rgba(23,34,59,.14);
+}
+.pay-item,.settings-row,.about-fact{background:var(--minimal-surface);}
+.btn-copy{box-shadow:none;border:1px solid var(--minimal-line);}
+
+@media (max-width:759px){
+  :root{--mobile-sheet-max:46dvh;}
+  .sheet{max-height:var(--mobile-sheet-max)!important;}
+  .sheet-body{padding:0 12px calc(10px + var(--safe-bottom));}
+  .journey-stepper{margin-bottom:8px;}
+  .service-option .service-name{font-size:10px!important;}
+  .trip-option{margin-top:6px;}
+  .availability-card{margin-top:1px;}
+  .form-actions-sticky{padding-top:6px;}
+  #btnInfo{width:42px;height:42px;min-width:42px;min-height:42px;}
+}
+
+@media (max-width:380px){
+  :root{--mobile-sheet-max:48dvh;}
+  .service-option{padding-left:4px!important;padding-right:4px!important;}
+  .service-option .service-icon-wrap{display:none!important;}
+  .action-grid .recalc-btn,
+  .action-grid .share-btn{font-size:10px;}
+}
+
+@media (min-width:760px){
+  .sheet{
+    width:400px;
+    left:16px;
+    bottom:16px;
+    border-radius:18px;
+    box-shadow:0 14px 42px rgba(23,34,59,.13);
+  }
+  .compact-bar{
+    width:400px;
+    left:16px;
+    bottom:16px;
+    border-radius:16px;
+  }
+  .search-panel{
+    width:410px;
+    left:16px;
+    top:16px;
+    bottom:16px;
+    border-radius:18px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1431,7 +1934,7 @@ body.is-sharing-map #map::after{display:none!important;}
       <section class="flow-step" id="serviceFlowStep" data-flow-step="service">
 
       <div class="service-selector">
-        <div class="service-selector-head"><span></span><span class="service-start-price" id="serviceStartPrice">Mulai Rp 10.000</span></div>
+        <div class="service-selector-head"><b>Pilih layanan</b><span class="service-start-price" id="serviceStartPrice">Mulai Rp 10.000</span></div>
         <div class="service-options" id="serviceOptions">
           <button class="service-option active" type="button" data-service="Antar Jemput" aria-pressed="true">
             <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5h-11z"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/><path d="M8 12l2-4h4l2 4"/></svg></span><span class="service-name">Antar Jemput</span>
@@ -1537,7 +2040,7 @@ body.is-sharing-map #map::after{display:none!important;}
 
       <button class="whatsapp-btn btn-full" id="btnWhatsapp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9 8.4 8.4 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8z"/></svg>
-        Pesan WhatsApp
+        Pesan via WhatsApp
       </button>
 
       <button class="nav-btn btn-full" id="btnNavMaps">
@@ -1583,7 +2086,7 @@ body.is-sharing-map #map::after{display:none!important;}
 <div class="modal-overlay" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
   <div class="modal-card">
     <div class="modal-title" id="paymentTitle">
-      Pilihan Pembayaran
+      Pembayaran
       <button id="btnClosePayment" style="color:var(--ink-soft);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body" id="paymentListContainer">
