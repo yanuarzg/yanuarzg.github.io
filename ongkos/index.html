@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+<link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
 <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossorigin>
 <link rel="preconnect" href="https://router.project-osrm.org" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@
     namaAplikasi: "Cek Ongkos Om Yanu",
 
     // Tampilkan tombol pengaturan untuk operator/admin.
-    tampilkanTombolSettings: true,
+    tampilkanTombolSettings: false,
     
     // 2. Tema Warna Merek (Gunakan kode HEX)
     warna: {
@@ -87,8 +87,8 @@
 
     // Endpoint dipisahkan dari kode agar mudah diganti ke provider production.
     mapProvider: {
-      tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      tileAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      tileUrl: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+      tileAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       geocodingEndpoint: "https://nominatim.openstreetmap.org",
       routingEndpoint: "https://router.project-osrm.org"
     },
@@ -109,7 +109,7 @@
     // 7. Template teks untuk Share / WhatsApp.
     teksBagikan: function(urlLink, infoBayar, rincian) {
       const perjalanan = rincian.pulangPergi ? "Pulang-pergi" : "Sekali jalan";
-      return `Halo kak, berikut rincian perjalanan.\n\n🛵 Layanan: ${rincian.layanan}\n💰 Estimasi ongkos: ${rincian.totalOngkos}\n🛣 Jarak: ${rincian.jarak}\n🔄 Perjalanan: ${perjalanan}\n\n📍 Cek rute dan rincian langsung di web:\n${urlLink}${infoBayar}`;
+      return `Halo Kak, saya ingin memesan layanan.\n\n*Rincian perjalanan*\nLayanan: ${rincian.layanan}\nEstimasi ongkos: ${rincian.totalOngkos}\nJarak: ${rincian.jarak}\nPerjalanan: ${perjalanan}\n\nLink rute dan rincian:\n${urlLink}${infoBayar}`;
     }
   };
 
@@ -938,6 +938,112 @@ body{background:#E8EDF3;}
   .meter-sub div:last-child{grid-column:1 / -1;}
 }
 
+
+
+/* ========== MAPS-LIKE UX / ACCESSIBILITY ========== */
+:root{
+  --gm-blue:#1A73E8;
+  --gm-blue-soft:#E8F0FE;
+  --gm-green:#0F9D58;
+  --touch-size:52px;
+}
+
+/* Peta dibuat bersih seperti aplikasi navigasi modern. */
+body{font-size:16px;background:#E7EBF0;}
+#map{background:#E7EBF0;}
+#map::after{display:none!important;}
+.leaflet-container{font-family:'Manrope',system-ui,sans-serif;}
+.leaflet-control-attribution{background:rgba(255,255,255,.86)!important;font-size:9px!important;}
+.leaflet-control-zoom{border:0!important;box-shadow:0 2px 10px rgba(31,41,55,.16)!important;border-radius:12px!important;overflow:hidden;}
+.leaflet-control-zoom a{border:0!important;color:#374151!important;background:#fff!important;}
+.leaflet-control-zoom a+a{border-top:1px solid #E5E7EB!important;}
+
+/* Tombol lokasi dibuat sebagai FAB di kanan bawah seperti Google Maps. */
+.topbar{pointer-events:none;padding:calc(12px + var(--safe-top)) 12px 0;justify-content:flex-end;}
+.topbar-right{pointer-events:auto;background:#fff;border:1px solid #E4E7EB;box-shadow:0 2px 10px rgba(31,41,55,.14);padding:2px;}
+.topbar .icon-btn{width:48px;height:48px;min-width:48px;min-height:48px;background:#fff;border:0;}
+#btnLocate{
+  position:fixed;right:14px;bottom:calc(var(--map-bottom-inset) + 14px);z-index:22;
+  width:52px;height:52px;min-width:52px;min-height:52px;
+  color:#4B5563;background:#fff;border:1px solid #E4E7EB!important;
+  box-shadow:0 3px 14px rgba(31,41,55,.20)!important;
+  transition:bottom .25s ease,transform .12s ease,color .15s ease,background .15s ease;
+}
+#btnLocate.active{color:var(--gm-blue);background:var(--gm-blue-soft);}
+#btnLocate.locating svg{animation:locationPulse .9s ease-in-out infinite alternate;}
+@keyframes locationPulse{to{transform:scale(1.14);}}
+
+/* Blue dot + lingkar akurasi lokasi pengguna. */
+.user-location-icon{background:transparent!important;border:0!important;}
+.user-location-dot{
+  width:22px;height:22px;border-radius:50%;background:var(--gm-blue);
+  border:4px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.38);
+  position:relative;
+}
+.user-location-dot::after{
+  content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(26,115,232,.35);
+  animation:userLocationPulse 1.8s ease-out infinite;
+}
+@keyframes userLocationPulse{0%{transform:scale(.72);opacity:.85}100%{transform:scale(1.65);opacity:0}}
+
+/* Bottom sheet: lebih mudah dibaca untuk pengguna awam, lansia, dan anak. */
+.sheet{border-radius:24px 24px 0 0;box-shadow:0 -4px 24px rgba(31,41,55,.14);}
+.sheet-handle{padding:12px 0 8px;}
+.sheet-handle span{width:44px;height:5px;background:#D1D5DB;}
+.sheet-body{padding-left:16px;padding-right:16px;}
+.sheet-title-copy>span:last-child{font-size:22px!important;line-height:1.2;}
+.sheet-subtitle{font-size:13px;line-height:1.5;}
+.route-field{min-height:64px;border-radius:14px;padding:10px 8px 10px 14px;}
+.field-overline{font-size:11px;}
+.field-text{font-size:15px;line-height:1.45;}
+.field-clear{min-width:42px;min-height:42px;width:42px;height:42px;}
+.add-stop-btn{min-height:48px;font-size:14px;}
+.service-option{min-height:88px;}
+.service-option .service-name{font-size:12.5px;}
+.service-option .service-desc{font-size:10.5px;line-height:1.4;}
+.availability-copy b{font-size:12.5px;}
+.cta,.whatsapp-btn,.nav-btn,.share-btn,.recalc-btn,.pick-confirm{min-height:52px;font-size:15px;border-radius:14px;}
+.cta{background:var(--gm-green);box-shadow:0 6px 18px rgba(15,157,88,.24);}
+.cta[data-step="location"]{background:var(--gm-blue);box-shadow:0 6px 18px rgba(26,115,232,.24);}
+.nav-btn{color:var(--gm-blue);border-color:#D2E3FC;}
+.form-progress{min-height:58px;}
+.quick-action{min-height:58px;}
+.result-item{min-height:58px;}
+.search-input-wrap{height:50px;border-radius:14px;}
+.search-input-wrap input{font-size:16px;}
+.search-submit{width:44px;height:44px;}
+
+/* Mode screenshot: hanya peta, rute, marker dan atribusi yang terlihat. */
+body.is-sharing-map .topbar,
+body.is-sharing-map #sheet,
+body.is-sharing-map #compactBar,
+body.is-sharing-map #pickBar,
+body.is-sharing-map #crosshairPin,
+body.is-sharing-map #panelBackdrop,
+body.is-sharing-map #topMenu,
+body.is-sharing-map #searchPanel,
+body.is-sharing-map #aboutPanel,
+body.is-sharing-map #paymentModal,
+body.is-sharing-map #renameModal,
+body.is-sharing-map #toast,
+body.is-sharing-map #networkPill,
+body.is-sharing-map .leaflet-control-zoom{display:none!important;}
+body.is-sharing-map #map::after{display:none!important;}
+
+@media (max-width:759px){
+  .leaflet-control-zoom{display:none!important;}
+  .topbar-right{gap:0;}
+  #btnInfo{width:46px;height:46px;min-width:46px;min-height:46px;}
+}
+@media (min-width:760px){
+  #btnLocate{right:22px;bottom:calc(var(--map-bottom-inset) + 18px);}
+  .leaflet-bottom.leaflet-right{bottom:calc(var(--map-bottom-inset) + 76px);}
+}
+@media (max-width:380px){
+  .service-option{min-height:78px;}
+  .sheet-title-copy>span:last-child{font-size:20px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -1066,7 +1172,7 @@ body{background:#E8EDF3;}
   <div class="sheet-body">
     <div id="formView">
       <div class="sheet-title">
-        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Hitung Ongkos</span><span class="sheet-subtitle">Pilih rute, cek estimasi, lalu bagikan tagihan.</span></div>
+        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Mau pergi ke mana?</span><span class="sheet-subtitle">Pilih lokasi awal dan tujuan. Kami bantu hitung jarak dan estimasi ongkos.</span></div>
         <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Ciutkan panel">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
@@ -1339,6 +1445,113 @@ let searchRequestId = 0;
 let calculationRequestId = 0;
 let drawnRouteLayers = [];
 const markers = {};
+let userLocationMarker = null;
+let userAccuracyCircle = null;
+let userLocationWatchId = null;
+let lastUserLocation = null;
+let centerOnNextLocation = false;
+
+const userLocationIcon = L.divIcon({
+  className: 'user-location-icon',
+  html: '<div class="user-location-dot" aria-hidden="true"></div>',
+  iconSize: [22, 22],
+  iconAnchor: [11, 11]
+});
+
+const updateUserLocationIndicator = (position, centerMap = false) => {
+  const { latitude, longitude, accuracy } = position.coords;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+  lastUserLocation = { lat: latitude, lng: longitude, accuracy: Number(accuracy) || 0 };
+
+  if (!userLocationMarker) {
+    userLocationMarker = L.marker([latitude, longitude], {
+      icon: userLocationIcon,
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: 1200
+    }).addTo(map);
+  } else {
+    userLocationMarker.setLatLng([latitude, longitude]);
+  }
+
+  const radius = Math.max(8, Math.min(Number(accuracy) || 0, 1000));
+  if (!userAccuracyCircle) {
+    userAccuracyCircle = L.circle([latitude, longitude], {
+      radius,
+      color: '#1A73E8',
+      weight: 1,
+      opacity: .28,
+      fillColor: '#1A73E8',
+      fillOpacity: .10,
+      interactive: false
+    }).addTo(map);
+  } else {
+    userAccuracyCircle.setLatLng([latitude, longitude]);
+    userAccuracyCircle.setRadius(radius);
+  }
+
+  const locateButton = document.getElementById('btnLocate');
+  locateButton?.classList.add('active');
+  locateButton?.setAttribute('aria-label', 'Pusatkan peta ke lokasi saya');
+  locateButton?.setAttribute('title', accuracy ? `Akurasi lokasi sekitar ${Math.round(accuracy)} meter` : 'Lokasi saya');
+
+  if (centerMap || centerOnNextLocation) {
+    centerOnNextLocation = false;
+    map.setView([latitude, longitude], Math.max(map.getZoom(), 16), { animate: true });
+  }
+};
+
+const startUserLocationWatch = ({ center = false, silent = false } = {}) => {
+  if (!navigator.geolocation) {
+    if (!silent) toast('Perangkat ini tidak mendukung lokasi GPS.');
+    return;
+  }
+
+  centerOnNextLocation = center;
+  const locateButton = document.getElementById('btnLocate');
+  locateButton?.classList.add('locating');
+
+  if (lastUserLocation && center) {
+    map.setView([lastUserLocation.lat, lastUserLocation.lng], Math.max(map.getZoom(), 16), { animate: true });
+    centerOnNextLocation = false;
+  }
+
+  if (userLocationWatchId != null) {
+    locateButton?.classList.remove('locating');
+    return;
+  }
+
+  userLocationWatchId = navigator.geolocation.watchPosition(
+    position => {
+      locateButton?.classList.remove('locating');
+      updateUserLocationIndicator(position);
+    },
+    error => {
+      locateButton?.classList.remove('locating');
+      if (error.code === 1) {
+        if (userLocationWatchId != null) navigator.geolocation.clearWatch(userLocationWatchId);
+        userLocationWatchId = null;
+        if (!silent) toast('Izin lokasi belum diberikan. Anda tetap bisa mencari alamat atau memilih titik di peta.');
+      } else if (!silent) {
+        toast('Lokasi belum dapat ditemukan. Coba lagi di area dengan sinyal GPS lebih baik.');
+      }
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+  );
+};
+
+const initUserLocationIndicator = async () => {
+  // Jangan memunculkan dialog izin lokasi secara tiba-tiba. Jika izin sebelumnya
+  // sudah diberikan, indikator biru langsung aktif; selain itu pengguna menekan tombol lokasi.
+  try {
+    if (!navigator.permissions?.query) return;
+    const permission = await navigator.permissions.query({ name: 'geolocation' });
+    if (permission.state === 'granted') startUserLocationWatch({ center: false, silent: true });
+    permission.addEventListener?.('change', () => {
+      if (permission.state === 'granted') startUserLocationWatch({ center: false, silent: true });
+    });
+  } catch {}
+};
 
 const getPtLabel = (pt) => pt.customName || pt.address || pt.label;
 const isRouteComplete = () => points.length >= 2 && points.every(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
@@ -1357,7 +1570,10 @@ const map = L.map('map', {
 }).setView(APP_CONFIG.titikPusatPeta, APP_CONFIG.zoomPeta);
 
 L.tileLayer(APP_CONFIG.mapProvider.tileUrl, {
-  maxZoom: 19, attribution: APP_CONFIG.mapProvider.tileAttribution, crossOrigin: true
+  maxZoom: 20,
+  attribution: APP_CONFIG.mapProvider.tileAttribution,
+  crossOrigin: true,
+  subdomains: 'abcd'
 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -1980,7 +2196,11 @@ sheetHandle.addEventListener('pointerup', (event) => {
 const topMenu = document.getElementById('topMenu');
 const panelBackdrop = document.getElementById('panelBackdrop');
 const btnSettings = document.getElementById('btnSettings');
-btnSettings.style.display = APP_CONFIG.tampilkanTombolSettings === false ? 'none' : 'flex';
+// Pengaturan khusus operator/admin: tersembunyi secara default.
+// Hanya tampil bila URL memiliki ?setting=1 (parameter lain tetap boleh ada).
+const settingsEnabled = new URLSearchParams(window.location.search).get('setting') === '1';
+btnSettings.hidden = !settingsEnabled;
+btnSettings.style.display = settingsEnabled ? 'flex' : 'none';
 let settingsReturnFocus = null;
 const openSettings = (event) => {
   settingsReturnFocus = event?.currentTarget || document.getElementById('btnSettings');
@@ -2042,8 +2262,9 @@ document.getElementById('btnReset').addEventListener('click', () => {
   renderStack();
   updateMapInsets();
   
-  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-  window.history.pushState({path:newUrl}, '', newUrl);
+  const newUrl = new URL(window.location.origin + window.location.pathname);
+  if (settingsEnabled) newUrl.searchParams.set('setting', '1');
+  window.history.pushState({path:newUrl.toString()}, '', newUrl.toString());
   toast('Data rute telah direset');
 });
 
@@ -2248,6 +2469,8 @@ document.getElementById('qaGps').addEventListener('click', () => {
   button.setAttribute('aria-busy', 'true');
   button.querySelector('.qa-text span').textContent = 'Mendeteksi lokasi…';
   navigator.geolocation.getCurrentPosition(async (pos) => {
+    updateUserLocationIndicator(pos);
+    startUserLocationWatch({ center: false, silent: true });
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
     const addr = await reverseGeocode(lat, lng);
     setActivePoint(lat, lng, addr);
@@ -2317,11 +2540,7 @@ document.getElementById('pickConfirm').addEventListener('click', async () => {
 });
 document.getElementById('pickCancel').addEventListener('click', exitPickMode);
 document.getElementById('btnLocate').addEventListener('click', () => {
-  if (!navigator.geolocation) { toast('GPS tidak didukung'); return; }
-  navigator.geolocation.getCurrentPosition(
-    pos => map.setView([pos.coords.latitude, pos.coords.longitude], 15),
-    () => toast('Gagal mengambil lokasi')
-  );
+  startUserLocationWatch({ center: true, silent: false });
 });
 
 /* ================= CALCULATE & RESULT ================= */
@@ -2332,8 +2551,8 @@ const toggleRoundTrip = document.getElementById('toggleRoundTrip');
 
 const drawRoute = (coords) => {
   clearRouteLayers();
-  const casing = L.polyline(coords, { color: '#087B5A', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  const route = L.polyline(coords, { color: APP_CONFIG.warna.titikAwal, weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  const casing = L.polyline(coords, { color: '#FFFFFF', weight: 10, opacity: .95, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  const route = L.polyline(coords, { color: '#1A73E8', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   drawnRouteLayers.push(casing, route);
   const bottomPadding = sheetEl.classList.contains('minimized') ? compactBar.offsetHeight + 36 : Math.min(sheetEl.offsetHeight + 32, window.innerHeight * .65);
   map.fitBounds(route.getBounds(), {
@@ -2503,7 +2722,7 @@ const buildSharePayload = () => {
     ['BSI', payData.bsi], ['BRI', payData.bri], ['Jago', payData.jago], ['Seabank', payData.seabank]
   ].filter(([, value]) => value).map(([label, value]) => `${label}: ${value}`);
   if (payData.name) methods.push(`a.n. ${payData.name}`);
-  const paymentText = methods.length ? `\n\n💳 Info pembayaran:\n${methods.join('\n')}` : '';
+  const paymentText = methods.length ? `\n\n*Info pembayaran*\n${methods.join('\n')}` : '';
   const rincian = {
     layanan: selectedService,
     totalOngkos: `Rp ${document.getElementById('fareValue').textContent.trim()}`,
@@ -2515,6 +2734,13 @@ const buildSharePayload = () => {
     text: APP_CONFIG.teksBagikan(shareUrl.toString(), paymentText, rincian)
   };
 };
+
+const sanitizeShareText = (value) => String(value || '')
+  .normalize('NFC')
+  .replace(/[\u200B-\u200D\uFEFF]/g, '')
+  .replace(/\r\n?/g, '\n')
+  .replace(/[ \t]+\n/g, '\n')
+  .trim();
 
 const normalizeWhatsAppNumber = (number) => {
   const digits = String(number || '').replace(/\D/g, '');
@@ -2528,8 +2754,52 @@ const handleWhatsAppOrder = () => {
   const number = normalizeWhatsAppNumber(APP_CONFIG.whatsappAdmin);
   if (!number) { toast('Nomor WhatsApp admin belum diatur.'); return; }
   const payload = buildSharePayload();
-  const url = `https://wa.me/${number}?text=${encodeURIComponent(payload.text)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  const waUrl = new URL(`https://wa.me/${number}`);
+  // URLSearchParams menangani encoding UTF-8 dan baris baru tanpa double-encoding.
+  waUrl.searchParams.set('text', sanitizeShareText(payload.text));
+  const waWindow = window.open(waUrl.toString(), '_blank', 'noopener,noreferrer');
+  if (waWindow) waWindow.opener = null;
+};
+
+const captureCleanMapScreenshot = async () => {
+  const mapElement = document.getElementById('map');
+  const originalCenter = map.getCenter();
+  const originalZoom = map.getZoom();
+  document.body.classList.add('is-sharing-map');
+
+  try {
+    map.invalidateSize({ pan: false });
+    const visibleRoutePoints = routePointsForNav.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+    if (visibleRoutePoints.length >= 2) {
+      const bounds = L.latLngBounds(visibleRoutePoints.map(p => [p.lat, p.lng]));
+      if (lastUserLocation) bounds.extend([lastUserLocation.lat, lastUserLocation.lng]);
+      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 16, animate: false });
+    }
+
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    await new Promise(resolve => setTimeout(resolve, 120));
+
+    const width = mapElement.clientWidth;
+    const height = mapElement.clientHeight;
+    const canvas = await html2canvas(mapElement, {
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      backgroundColor: '#E7EBF0',
+      width,
+      height,
+      windowWidth: width,
+      windowHeight: height,
+      scale: Math.min(2, window.devicePixelRatio || 1),
+      ignoreElements: element => element.classList?.contains('leaflet-control-zoom')
+    });
+    return await canvasToBlob(canvas);
+  } finally {
+    document.body.classList.remove('is-sharing-map');
+    map.invalidateSize({ pan: false });
+    map.setView(originalCenter, originalZoom, { animate: false });
+    updateMapInsets();
+  }
 };
 
 window.handleShare = async (btnElement) => {
@@ -2538,50 +2808,38 @@ window.handleShare = async (btnElement) => {
     return;
   }
 
-  setButtonBusy(btnElement, true, 'Menyiapkan…');
-  const topbar = document.querySelector('.topbar');
-  const wasTopbarDisplay = topbar.style.display;
-  const sheetWasMinimized = sheetEl.classList.contains('minimized');
+  setButtonBusy(btnElement, true, 'Menyiapkan...');
   let blob = null;
 
   try {
     const payload = buildSharePayload();
-    topbar.style.display = 'none';
-    if (sheetWasMinimized) sheetEl.style.display = 'none';
-    await new Promise(resolve => setTimeout(resolve, 100));
-
     try {
-      const width = document.documentElement.clientWidth;
-      const height = document.documentElement.clientHeight;
-      const canvas = await html2canvas(document.body, {
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#DCE3EA',
-        width, height, windowWidth: width, windowHeight: height,
-        scale: Math.min(2, window.devicePixelRatio || 1)
-      });
-      blob = await canvasToBlob(canvas);
+      blob = await captureCleanMapScreenshot();
     } catch (imageError) {
-      console.warn('Screenshot tidak tersedia, membagikan teks saja.', imageError);
+      console.warn('Screenshot peta tidak tersedia, membagikan teks saja.', imageError);
     }
 
-    const files = blob ? [new File([blob], 'ongkos-jarak.png', { type: 'image/png' })] : [];
-    const shareData = { title: APP_CONFIG.namaAplikasi, text: payload.text, url: payload.link };
+    const files = blob ? [new File([blob], 'peta-rute.png', { type: 'image/png' })] : [];
+    const shareData = {
+      title: APP_CONFIG.namaAplikasi,
+      text: sanitizeShareText(payload.text),
+      url: payload.link
+    };
     if (files.length && navigator.canShare?.({ files })) shareData.files = files;
 
     if (navigator.share) {
       await navigator.share(shareData);
-      toast('Rincian berhasil dibagikan.');
+      toast('Rute berhasil dibagikan.');
     } else {
-      await copyToClipboard(payload.text, btnElement);
+      await copyToClipboard(shareData.text, btnElement);
       if (blob) {
         const downloadUrl = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = downloadUrl;
-        anchor.download = 'ongkos-jarak.png';
+        anchor.download = 'peta-rute.png';
         anchor.click();
         setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-        toast('Teks disalin dan gambar diunduh.');
+        toast('Teks disalin dan gambar peta diunduh.');
       } else {
         toast('Rincian dan tautan telah disalin.');
       }
@@ -2589,11 +2847,9 @@ window.handleShare = async (btnElement) => {
   } catch (error) {
     if (error?.name !== 'AbortError') {
       console.error(error);
-      toast('Rincian tidak dapat dibagikan. Coba salin tautan dari browser.');
+      toast('Rincian tidak dapat dibagikan. Coba lagi.');
     }
   } finally {
-    topbar.style.display = wasTopbarDisplay;
-    if (sheetWasMinimized) sheetEl.style.display = 'flex';
     setButtonBusy(btnElement, false);
     updateMapInsets();
   }
@@ -2734,6 +2990,7 @@ const initApp = async () => {
   initAppValues(); // Memuat data UI dari CONFIG awal
   renderServiceSchedule();
   setInterval(renderServiceSchedule, 60000);
+  initUserLocationIndicator();
 
   const params = new URLSearchParams(window.location.search);
   setSelectedService(params.get('layanan') || 'Antar Jemput', false);
