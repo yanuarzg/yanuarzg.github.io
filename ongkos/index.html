@@ -117,7 +117,7 @@
     // 7. Template teks untuk Share / WhatsApp.
     teksBagikan: function(urlLink, infoBayar, rincian) {
       const perjalanan = rincian.pulangPergi ? "Pulang-pergi" : "Sekali jalan";
-      return `Halo Kak, saya ingin memesan layanan.\n\n*Rincian perjalanan*\nLayanan: ${rincian.layanan}\nEstimasi ongkos: ${rincian.totalOngkos}\nJarak: ${rincian.jarak}\nPerjalanan: ${perjalanan}\n\nLink rute dan rincian:\n${urlLink}${infoBayar}`;
+      return `*Rincian perjalanan*\nLayanan: ${rincian.layanan}\nEstimasi ongkos: ${rincian.totalOngkos}\nJarak: ${rincian.jarak}\nPerjalanan: ${perjalanan}\n\nLink rute dan rincian:\n${urlLink}${infoBayar}`;
     }
   };
 
