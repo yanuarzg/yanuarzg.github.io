@@ -1044,6 +1044,245 @@ body.is-sharing-map #map::after{display:none!important;}
   .sheet-title-copy>span:last-child{font-size:20px!important;}
 }
 
+
+
+/* ========== MOBILE MAP-FIRST BOTTOM SHEET ========== */
+@media (max-width:759px){
+  :root{--mobile-sheet-max:52dvh;}
+
+  /* Peta harus tetap menjadi konteks utama. Panel tidak boleh mengambil seluruh layar. */
+  .sheet{
+    max-height:var(--mobile-sheet-max)!important;
+    border-radius:22px 22px 0 0;
+    overflow:hidden;
+  }
+  .sheet-handle{padding:7px 0 5px;min-height:24px;}
+  .sheet-handle span{width:38px;height:4px;}
+  .sheet-body{
+    padding:0 14px calc(12px + var(--safe-bottom));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .sheet-body::-webkit-scrollbar{display:none;}
+
+  /* Header ringkas: instruksi panjang dihilangkan karena CTA sudah memberi langkah berikutnya. */
+  .sheet-title{margin:0 0 7px;align-items:center;}
+  .sheet-title-copy{gap:0;}
+  .sheet-kicker,.sheet-subtitle{display:none!important;}
+  .sheet-title-copy>span:last-child{font-size:18px!important;line-height:1.25;letter-spacing:-.2px;}
+  .btn-minimize{min-width:40px;min-height:40px;width:40px;height:40px;}
+
+  /* Status layanan menjadi satu baris kecil, jadwal lengkap tetap bisa dibuka bila diperlukan. */
+  .availability-card{margin:0 0 6px;border-radius:12px;}
+  .availability-summary{min-height:40px;padding:5px 8px;gap:7px;}
+  .availability-icon{display:none;}
+  .availability-copy small{display:none;}
+  .availability-copy b{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .availability-badge{font-size:9px;padding:4px 6px;}
+  .schedule-list{max-height:132px;overflow:auto;padding:0 8px 6px;}
+  .schedule-row{padding:5px 1px;font-size:10.5px;}
+
+  /* Progress card duplikatif dengan CTA dan placeholder lokasi, jadi disembunyikan di mobile. */
+  .form-progress{display:none!important;}
+
+  /* Input lokasi dibuat padat tetapi tetap nyaman disentuh. */
+  .route-stack{padding-left:24px;margin-top:0;}
+  .route-rail{left:8px;top:17px;bottom:17px;}
+  .route-row{padding:3px 0;}
+  .route-dot{left:-24px;width:18px;height:18px;box-shadow:0 0 0 3px #fff;}
+  .route-dot svg{width:12px;height:12px;}
+  .route-field{min-height:50px;padding:6px 6px 6px 10px;border-radius:12px;}
+  .field-copy{gap:0;}
+  .field-overline{font-size:9px;letter-spacing:.3px;}
+  .field-text{font-size:13.5px;line-height:1.3;}
+  .field-clear{min-width:38px;min-height:38px;width:38px;height:38px;}
+  .swap-btn{width:32px;height:32px;right:-2px;top:37px;}
+
+  .add-stop-btn{
+    width:calc(100% - 22px);margin:3px 0 0 22px;min-height:40px;
+    padding:7px 9px;border-radius:10px;font-size:12px;
+  }
+
+  /* Layanan menjadi horizontal chips/cards agar tidak menambah tinggi panel. */
+  .service-selector{margin-top:8px;}
+  .service-selector-head{margin-bottom:5px;align-items:center;}
+  .service-selector-head b{font-size:9.5px;}
+  .service-selector-head .service-start-price{font-size:9.5px;padding:3px 6px;}
+  .service-options{
+    display:flex!important;gap:6px;overflow-x:auto;padding:1px 1px 4px;
+    scroll-snap-type:x proximity;scrollbar-width:none;
+  }
+  .service-options::-webkit-scrollbar{display:none;}
+  .service-option{
+    flex:0 0 auto;min-width:108px;min-height:50px!important;padding:6px 8px;
+    border-radius:12px;flex-direction:row;align-items:center;justify-content:flex-start;
+    text-align:left;gap:6px;scroll-snap-align:start;
+  }
+  .service-option .service-icon-wrap{width:28px;height:28px;border-radius:9px;flex:none;}
+  .service-option svg{width:16px;height:16px;}
+  .service-option .service-name{font-size:11px;white-space:nowrap;}
+  .service-option .service-desc{display:none!important;}
+
+  /* Pulang-pergi cukup satu baris. */
+  .trip-option{margin:5px 0 6px;padding:6px 9px;min-height:42px;border-radius:11px;gap:8px;}
+  .trip-option-icon{width:28px;height:28px;border-radius:9px;}
+  .trip-option-icon svg{width:15px;height:15px;}
+  .trip-option-copy b{font-size:11.5px;}
+  .trip-option-copy span{display:none;}
+  .toggle-switch{width:40px;height:22px;flex:none;}
+  .toggle-slider:before{width:16px;height:16px;left:3px;bottom:3px;}
+  .toggle-switch input:checked + .toggle-slider:before{transform:translateX(18px);}
+
+  /* CTA tetap mudah dijangkau tetapi tidak memakan ruang untuk helper yang repetitif. */
+  .form-actions-sticky{margin:0 -2px;padding:6px 2px 1px;}
+  .form-actions-sticky .cta{min-height:48px;margin:0;font-size:14px;border-radius:12px;}
+  .cta-hint{display:none;}
+
+  /* Hasil juga map-first; detail panjang cukup discroll di dalam sheet. */
+  .result-actions-top{margin-bottom:5px;}
+  .result-heading{margin-bottom:7px;}
+  .result-heading b{font-size:16px;}
+  .result-heading span,.result-confidence{font-size:10.5px;}
+  .result-trip-chips{margin-bottom:7px;gap:5px;}
+  .result-trip-chip{font-size:9.5px;padding:5px 7px;}
+  .meter-card{padding:15px;margin-bottom:10px;border-radius:16px;}
+  .meter-value{font-size:30px;}
+  .meter-sub{margin-top:8px;gap:7px;}
+  .meter-sub div{font-size:10.5px;}
+  .meter-sub b{font-size:13px;}
+  .fare-formula{margin-top:8px;padding-top:8px;}
+  .segment-title{margin:9px 0 5px;}
+  .segment{padding:7px 0;}
+  .action-grid{margin-top:8px;gap:7px;}
+  .whatsapp-btn,.nav-btn,.share-btn,.recalc-btn{min-height:46px;font-size:13px;border-radius:12px;}
+}
+
+@media (max-width:420px){
+  :root{--mobile-sheet-max:49dvh;}
+}
+
+@media (max-width:380px){
+  :root{--mobile-sheet-max:47dvh;}
+  .sheet-title-copy>span:last-child{font-size:17px!important;}
+  .service-option{min-width:102px;}
+}
+
+
+
+/* ========== STEPPED FLOW: SERVICE → LOCATION → ESTIMATE ========== */
+.journey-stepper{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;
+  gap:0;margin:0 0 12px;padding:2px 2px 0;
+}
+.journey-step{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;
+  min-width:0;padding:2px 3px;color:#7A8496;text-align:center;cursor:pointer;
+}
+.journey-step::before{
+  content:'';position:absolute;top:14px;left:0;right:0;height:2px;background:#DDE3EA;z-index:0;
+}
+.journey-step:first-child::before{left:50%;}
+.journey-step:last-child::before{right:50%;}
+.journey-step-dot{
+  position:relative;z-index:1;width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;background:#F1F3F4;border:2px solid #D7DCE3;
+  font:800 11px 'IBM Plex Mono',monospace;color:#6B7280;transition:.18s ease;
+}
+.journey-step-label{font-size:10px;font-weight:800;line-height:1.15;white-space:nowrap;}
+.journey-step.active{color:var(--gm-blue,#1A73E8);}
+.journey-step.active .journey-step-dot{background:var(--gm-blue,#1A73E8);border-color:var(--gm-blue,#1A73E8);color:#fff;box-shadow:0 0 0 4px rgba(26,115,232,.10);}
+.journey-step.done{color:var(--gm-green,#0F9D58);}
+.journey-step.done .journey-step-dot{background:var(--gm-green,#0F9D58);border-color:var(--gm-green,#0F9D58);color:#fff;}
+.journey-step.done::before,.journey-step.active::before{background:linear-gradient(90deg,var(--gm-green,#0F9D58),#DDE3EA);}
+.journey-step[disabled]{cursor:default;}
+.flow-step[hidden]{display:none!important;}
+.flow-step-enter{animation:flowStepIn .2s ease both;}
+@keyframes flowStepIn{from{opacity:.2;transform:translateX(8px)}to{opacity:1;transform:none}}
+.step-intro{margin:0 0 9px;}
+.step-intro b{display:block;font-size:15px;letter-spacing:-.2px;}
+.step-intro span{display:block;margin-top:2px;font-size:11px;line-height:1.45;color:var(--ink-soft);}
+#serviceFlowStep .service-selector{margin-top:4px;}
+#serviceFlowStep .trip-option{margin-bottom:6px;}
+#locationFlowStep .form-progress{margin-top:2px;}
+.step-back-row{display:flex;align-items:center;justify-content:flex-start;margin:2px 0 7px;}
+.step-back-btn{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:6px 8px;border-radius:10px;font-size:11.5px;font-weight:800;color:var(--ink-soft);}
+.step-back-btn:hover{background:var(--surface);}
+.step-back-btn svg{width:15px;height:15px;}
+
+@media (max-width:759px){
+  .journey-stepper{margin-bottom:8px;padding-top:0;}
+  .journey-step-dot{width:25px;height:25px;font-size:10px;}
+  .journey-step::before{top:12px;}
+  .journey-step-label{font-size:9px;}
+  .step-intro{margin-bottom:7px;}
+  .step-intro b{font-size:14px;}
+  .step-intro span{display:none;}
+  #serviceFlowStep .service-options{margin-bottom:6px;}
+  #serviceFlowStep .trip-option{margin:7px 0 3px;}
+  #locationFlowStep .add-stop-btn{margin-top:3px;}
+}
+
+
+
+/* ========== DISTRACTION-FREE UX ========== */
+/* Satu layar = satu keputusan. Informasi sekunder tetap tersedia on-demand. */
+.sheet-title-copy,
+.step-intro,
+.form-progress,
+.cta-hint,
+.service-option .service-desc,
+.result-heading,
+.result-confidence,
+.fare-formula,
+.ruler,
+.search-helper{display:none!important;}
+
+.sheet-title{justify-content:flex-end;margin:0 0 2px;min-height:34px;}
+.service-selector{margin-top:0!important;}
+.service-selector-head{justify-content:flex-end;margin-bottom:7px;}
+.service-selector-head>span:first-child:empty{display:none;}
+.service-option{justify-content:center;text-align:center;align-items:center;min-height:70px;}
+.service-option .service-name{font-size:12px;line-height:1.2;text-align:center;}
+.trip-option{margin-top:9px;}
+.trip-option-copy b{font-size:12.5px;}
+.availability-copy b{margin-top:0;}
+
+/* Chips sudah menjelaskan layanan dan tipe perjalanan; kartu harga cukup menampilkan jarak. */
+.meter-sub{grid-template-columns:1fr!important;margin-top:9px;}
+.meter-sub>div:nth-child(n+2){display:none!important;}
+.meter-sub div{font-size:10.5px;}
+.meter-sub b{font-size:14px;}
+.meter-card{padding-bottom:17px;}
+
+.route-details{margin:2px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.route-details summary{list-style:none;cursor:pointer;padding:11px 2px;font-size:12px;font-weight:800;color:var(--ink-soft);display:flex;align-items:center;justify-content:space-between;}
+.route-details summary::-webkit-details-marker{display:none;}
+.route-details summary::after{content:'›';font-size:20px;line-height:1;transform:rotate(90deg);transition:transform .15s;}
+.route-details[open] summary::after{transform:rotate(-90deg);}
+.route-details .segment-list{padding-bottom:6px;}
+
+@media (max-width:759px){
+  .sheet-title{min-height:28px;margin-bottom:0;}
+  .sheet-body{padding-top:0;}
+  .journey-stepper{margin-bottom:5px;}
+  .service-options{gap:7px;}
+  .service-option{min-height:64px;padding:8px 5px;}
+  .service-option .service-icon-wrap{width:30px;height:30px;}
+  .service-option .service-name{font-size:11px;}
+  .trip-option{min-height:43px;padding:7px 9px;margin:6px 0 4px;}
+  .availability-summary{min-height:38px;}
+  .step-back-row{margin:0 0 3px;}
+  .step-back-btn{min-height:32px;padding:4px 6px;}
+  .route-field{min-height:49px;}
+  .add-stop-btn{padding-top:7px;padding-bottom:7px;}
+  .meter-card{padding:17px 18px 15px;}
+  .meter-value{font-size:32px;}
+  .result-trip-chips{margin-bottom:8px;}
+  .route-details{margin-bottom:9px;}
+  .whatsapp-btn,.nav-btn,.share-btn,.recalc-btn{min-height:45px;padding-top:11px;padding-bottom:11px;}
+}
 </style>
 </head>
 <body>
@@ -1170,23 +1409,68 @@ body.is-sharing-map #map::after{display:none!important;}
 <div class="sheet" id="sheet">
   <button class="sheet-handle" id="sheetHandle" aria-label="Ciutkan panel" aria-expanded="true"><span></span></button>
   <div class="sheet-body">
+    <div class="journey-stepper" id="journeyStepper" aria-label="Tahapan pemesanan">
+      <button class="journey-step active" type="button" data-flow-nav="service" aria-current="step">
+        <span class="journey-step-dot">1</span><span class="journey-step-label">Layanan</span>
+      </button>
+      <button class="journey-step" type="button" data-flow-nav="location">
+        <span class="journey-step-dot">2</span><span class="journey-step-label">Lokasi</span>
+      </button>
+      <button class="journey-step" type="button" data-flow-nav="result" disabled>
+        <span class="journey-step-dot">3</span><span class="journey-step-label">Estimasi</span>
+      </button>
+    </div>
     <div id="formView">
       <div class="sheet-title">
-        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Mau pergi ke mana?</span><span class="sheet-subtitle">Pilih lokasi awal dan tujuan. Kami bantu hitung jarak dan estimasi ongkos.</span></div>
+        <div class="sheet-title-copy"><span class="sheet-kicker" id="appNameLabel"></span><span>Perjalanan</span><span class="sheet-subtitle" id="flowSubtitle"></span></div>
         <button class="btn-minimize" id="btnMinimizeSheet" aria-label="Ciutkan panel">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </div>
 
+      <section class="flow-step" id="serviceFlowStep" data-flow-step="service">
+
+      <div class="service-selector">
+        <div class="service-selector-head"><span></span><span class="service-start-price" id="serviceStartPrice">Mulai Rp 10.000</span></div>
+        <div class="service-options" id="serviceOptions">
+          <button class="service-option active" type="button" data-service="Antar Jemput" aria-pressed="true">
+            <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5h-11z"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/><path d="M8 12l2-4h4l2 4"/></svg></span><span class="service-name">Antar Jemput</span>
+          </button>
+          <button class="service-option" type="button" data-service="Delivery" aria-pressed="false">
+            <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v10H3z"/><path d="M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span class="service-name">Delivery</span>
+          </button>
+          <button class="service-option" type="button" data-service="Belanja" aria-pressed="false">
+            <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="service-name">Belanja</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Toggle Pulang Pergi -->
+      <div class="trip-option">
+        <div class="trip-option-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3M17 17H7l3 3"/><path d="M17 7l3 3-3 3M7 17l-3-3 3-3"/></svg>
+        </div>
+        <div class="trip-option-copy"><b>Pulang-pergi</b></div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleRoundTrip" aria-label="Aktifkan perjalanan pulang pergi">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <div class="availability-card" id="serviceScheduleCard">
         <button class="availability-summary" id="btnToggleSchedule" type="button" aria-expanded="false" aria-controls="scheduleList">
           <span class="availability-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-          <span class="availability-copy"><small>Status layanan</small><b id="scheduleTodayText">Memuat jadwal…</b></span>
+          <span class="availability-copy"><b id="scheduleTodayText">Memuat…</b></span>
           <span class="availability-badge" id="scheduleStatusBadge">…</span>
           <svg class="availability-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="schedule-list" id="scheduleList" hidden></div>
       </div>
+
+      </section>
+
+      <section class="flow-step" id="locationFlowStep" data-flow-step="location" hidden>
+        <div class="step-back-row"><button class="step-back-btn" id="btnBackToService" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Layanan</button></div>
 
       <div class="form-progress" id="formProgress" role="button" tabindex="0" aria-live="polite" aria-label="Buka lokasi berikutnya yang belum diisi">
         <div class="progress-icon" id="formProgressIcon">1/2</div>
@@ -1199,42 +1483,17 @@ body.is-sharing-map #map::after{display:none!important;}
 
       <button class="add-stop-btn" id="btnAddStop">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Tambah tujuan baru
+        Tambah tujuan
       </button>
 
-      <div class="service-selector">
-        <div class="service-selector-head"><b>Pilih layanan</b><span class="service-start-price" id="serviceStartPrice">Mulai Rp 10.000</span></div>
-        <div class="service-options" id="serviceOptions">
-          <button class="service-option active" type="button" data-service="Antar Jemput" aria-pressed="true">
-            <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5h-11z"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/><path d="M8 12l2-4h4l2 4"/></svg></span><span class="service-name">Antar Jemput</span><span class="service-desc">Perjalanan penumpang</span>
-          </button>
-          <button class="service-option" type="button" data-service="Delivery" aria-pressed="false">
-            <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v10H3z"/><path d="M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span class="service-name">Delivery</span><span class="service-desc">Paket & dokumen</span>
-          </button>
-          <button class="service-option" type="button" data-service="Belanja" aria-pressed="false">
-            <span class="service-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="service-name">Belanja</span><span class="service-desc">Titip belanja harian</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Toggle Pulang Pergi -->
-      <div class="trip-option">
-        <div class="trip-option-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3M17 17H7l3 3"/><path d="M17 7l3 3-3 3M7 17l-3-3 3-3"/></svg>
-        </div>
-        <div class="trip-option-copy"><b>Pulang-pergi</b><span>Tambahkan perjalanan kembali ke titik awal.</span></div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="toggleRoundTrip" aria-label="Aktifkan perjalanan pulang pergi">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+      </section>
 
       <div class="form-actions-sticky">
-        <button class="cta" id="btnCalc" data-step="location" aria-describedby="calcHint">
+        <button class="cta" id="btnCalc" data-step="service" aria-describedby="calcHint">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          <span class="cta-label" id="calcButtonLabel">Pilih Titik Awal</span>
+          <span class="cta-label" id="calcButtonLabel">Pilih Lokasi</span>
         </button>
-        <div class="cta-hint" id="calcHint">Lengkapi titik awal dan tujuan.</div>
+        <div class="cta-hint" id="calcHint">Antar Jemput • Sekali jalan</div>
       </div>
     </div>
 
@@ -1243,16 +1502,16 @@ body.is-sharing-map #map::after{display:none!important;}
       <div class="result-actions-top">
         <button class="result-back" id="btnBack">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          Ubah rute
+          Ubah
         </button>
         <button class="btn-minimize" id="btnMinimizeResult" aria-label="Minimize">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
       </div>
 
-      <div class="result-heading"><b>Ringkasan perjalanan</b><span>Estimasi berdasarkan rute kendaraan yang tersedia.</span></div>
+
       <div class="result-trip-chips"><span class="result-trip-chip primary" id="resultServiceChip">Antar Jemput</span><span class="result-trip-chip" id="resultTripChip">Sekali jalan</span><span class="result-trip-chip" id="resultStopsChip">1 tujuan</span></div>
-      <div class="result-confidence"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span>Harga yang tampil adalah estimasi sebelum pesanan dikonfirmasi melalui WhatsApp.</span></div>
+
 
       <div class="route-notice" id="routeNotice" role="status" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 17h.01"/></svg>
@@ -1274,30 +1533,30 @@ body.is-sharing-map #map::after{display:none!important;}
         <div class="fare-formula" id="fareFormula" aria-live="polite"></div>
       </div>
 
-      <div class="segment-list" id="segmentList"></div>
+      <details class="route-details"><summary>Rincian rute</summary><div class="segment-list" id="segmentList"></div></details>
 
       <button class="whatsapp-btn btn-full" id="btnWhatsapp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9 8.4 8.4 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8z"/></svg>
-        Pesan via WhatsApp
+        Pesan WhatsApp
       </button>
 
       <button class="nav-btn btn-full" id="btnNavMaps">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4 18-7z"/></svg>
-        Buka Navigasi Google Maps
+        Navigasi
       </button>
 
       <div class="action-grid">
         <button class="recalc-btn" id="btnPayment">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Info Bayar
+          Bayar
         </button>
         <button class="recalc-btn" id="btnRecalc">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
-          Ubah Rute
+          Ubah
         </button>
         <button class="share-btn btn-full" id="btnShare">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Bagikan Rincian
+          Bagikan
         </button>
       </div>
     </div>
@@ -1342,7 +1601,7 @@ body.is-sharing-map #map::after{display:none!important;}
     <div class="modal-title" id="renameTitle">Nama lokasi
       <button id="btnCloseRename" aria-label="Tutup" style="color:var(--ink-soft);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-    <div style="font-size:12px;color:var(--ink-soft);line-height:1.5;">Beri nama singkat agar rute lebih mudah dikenali saat dibagikan.</div>
+
     <div class="rename-field">
       <label for="renameInput">Label lokasi</label>
       <input id="renameInput" type="text" maxlength="48" placeholder="Contoh: Rumah Budi" autocomplete="off">
@@ -1370,7 +1629,7 @@ body.is-sharing-map #map::after{display:none!important;}
     <button class="search-submit" id="btnSubmitSearch" type="button" aria-label="Cari alamat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
   </div>
   <div class="search-context" id="searchContext">Memilih lokasi</div>
-  <div class="search-helper">Ketik minimal 3 karakter, lalu tekan Cari atau Enter.</div>
+
   <div class="search-body">
     <div class="quick-actions" id="quickActions">
       <button class="quick-action" id="qaGps">
@@ -1390,7 +1649,7 @@ body.is-sharing-map #map::after{display:none!important;}
 <!-- ============ MAP-PICK BAR ============ -->
 <div class="pick-bar" id="pickBar">
   <div class="pick-address" id="pickAddress">Menentukan alamat…</div>
-  <div class="pick-sub">Geser peta hingga pin tepat di lokasi</div>
+  <div class="pick-sub">Geser peta ke lokasi</div>
   <button class="pick-confirm" id="pickConfirm">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
     Pilih lokasi ini
@@ -1409,8 +1668,8 @@ body.is-sharing-map #map::after{display:none!important;}
 const cryptoId = () => window.crypto?.randomUUID ? crypto.randomUUID() : 'p' + Math.random().toString(36).slice(2, 10);
 
 const getEmptyPoints = () => [
-  { id: cryptoId(), role: 'origin', label: 'Titik awal', lat: null, lng: null, address: '', customName: '' },
-  { id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '', customName: '' }
+  { id: cryptoId(), role: 'origin', label: 'Lokasi jemput', lat: null, lng: null, address: '', customName: '' },
+  { id: cryptoId(), role: 'dest', label: 'Tujuan', lat: null, lng: null, address: '', customName: '' }
 ];
 
 let points = getEmptyPoints();
@@ -1616,7 +1875,10 @@ const updateMapInsets = () => {
     let inset = 90;
     if (pickMode && pickBar.classList.contains('show')) inset = pickBar.offsetHeight + 18;
     else if (sheetEl?.classList.contains('minimized')) inset = compactBar.offsetHeight + 18;
-    else if (sheetEl) inset = Math.min(sheetEl.offsetHeight + 18, window.innerHeight * .7);
+    else if (sheetEl) {
+      const cap = window.innerWidth < 760 ? .56 : .7;
+      inset = Math.min(sheetEl.offsetHeight + 14, window.innerHeight * cap);
+    }
     document.documentElement.style.setProperty('--map-bottom-inset', `${Math.max(80, inset)}px`);
     map.invalidateSize({ pan: false });
   });
@@ -1667,7 +1929,7 @@ const renderServiceSchedule = () => {
   const closeMinutes = timeToMinutes(today.tutup);
   const open = !holiday && isInServiceWindow(minutes, openMinutes, closeMinutes);
 
-  scheduleTodayText.textContent = holiday ? `${today.nama} • Libur` : `${today.nama} • ${today.buka}–${today.tutup}`;
+  scheduleTodayText.textContent = holiday ? 'Tidak beroperasi' : `${today.buka}–${today.tutup}`;
   scheduleStatusBadge.textContent = holiday ? 'Libur' : (open ? 'Buka' : 'Tutup');
   scheduleStatusBadge.classList.toggle('closed', !open);
 
@@ -1696,6 +1958,8 @@ const setSelectedService = (service, refresh = true) => {
   });
   const serviceValue = document.getElementById('serviceValue');
   if (serviceValue) serviceValue.textContent = selectedService;
+  if (flowSubtitle && currentFlowStep === 'location') flowSubtitle.textContent = `Layanan: ${selectedService}. Sekarang tentukan titik perjalanan.`;
+  if (typeof updateFormProgress === 'function') updateFormProgress();
   if (refresh && lastResult && resultView.classList.contains('show')) showResult(lastResult, true);
 };
 serviceOptions.addEventListener('click', event => {
@@ -1992,6 +2256,61 @@ const routeBetween = async (list) => {
   }
 };
 
+
+/* ================= STEPPED BOOKING FLOW ================= */
+const journeyStepper = document.getElementById('journeyStepper');
+const serviceFlowStep = document.getElementById('serviceFlowStep');
+const locationFlowStep = document.getElementById('locationFlowStep');
+const flowSubtitle = document.getElementById('flowSubtitle');
+let currentFlowStep = 'service';
+
+const updateFlowStepper = (step = currentFlowStep) => {
+  const order = ['service', 'location', 'result'];
+  const activeIndex = order.indexOf(step);
+  journeyStepper.querySelectorAll('[data-flow-nav]').forEach((button, index) => {
+    const key = button.dataset.flowNav;
+    const isActive = key === step;
+    const done = index < activeIndex;
+    button.classList.toggle('active', isActive);
+    button.classList.toggle('done', done);
+    if (isActive) button.setAttribute('aria-current', 'step');
+    else button.removeAttribute('aria-current');
+    if (key === 'result') button.disabled = !lastResult;
+    else button.disabled = false;
+    const dot = button.querySelector('.journey-step-dot');
+    if (dot) dot.textContent = done ? '✓' : String(index + 1);
+  });
+};
+
+const setFlowStep = (step, { focus = false } = {}) => {
+  if (!['service', 'location'].includes(step)) return;
+  currentFlowStep = step;
+  serviceFlowStep.hidden = step !== 'service';
+  locationFlowStep.hidden = step !== 'location';
+  const active = step === 'service' ? serviceFlowStep : locationFlowStep;
+  active.classList.remove('flow-step-enter');
+  requestAnimationFrame(() => active.classList.add('flow-step-enter'));
+  flowSubtitle.textContent = step === 'service'
+    ? ''
+    : selectedService;
+  updateFlowStepper(step);
+  updateFormProgress();
+  updateMapInsets();
+  if (focus) active.querySelector('button:not([disabled]), [role="button"]')?.focus?.();
+};
+
+journeyStepper.addEventListener('click', event => {
+  const button = event.target.closest('[data-flow-nav]');
+  if (!button || button.disabled) return;
+  const step = button.dataset.flowNav;
+  if (step === 'service' || step === 'location') {
+    if (resultView?.classList.contains('show')) backToForm();
+    setFlowStep(step);
+  }
+});
+
+document.getElementById('btnBackToService').addEventListener('click', () => setFlowStep('service', { focus: true }));
+
 /* ================= RENDER STACK ================= */
 const routeStack = document.getElementById('routeStack');
 
@@ -2017,16 +2336,23 @@ const updateFormProgress = () => {
   btnCalc.removeAttribute('aria-disabled');
   const calcButtonLabel = document.getElementById('calcButtonLabel');
 
+  if (currentFlowStep === 'service') {
+    btnCalc.dataset.step = 'service';
+    calcButtonLabel.textContent = 'Pilih Lokasi';
+    hint.textContent = `${selectedService}${toggleRoundTrip.checked ? ' • Pulang-pergi' : ' • Sekali jalan'}`;
+    return;
+  }
+
   if (complete) {
     btnCalc.dataset.step = 'calculate';
-    calcButtonLabel.textContent = 'Lihat Estimasi Ongkos';
+    calcButtonLabel.textContent = 'Lihat Estimasi';
     title.textContent = 'Rute siap dihitung';
     detail.textContent = `${points.length - 1} tujuan telah dipilih. Periksa urutan lalu hitung ongkos.`;
     hint.textContent = toggleRoundTrip.checked ? 'Mode pulang-pergi aktif.' : 'Jarak dihitung mengikuti rute jalan.';
   } else {
     btnCalc.dataset.step = 'location';
     const isOriginMissing = missing?.role === 'origin';
-    calcButtonLabel.textContent = isOriginMissing ? 'Pilih Titik Awal' : `Pilih ${missing?.label || 'Lokasi'}`;
+    calcButtonLabel.textContent = isOriginMissing ? 'Pilih Lokasi Jemput' : `Pilih ${missing?.label || 'Lokasi'}`;
     title.textContent = isOriginMissing ? 'Pilih titik awal' : `Pilih ${missing?.label?.toLowerCase() || 'lokasi'}`;
     detail.textContent = 'Cari alamat, gunakan GPS, atau tandai titik langsung pada peta.';
     hint.textContent = selected === 0 ? 'Mulai dari lokasi penjemputan atau titik asal.' : `Tinggal ${points.length - selected} lokasi lagi.`;
@@ -2062,7 +2388,6 @@ const renderStack = () => {
       <div class="route-dot ${pt.role}">${iconFor(pt.role)}</div>
       <div class="route-field ${hasLocation ? '' : 'empty'}" data-id="${pt.id}" role="button" tabindex="0" aria-label="${escapeHtml(hasLocation ? `Ubah ${pt.label}: ${getPtLabel(pt)}` : `Pilih ${pt.label}`)}">
         <div class="field-copy">
-          <div class="field-overline">${pt.role === 'origin' ? 'Asal' : (pt.role === 'dest' ? 'Tujuan akhir' : pt.label)}</div>
           <div class="field-text">${escapeHtml(getPtLabel(pt))}</div>
         </div>
         ${hasLocation || pt.customName ? `<button class="field-clear" data-edit="${pt.id}" aria-label="Ubah nama ${escapeHtml(pt.label)}" style="color:var(--ink-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>` : ''}
@@ -2152,7 +2477,7 @@ document.getElementById('btnAddStop').addEventListener('click', () => {
   const oldDest = points[points.length - 1];
   oldDest.role = 'waypoint';
   oldDest.label = `Tujuan ${points.length - 1}`;
-  points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan akhir', lat: null, lng: null, address: '', customName: '' });
+  points.push({ id: cryptoId(), role: 'dest', label: 'Tujuan', lat: null, lng: null, address: '', customName: '' });
   invalidateCalculatedResult();
   renderStack();
 });
@@ -2256,6 +2581,11 @@ document.getElementById('btnReset').addEventListener('click', () => {
   
   document.getElementById('resultView').classList.remove('show');
   document.getElementById('formView').style.display = 'block';
+  currentFlowStep = 'service';
+  serviceFlowStep.hidden = false;
+  locationFlowStep.hidden = true;
+  flowSubtitle.textContent = 'Pilih jenis layanan terlebih dahulu.';
+  updateFlowStepper('service');
   
   if (sheetEl.classList.contains('minimized')) setSheetMinimized(false); 
   invalidateCalculatedResult();
@@ -2554,7 +2884,8 @@ const drawRoute = (coords) => {
   const casing = L.polyline(coords, { color: '#FFFFFF', weight: 10, opacity: .95, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   const route = L.polyline(coords, { color: '#1A73E8', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   drawnRouteLayers.push(casing, route);
-  const bottomPadding = sheetEl.classList.contains('minimized') ? compactBar.offsetHeight + 36 : Math.min(sheetEl.offsetHeight + 32, window.innerHeight * .65);
+  const routePadCap = window.innerWidth < 760 ? .56 : .65;
+  const bottomPadding = sheetEl.classList.contains('minimized') ? compactBar.offsetHeight + 36 : Math.min(sheetEl.offsetHeight + 24, window.innerHeight * routePadCap);
   map.fitBounds(route.getBounds(), {
     paddingTopLeft: [56, 80],
     paddingBottomRight: [56, bottomPadding],
@@ -2603,7 +2934,13 @@ window.executeCalc = async (silent = false) => {
   }
 };
 
-btnCalc.addEventListener('click', () => isRouteComplete() ? executeCalc(false) : openNextMissingPoint());
+btnCalc.addEventListener('click', () => {
+  if (currentFlowStep === 'service') {
+    setFlowStep('location');
+    return;
+  }
+  isRouteComplete() ? executeCalc(false) : openNextMissingPoint();
+});
 toggleRoundTrip.addEventListener('change', () => { invalidateCalculatedResult(); updateFormProgress(); if(resultView.classList.contains('show')) executeCalc(true); });
 
 const roundFare = (n) => Math.round(n / 10) * 10;
@@ -2666,6 +3003,8 @@ const showResult = (res, silent) => {
   if (!silent) {
     formView.style.display = 'none';
     resultView.classList.add('show');
+    currentFlowStep = 'result';
+    updateFlowStepper('result');
     sheetEl.querySelector('.sheet-body').scrollTop = 0;
   }
   updateMapInsets();
@@ -2675,6 +3014,11 @@ const backToForm = () => {
   resultView.classList.remove('show');
   formView.style.display = 'block';
   routePointsForNav = points.map(point => ({ ...point }));
+  currentFlowStep = 'location';
+  serviceFlowStep.hidden = true;
+  locationFlowStep.hidden = false;
+  flowSubtitle.textContent = `Layanan: ${selectedService}. Sekarang tentukan titik perjalanan.`;
+  updateFlowStepper('location');
   syncMarkers();
   updateFormProgress();
   updateMapInsets();
@@ -2994,6 +3338,7 @@ const initApp = async () => {
 
   const params = new URLSearchParams(window.location.search);
   setSelectedService(params.get('layanan') || 'Antar Jemput', false);
+  setFlowStep('service');
   const ptsStr = params.get('pts');
   
   if (ptsStr) {
