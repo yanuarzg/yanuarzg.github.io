@@ -68,7 +68,7 @@
       ]
     },
 
-    // Nomor WhatsApp untuk tombol Pesan via WhatsApp.
+    // Nomor WhatsApp untuk tombol Pesan sekarang.
     // Bisa diawali 0, 62, atau +62.
     whatsappAdmin: "089507785333",
 
@@ -1013,10 +1013,9 @@ body{font-size:16px;background:#E7EBF0;}
 .search-input-wrap input{font-size:16px;}
 .search-submit{width:44px;height:44px;}
 
-/* Mode screenshot: hanya peta, rute, marker dan atribusi yang terlihat. */
+/* Mode screenshot share: peta + ringkasan harga/jarak pada compact bar. */
 body.is-sharing-map .topbar,
 body.is-sharing-map #sheet,
-body.is-sharing-map #compactBar,
 body.is-sharing-map #pickBar,
 body.is-sharing-map #crosshairPin,
 body.is-sharing-map #panelBackdrop,
@@ -1029,6 +1028,14 @@ body.is-sharing-map #toast,
 body.is-sharing-map #networkPill,
 body.is-sharing-map .leaflet-control-zoom{display:none!important;}
 body.is-sharing-map #map::after{display:none!important;}
+body.is-sharing-map #compactBar{
+  display:flex!important;
+  transform:translateY(0)!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  z-index:999!important;
+}
+body.is-sharing-map #compactBar .cb-actions{display:none!important;}
 
 @media (max-width:759px){
   .leaflet-control-zoom{display:none!important;}
@@ -1786,6 +1793,304 @@ button:active{transform:scale(.985);}
   }
 }
 
+
+
+/* ========== 2026 PRODUCT UI — MAP FIRST / GOJEK-GRAB INSPIRED ========== */
+/* Final override layer: stronger hierarchy, calmer surfaces, compact controls. */
+:root{
+  --app-green:#00A86B;
+  --app-green-dark:#007F52;
+  --app-green-soft:#EAF8F2;
+  --app-blue:#1A73E8;
+  --app-text:#17223B;
+  --app-muted:#6B7280;
+  --app-border:#E7EAF0;
+  --app-surface:#F7F8FA;
+  --app-shadow:0 8px 28px rgba(23,34,59,.10);
+  --app-shadow-soft:0 2px 12px rgba(23,34,59,.08);
+}
+
+/* Overall canvas */
+body{background:#EEF1F4;color:var(--app-text);}
+#map{background:#E9EDF1;}
+.leaflet-control-attribution{border-radius:8px 0 0 0!important;color:#6B7280!important;}
+
+/* Floating map controls */
+.topbar{padding:calc(12px + var(--safe-top)) 12px 0;}
+.topbar-right{gap:8px!important;}
+.topbar .icon-btn,#btnLocate{
+  border:1px solid rgba(231,234,240,.95)!important;
+  background:rgba(255,255,255,.97)!important;
+  box-shadow:var(--app-shadow-soft)!important;
+  color:#3F4A5A;
+}
+.topbar .icon-btn:hover,#btnLocate:hover{background:#fff!important;color:var(--app-text);}
+#btnLocate.active{color:var(--app-blue)!important;background:#F3F7FF!important;}
+
+/* Main bottom sheet */
+.sheet{
+  background:rgba(255,255,255,.985);
+  border:1px solid rgba(231,234,240,.9)!important;
+  border-bottom:0!important;
+  border-radius:24px 24px 0 0!important;
+  box-shadow:0 -8px 34px rgba(23,34,59,.11)!important;
+  backdrop-filter:blur(16px);
+}
+.sheet-handle{padding:9px 0 7px!important;}
+.sheet-handle span{width:38px!important;height:4px!important;background:#D7DCE3!important;}
+.sheet-body{padding-left:14px!important;padding-right:14px!important;}
+
+/* Stepper = quiet navigation, not a dominant component */
+.journey-stepper{
+  background:transparent!important;
+  padding:0 1px 9px!important;
+  margin:0 0 8px!important;
+  gap:8px!important;
+  border-bottom:1px solid var(--app-border);
+  border-radius:0!important;
+}
+.journey-step{
+  min-height:28px!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  padding:5px 7px!important;
+  color:#9098A6!important;
+  box-shadow:none!important;
+}
+.journey-step-label{font-size:10px!important;font-weight:800!important;letter-spacing:.05px;}
+.journey-step.active{background:var(--app-green-soft)!important;color:var(--app-green-dark)!important;}
+.journey-step.done{color:#4E7A69!important;}
+.journey-step.done .journey-step-label::before{content:'✓ ';}
+
+/* Service choice feels like a product selector */
+.service-selector-head{margin:0 1px 8px!important;}
+.service-selector-head b{font-size:11px!important;color:#586273!important;font-weight:800!important;}
+.service-selector-head .service-start-price{
+  font-size:10.5px!important;
+  color:var(--app-green-dark)!important;
+  font-weight:800!important;
+}
+.service-options{gap:8px!important;}
+.service-option{
+  min-height:58px!important;
+  padding:8px 7px!important;
+  border:1px solid var(--app-border)!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  color:#566171!important;
+  box-shadow:none!important;
+}
+.service-option:hover{border-color:#CAD1DC!important;background:#FCFDFE!important;}
+.service-option .service-icon-wrap{
+  width:28px!important;height:28px!important;
+  border-radius:9px!important;
+  background:#F1F3F6!important;
+  color:#4F596A!important;
+}
+.service-option .service-name{font-size:10.8px!important;font-weight:800!important;color:#3F4857!important;}
+.service-option.active{
+  border-color:#9FDCC5!important;
+  background:var(--app-green-soft)!important;
+  color:var(--app-green-dark)!important;
+}
+.service-option.active .service-icon-wrap{background:#D9F1E7!important;color:var(--app-green-dark)!important;}
+.service-option.active .service-name{color:var(--app-green-dark)!important;}
+
+/* Round trip + availability are intentionally secondary */
+.trip-option{
+  min-height:40px!important;
+  padding:6px 8px!important;
+  margin:8px 0 5px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:var(--app-surface)!important;
+}
+.trip-option-icon{width:24px!important;height:24px!important;color:#667085!important;}
+.trip-option-copy b{font-size:11.5px!important;color:#4E596A!important;}
+.toggle-slider{background:#D8DDE5!important;}
+.toggle-switch input:checked + .toggle-slider{background:var(--app-green)!important;}
+.availability-card{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  margin:0!important;
+}
+.availability-summary{min-height:32px!important;padding:4px 4px!important;}
+.availability-summary:hover{background:transparent!important;}
+.availability-copy b{font-size:10.5px!important;color:#7A8493!important;font-weight:700!important;}
+.availability-badge{font-size:9px!important;padding:3px 6px!important;}
+.schedule-list{background:var(--app-surface);border-radius:10px;margin-top:3px;padding:4px 8px!important;}
+
+/* Route input: resembles modern mobility apps */
+.step-back-row{margin:0 0 5px!important;}
+.step-back-btn{color:#667085!important;font-size:10.5px!important;}
+.route-stack{padding-left:24px!important;}
+.route-rail{left:8px!important;top:18px!important;bottom:18px!important;background:#DDE2E8!important;}
+.route-row{padding:4px 0!important;}
+.route-dot{left:-24px!important;width:18px!important;height:18px!important;box-shadow:0 0 0 3px #fff!important;}
+.route-field,.route-field.empty{
+  min-height:52px!important;
+  padding:7px 6px 7px 11px!important;
+  border:1px solid var(--app-border)!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(23,34,59,.025)!important;
+}
+.route-field.empty{background:#FAFBFC!important;border-style:dashed!important;}
+.route-field:hover{border-color:#C8CFD9!important;background:#fff!important;}
+.route-field.attention{border-color:#7CCBAE!important;box-shadow:0 0 0 3px rgba(0,168,107,.08)!important;}
+.field-text{font-size:13px!important;font-weight:750!important;color:#303A49!important;}
+.route-field.empty .field-text{color:#7A8493!important;font-weight:650!important;}
+.field-clear{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;}
+.swap-btn{width:30px!important;height:30px!important;top:39px!important;background:#fff!important;}
+.add-stop-btn{
+  min-height:34px!important;
+  margin:3px 0 1px 22px!important;
+  padding:5px 8px!important;
+  color:#4F6F64!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  background:transparent!important;
+}
+.add-stop-btn:hover{background:var(--app-green-soft)!important;color:var(--app-green-dark)!important;}
+
+/* Sticky CTA: one obvious next step */
+.form-actions-sticky{padding-top:8px!important;}
+.form-actions-sticky .cta,.cta[data-step="location"]{
+  min-height:48px!important;
+  border-radius:13px!important;
+  background:var(--app-green)!important;
+  box-shadow:0 7px 18px rgba(0,168,107,.18)!important;
+  font-size:13.5px!important;
+  letter-spacing:-.05px;
+}
+.form-actions-sticky .cta:hover,.cta[data-step="location"]:hover{background:var(--app-green-dark)!important;}
+.form-actions-sticky .cta svg{width:17px!important;height:17px!important;}
+
+/* Result: price is the hero, everything else supports it */
+.result-actions-top{margin-bottom:6px!important;}
+.result-back{color:#657082!important;font-size:11px!important;}
+.result-trip-chips{gap:5px!important;margin-bottom:8px!important;}
+.result-trip-chip{
+  background:#F3F5F7!important;
+  color:#657082!important;
+  border:1px solid #ECEEF2;
+  border-radius:999px!important;
+  padding:4px 7px!important;
+  font-size:9.5px!important;
+}
+.result-trip-chip.primary{background:var(--app-green-soft)!important;color:var(--app-green-dark)!important;border-color:#D3EFE4!important;}
+.meter-card{
+  padding:15px 15px 13px!important;
+  margin-bottom:9px!important;
+  border:1px solid #DDEFE7!important;
+  border-radius:16px!important;
+  background:linear-gradient(150deg,#F7FCFA 0%,#EEF9F4 100%)!important;
+  box-shadow:none!important;
+}
+.meter-label{font-size:9.5px!important;color:#658073!important;}
+.meter-value{font-size:34px!important;color:#17223B!important;letter-spacing:-1px!important;}
+.meter-value .curr{font-size:15px!important;color:#5D756B!important;}
+.meter-sub b{font-size:12.5px!important;}
+.route-details{border-color:var(--app-border)!important;}
+.route-details summary{color:#6B7280!important;}
+
+/* Primary conversion action and calmer utility buttons */
+.whatsapp-btn{
+  min-height:48px!important;
+  border-radius:13px!important;
+  background:var(--app-green)!important;
+  box-shadow:0 7px 18px rgba(0,168,107,.18)!important;
+  font-size:13.5px!important;
+}
+.whatsapp-btn:hover{background:var(--app-green-dark)!important;}
+.nav-btn{
+  min-height:44px!important;
+  margin-top:7px!important;
+  border-radius:12px!important;
+  border:1px solid #D7E5FB!important;
+  background:#F8FBFF!important;
+  color:#2164C5!important;
+  font-size:12px!important;
+}
+.action-grid{gap:7px!important;margin-top:7px!important;}
+.action-grid .recalc-btn,.action-grid .share-btn{
+  min-height:40px!important;
+  border-radius:11px!important;
+  border:1px solid var(--app-border)!important;
+  background:#F7F8FA!important;
+  color:#5F6978!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+}
+.action-grid button svg{opacity:.78;}
+
+/* Search = clean full-screen utility */
+.search-panel{background:#fff!important;}
+.search-head{padding:calc(11px + var(--safe-top)) 11px 9px!important;background:#fff!important;}
+.search-input-wrap{
+  height:46px!important;
+  border:1px solid var(--app-border)!important;
+  border-radius:14px!important;
+  background:#F7F8FA!important;
+}
+.search-input-wrap:focus-within{border-color:#A7DCC8!important;box-shadow:0 0 0 3px rgba(0,168,107,.07)!important;}
+.search-submit{width:42px!important;height:42px!important;border-radius:12px!important;background:var(--app-green)!important;}
+.search-context{font-size:10px!important;color:#737E8F!important;}
+.quick-action,.result-item{border-radius:12px!important;}
+.quick-action:hover,.result-item:hover{background:#F7F9FA!important;border-color:transparent!important;}
+.quick-action .qa-icon{background:#F1F4F6!important;color:var(--app-green-dark)!important;}
+.result-item .ri-icon{background:#F2F4F6!important;}
+
+/* Map-pick confirmation */
+.pick-bar{border-radius:22px 22px 0 0!important;box-shadow:0 -8px 30px rgba(23,34,59,.12)!important;}
+.pick-confirm{background:var(--app-green)!important;border-radius:13px!important;}
+
+/* Compact minimized state */
+.compact-bar{
+  background:rgba(23,34,59,.97)!important;
+  border-radius:18px 18px 0 0!important;
+  box-shadow:0 -7px 26px rgba(23,34,59,.16)!important;
+}
+.cb-btn{background:rgba(255,255,255,.11)!important;}
+
+/* Modal language */
+.modal-overlay{background:rgba(23,34,59,.42)!important;backdrop-filter:blur(5px)!important;}
+.modal-card{border:1px solid rgba(255,255,255,.7);}
+.pay-item,.settings-row,.about-fact{background:#F7F8FA!important;}
+
+/* Mobile: preserve map dominance and reduce visual noise. */
+@media (max-width:759px){
+  :root{--mobile-sheet-max:48dvh;}
+  .sheet{max-height:var(--mobile-sheet-max)!important;}
+  .journey-stepper{margin-bottom:7px!important;}
+  .service-options{gap:6px!important;}
+  .service-option{min-height:54px!important;padding:7px 5px!important;}
+  .service-option .service-icon-wrap{width:24px!important;height:24px!important;}
+  .service-option .service-name{font-size:10px!important;}
+  .trip-option{margin-top:6px!important;}
+  .availability-summary{padding-left:2px!important;padding-right:2px!important;}
+  .route-field,.route-field.empty{min-height:50px!important;}
+  .form-actions-sticky{padding-top:7px!important;}
+  #btnInfo{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;}
+  #btnLocate{right:12px!important;}
+}
+
+@media (max-width:380px){
+  :root{--mobile-sheet-max:50dvh;}
+  .service-option .service-icon-wrap{display:flex!important;}
+  .service-option{gap:4px!important;}
+  .service-option .service-name{font-size:9.5px!important;}
+  .meter-value{font-size:31px!important;}
+}
+
+@media (min-width:760px){
+  .sheet{width:404px!important;left:18px!important;bottom:18px!important;border-radius:22px!important;border-bottom:1px solid rgba(231,234,240,.9)!important;}
+  .search-panel{width:420px!important;left:18px!important;top:18px!important;bottom:18px!important;border-radius:22px!important;box-shadow:var(--app-shadow)!important;}
+  .compact-bar{width:404px!important;left:18px!important;bottom:18px!important;border-radius:18px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -2040,12 +2345,12 @@ button:active{transform:scale(.985);}
 
       <button class="whatsapp-btn btn-full" id="btnWhatsapp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9 8.4 8.4 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8z"/></svg>
-        Pesan via WhatsApp
+        Pesan sekarang
       </button>
 
       <button class="nav-btn btn-full" id="btnNavMaps">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4 18-7z"/></svg>
-        Navigasi
+        Buka Maps
       </button>
 
       <div class="action-grid">
@@ -3446,7 +3751,7 @@ btnCalc.addEventListener('click', () => {
 });
 toggleRoundTrip.addEventListener('change', () => { invalidateCalculatedResult(); updateFormProgress(); if(resultView.classList.contains('show')) executeCalc(true); });
 
-const roundFare = (n) => Math.round(n / 10) * 10;
+const roundFare = (n) => Math.round(n / 100) * 100;
 const fmtRp = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 const showResult = (res, silent) => {
@@ -3616,11 +3921,19 @@ const captureCleanMapScreenshot = async () => {
 
   try {
     map.invalidateSize({ pan: false });
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
     const visibleRoutePoints = routePointsForNav.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
     if (visibleRoutePoints.length >= 2) {
       const bounds = L.latLngBounds(visibleRoutePoints.map(p => [p.lat, p.lng]));
       if (lastUserLocation) bounds.extend([lastUserLocation.lat, lastUserLocation.lng]);
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 16, animate: false });
+      const compactHeight = compactBar.offsetHeight || 72;
+      map.fitBounds(bounds, {
+        paddingTopLeft: [70, 70],
+        paddingBottomRight: [70, compactHeight + 70],
+        maxZoom: 16,
+        animate: false
+      });
     }
 
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -3628,7 +3941,7 @@ const captureCleanMapScreenshot = async () => {
 
     const width = mapElement.clientWidth;
     const height = mapElement.clientHeight;
-    const canvas = await html2canvas(mapElement, {
+    const canvas = await html2canvas(document.body, {
       useCORS: true,
       allowTaint: false,
       logging: false,
@@ -3637,6 +3950,8 @@ const captureCleanMapScreenshot = async () => {
       height,
       windowWidth: width,
       windowHeight: height,
+      scrollX: 0,
+      scrollY: 0,
       scale: Math.min(2, window.devicePixelRatio || 1),
       ignoreElements: element => element.classList?.contains('leaflet-control-zoom')
     });
