@@ -231,13 +231,13 @@ dialog::backdrop{background:rgba(20,12,14,.52);backdrop-filter:blur(3px)}
           </button>
         </div>
       </div>
-      <div class="searchbar" role="search">
+      <div class="searchbar" role="search" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
         <label class="sr-only" for="productSearch">Cari menu</label>
         <input class="search-input" id="productSearch" type="search" placeholder="Cari cireng, pangsit, pempek..." autocomplete="off">
         <button class="search-clear" id="clearSearchButton" type="button" aria-label="Hapus pencarian" hidden>×</button>
       </div>
-      <nav class="category-nav" id="categoryNav" aria-label="Kategori menu"></nav>
+      <nav style="display:none;" class="category-nav" id="categoryNav" aria-label="Kategori menu"></nav>
     </div>
   </header>
 
@@ -265,7 +265,7 @@ dialog::backdrop{background:rgba(20,12,14,.52);backdrop-filter:blur(3px)}
       <span class="po-status-badge" id="poStatusBadge">AKTIF</span>
     </section>
 
-    <section class="section" aria-labelledby="popularTitle">
+    <section style="display:none;" class="section" aria-labelledby="popularTitle">
       <div class="section-head"><div><h2 id="popularTitle">Paling sering dipesan</h2><p>3 pilihan untuk mulai cepat.</p></div></div>
       <div class="popular-row" id="popularRow"></div>
     </section>
@@ -446,9 +446,9 @@ window.APP_CONFIG = {
   openPO: {
     enabled: true,
     status: 'auto',
-    openDate: '2026-08-02',
-    closeDate: '2026-08-14',
-    readyDate: '2026-08-17',
+    openDate: '2026-08-18',
+    closeDate: '2026-08-22',
+    readyDate: '2026-08-25',
     timezone: 'Asia/Jakarta',
     label: 'Open PO',
     readyPrefix: 'Ready',
@@ -503,13 +503,13 @@ window.APP_CONFIG = {
       ]}]
     },
     {
-      id: 'dimsum', enabled: true, category: 'Dimsum & Pangsit', name: 'Dimsum Ayam Udang Wortel',
+      id: 'dimsum', enabled: false, category: 'Dimsum & Pangsit', name: 'Dimsum Ayam Udang Wortel',
       badge: '4 pcs + saus', description: 'Dimsum frozen dengan isian ayam, udang, dan wortel. Satu paket berisi 4 pcs dan saus.',
       priceLabel: 'Rp12.000', basePrice: 12000, image: 'asset:dimsum-placeholder', pack: '4 pcs + saus', popular: false,
       keywords: 'dimsum ayam udang wortel empat pcs saus frozen'
     },
     {
-      id: 'pempek', enabled: true, category: 'Pempek', name: 'Paket Pempek',
+      id: 'pempek', enabled: false, category: 'Pempek', name: 'Paket Pempek',
       badge: '3 pcs', description: 'Satu paket pempek frozen berisi dua kapal selam dan satu lenjer.',
       priceLabel: 'Rp13.000', basePrice: 13000, image: 'asset:pempek', pack: '2 kapal selam + 1 lenjer', popular: false,
       keywords: 'pempek kapal selam lenjer frozen'
